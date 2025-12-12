@@ -20,6 +20,31 @@ from coordinator import EngineCoordinator
 from integrated_launcher import IntegratedGovernanceAutomationLauncher
 
 
+async def test_dimension_artifacts():
+    """Verify required dimension artifacts are available."""
+    print("\n" + "=" * 80)
+    print("🧪 Test 0: Dimension Artifacts")
+    print("=" * 80)
+
+    dimension_dir = Path(__file__).parent
+    schema_path = dimension_dir.parent / "dimensions" / "39-automation" / "schema.json"
+    policy_path = dimension_dir.parent / "dimensions" / "39-automation" / "policy.rego"
+    dimension_yaml = dimension_dir / "dimension.yaml"
+
+    missing = [p for p in [schema_path, policy_path, dimension_yaml] if not p.exists()]
+    if missing:
+        print(f"❌ Missing artifacts: {', '.join(str(p) for p in missing)}")
+        return False
+
+    content = dimension_yaml.read_text(encoding="utf-8")
+    if "../dimensions/39-automation/schema.json" not in content or "../dimensions/39-automation/policy.rego" not in content:
+        print("❌ dimension.yaml does not reference shared schema/policy paths")
+        return False
+
+    print("✅ Dimension artifacts validated")
+    return True
+
+
 async def test_main_launcher():
     """Test main governance automation launcher."""
     print("\n" + "=" * 80)
@@ -149,6 +174,7 @@ async def main():
     print("╚════════════════════════════════════════════════════════════════════════════╝")
 
     tests = [
+        ("Dimension Artifacts", test_dimension_artifacts),
         ("Main Launcher", test_main_launcher),
         ("Coordinator", test_coordinator),
         ("Communication", test_inter_engine_communication),
