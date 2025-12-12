@@ -547,8 +547,9 @@ class EngineRegistry:
         --------------------
         - **class_name**: Directly from the class `__name__` attribute
         - **module_path**: Converted to string for JSON serialization
-        - **engine_type**: Reads the ENGINE_TYPE class attribute's value (as a string) if present,
-                           otherwise defaults to "execution"
+        - **engine_type**: String value extracted from the ENGINE_TYPE class 
+                           attribute if present, otherwise defaults to the 
+                           string value of EngineType.EXECUTION
 
         Error Handling:
         ---------------
