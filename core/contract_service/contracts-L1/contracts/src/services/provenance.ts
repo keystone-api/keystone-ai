@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'crypto';
 import { readFile, stat, realpath } from 'fs/promises';
+import { tmpdir } from 'os';
 import * as path from 'path';
 
 import { SLSAAttestationService, SLSAProvenance, BuildMetadata } from './attestation';
@@ -31,9 +32,10 @@ async function validateAndNormalizePath(
 
   // Handle absolute paths: only allow in test environment for tmpdir
   let resolvedPath: string;
+  const systemTmpDir = tmpdir();
   if (path.isAbsolute(filePath)) {
-    if (process.env.NODE_ENV === 'test' && filePath.startsWith(path.sep + 'tmp')) {
-      // In test environment, allow absolute paths to /tmp
+    if (process.env.NODE_ENV === 'test' && filePath.startsWith(systemTmpDir)) {
+      // In test environment, allow absolute paths to system temp directory
       resolvedPath = filePath;
     } else {
       // For production, reject absolute paths or resolve them relative to safeRoot
@@ -48,8 +50,8 @@ async function validateAndNormalizePath(
     // Use realpath to resolve symbolic links and get the canonical path
     const canonicalPath = await realpath(resolvedPath);
 
-    // In test environment, allow /tmp paths
-    if (process.env.NODE_ENV === 'test' && canonicalPath.startsWith(path.sep + 'tmp')) {
+    // In test environment, allow temp directory paths
+    if (process.env.NODE_ENV === 'test' && canonicalPath.startsWith(systemTmpDir)) {
       return canonicalPath;
     }
 
@@ -64,9 +66,11 @@ async function validateAndNormalizePath(
     // If realpath fails (e.g., file doesn't exist), validate the normalized path
     const normalizedPath = path.normalize(resolvedPath);
 
-    // In test environment, allow /tmp paths even if file doesn't exist yet
-    if (process.env.NODE_ENV === 'test' && normalizedPath.startsWith(path.sep + 'tmp')) {
-      throw error; // Re-throw the original error (e.g., ENOENT) but allow the path
+    // In test environment, allow temp directory paths even if file doesn't exist yet
+    // This allows tests to validate paths before files are created
+    if (process.env.NODE_ENV === 'test' && normalizedPath.startsWith(systemTmpDir)) {
+      // Re-throw the original error (e.g., ENOENT) after validating the path is allowed
+      throw error;
     }
 
     // Ensure the normalized path is within safeRoot
