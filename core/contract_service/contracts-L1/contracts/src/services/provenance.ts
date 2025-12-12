@@ -2,16 +2,7 @@ import { createHash, randomUUID } from 'crypto';
 import { readFile, stat, realpath } from 'fs/promises';
 import { tmpdir } from 'os';
 import * as path from 'path';
-import { tmpdir } from 'os';
 
-// Define a safe root directory for allowed file operations
-const SAFE_ROOT = path.resolve(process.cwd(), 'safefiles');
-// Allowed absolute path prefixes based on environment
-// In test: allow tmpdir for test files
-// In production: allow project workspace and safefiles directory only
-const ALLOWED_ABSOLUTE_PREFIXES = process.env.NODE_ENV === 'test' 
-  ? [tmpdir(), process.cwd()] 
-  : [process.cwd(), SAFE_ROOT];
 import { SLSAAttestationService, SLSAProvenance, BuildMetadata } from './attestation';
 
 // Define a safe root directory for allowed file operations
@@ -178,26 +169,10 @@ export class ProvenanceService {
     builder: BuilderInfo,
     metadata: Partial<MetadataInfo> = {}
   ): Promise<BuildAttestation> {
-    // Handle absolute vs relative paths
-    let resolvedPath: string;
-    if (path.isAbsolute(subjectPath)) {
-      // For absolute paths, validate against allowed prefixes (security check)
-      resolvedPath = path.normalize(subjectPath);
-      const isAllowed = ALLOWED_ABSOLUTE_PREFIXES.some(prefix => 
-        resolvedPath.startsWith(prefix + path.sep) || resolvedPath === prefix
-      );
-      if (!isAllowed) {
-        throw new Error('Invalid file path: Absolute paths must be within allowed directories.');
-      }
-    } else {
-      // For relative paths, resolve against SAFE_ROOT
-      resolvedPath = path.resolve(SAFE_ROOT, subjectPath);
-      // Ensure the resolved path is within SAFE_ROOT
-      if (!(resolvedPath === SAFE_ROOT || resolvedPath.startsWith(SAFE_ROOT + path.sep))) {
-        throw new Error('Invalid file path: Access outside of allowed directory is not permitted.');
-      }
-    }
-    const stats = await stat(resolvedPath);
+    // Use validateAndNormalizePath to resolve symlinks and validate path security
+    const validatedPath = await validateAndNormalizePath(subjectPath);
+
+    const stats = await stat(validatedPath);
     if (!stats.isFile()) {
       throw new Error(`Subject path must be a file: ${subjectPath}`);
     }
