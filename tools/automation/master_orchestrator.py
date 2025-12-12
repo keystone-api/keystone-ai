@@ -415,7 +415,7 @@ class EngineRegistry:
             - `class_name` (str): Name of the BaseEngine subclass
             - `module_path` (str): Absolute path to the Python module file
             - `engine_type` (str): Engine type value from ENGINE_TYPE attribute
-                                   or defaults to "execution"
+                                   or defaults to `EngineType.EXECUTION` (the enum value; if a string is returned, it is extracted via `.value`)
 
             For YAML config discoveries, each dict contains:
             - All fields defined in the YAML file
