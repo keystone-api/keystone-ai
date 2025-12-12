@@ -97,7 +97,8 @@ jobs:
           -I automation/autonomous/architecture-stability \
           automation/autonomous/architecture-stability/system_hal.c \
           automation/autonomous/architecture-stability/test/test_system_hal.c \
-          -o automation/autonomous/architecture-stability/build/test_system_hal
+          -o automation/autonomous/architecture-stability/build/test_system_hal \
+          -lrt
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4
