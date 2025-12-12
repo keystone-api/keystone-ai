@@ -126,7 +126,7 @@ analyze-reports:
 	@echo "   - JSON: $(REPORTS_ANALYSIS_JSON)"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Governance Validation
+# Governance Validation & Scanning
 # ─────────────────────────────────────────────────────────────────────────────
 validate-governance:
 	@echo "🔍 Validating Architecture Governance Matrix..."
@@ -135,6 +135,36 @@ validate-governance:
 validate-governance-ci:
 	@echo "🔍 Validating Architecture Governance Matrix (CI mode)..."
 	$(PYTHON) tools/governance/validate-governance-matrix.py
+
+scan-governance:
+	@echo "🔍 Scanning governance directory structure..."
+	$(PYTHON) governance/35-scripts/scan-governance-directory.py --verbose
+
+scan-governance-report:
+	@echo "📊 Generating governance scan report..."
+	$(PYTHON) governance/35-scripts/scan-governance-directory.py \
+		--report-output governance/scan-report.yaml \
+		--report-format yaml \
+		--verbose
+	@echo "✅ Report saved to governance/scan-report.yaml"
+
+scan-governance-json:
+	@echo "📊 Generating governance scan report (JSON)..."
+	$(PYTHON) governance/35-scripts/scan-governance-directory.py \
+		--report-output governance/scan-report.json \
+		--report-format json \
+		--verbose
+	@echo "✅ Report saved to governance/scan-report.json"
+
+validate-governance-structure:
+	@echo "🔍 Validating governance structure..."
+	$(PYTHON) governance/35-scripts/validate-governance-structure.py --verbose
+
+governance-full-check: validate-governance-structure scan-governance validate-governance
+	@echo ""
+	@echo "════════════════════════════════════════════════════════════════"
+	@echo "  ✅ Full governance validation and scan completed!"
+	@echo "════════════════════════════════════════════════════════════════"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Cross-Platform Build System
@@ -229,10 +259,15 @@ help:
 	@echo "  make clean-generated Remove all generated YAML files"
 	@echo "  make analyze-reports Analyze root-level reports"
 	@echo ""
-	@echo "🔍 Validation Targets:"
+	@echo "🔍 Governance Targets:"
 	@echo ""
-	@echo "  make validate-governance     Validate Architecture Governance Matrix"
-	@echo "  make validate-governance-ci  Validate governance (CI mode)"
+	@echo "  make scan-governance              Scan governance directory structure"
+	@echo "  make scan-governance-report       Generate governance scan report (YAML)"
+	@echo "  make scan-governance-json         Generate governance scan report (JSON)"
+	@echo "  make validate-governance-structure Validate governance structure"
+	@echo "  make validate-governance          Validate Architecture Governance Matrix"
+	@echo "  make validate-governance-ci       Validate governance (CI mode)"
+	@echo "  make governance-full-check        Run all governance validations and scans"
 	@echo ""
 	@echo "ℹ️  General:"
 	@echo ""
