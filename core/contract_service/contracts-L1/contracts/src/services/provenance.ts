@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'crypto';
-import { readFile, stat, realpath } from 'fs/promises';
+import { readFile, stat } from 'fs/promises';
 import { tmpdir } from 'os';
 import * as path from 'path';
 
@@ -143,11 +143,14 @@ export interface Dependency {
 }
 
 export class ProvenanceService {
-  private slsaService: SLSAAttestationService;
+  private readonly slsaService: SLSAAttestationService;
+  private readonly pathValidator: PathValidator;
 
-  constructor() {
+  constructor(pathValidator?: PathValidator) {
     this.slsaService = new SLSAAttestationService();
+    this.pathValidator = pathValidator || new PathValidator();
   }
+
   /**
    * 生成文件的 SHA256 摘要
    * Validates the file path to prevent path traversal attacks.
@@ -169,7 +172,7 @@ export class ProvenanceService {
     builder: BuilderInfo,
     metadata: Partial<MetadataInfo> = {}
   ): Promise<BuildAttestation> {
-    // Validate and normalize the path to prevent path traversal
+    // Use validateAndNormalizePath to resolve symlinks and validate path security
     const validatedPath = await validateAndNormalizePath(subjectPath);
 
     const stats = await stat(validatedPath);
@@ -177,9 +180,9 @@ export class ProvenanceService {
       throw new Error(`Subject path must be a file: ${subjectPath}`);
     }
 
-    const content = await readFile(validatedPath);
+    const content = await readFile(resolvedPath);
     const subject = this.slsaService.createSubjectFromContent(
-      path.relative(process.cwd(), validatedPath),
+      path.relative(process.cwd(), resolvedPath),
       content
     );
 
