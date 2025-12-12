@@ -18,5 +18,5 @@
 ## Validation Checklist
 
 - Confirm new locations follow `root_directory_guidelines` in `config/system-module-map.yaml`.
-- Re-run `tools/governance/validate-governance-matrix.py` (canonical governance matrix/path validator) if paths change.
+- Re-run `tools/governance/validate-governance-matrix.py` (governance matrix validator) if paths change.
 - Ensure any renamed paths continue to satisfy the layered governance matrix and dependency flow.
