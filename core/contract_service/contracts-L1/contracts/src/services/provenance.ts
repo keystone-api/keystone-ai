@@ -1,10 +1,9 @@
 import { createHash, randomUUID } from 'crypto';
 import { readFile, stat } from 'fs/promises';
-import { relative } from 'path';
 import * as path from 'path';
 
-import { PathValidationError } from '../errors';
 import { SLSAAttestationService, SLSAProvenance, BuildMetadata } from './attestation';
+import { PathValidationError } from '../errors';
 
 // Define a safe root directory for allowed file operations
 const SAFE_ROOT = path.resolve(process.cwd(), 'safefiles');
@@ -112,7 +111,7 @@ export class ProvenanceService {
 
     const content = await readFile(resolvedPath);
     const subject = this.slsaService.createSubjectFromContent(
-      relative(process.cwd(), resolvedPath),
+      path.relative(process.cwd(), resolvedPath),
       content
     );
 
