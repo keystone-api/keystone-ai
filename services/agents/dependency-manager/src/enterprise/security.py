@@ -13,6 +13,7 @@
 
 import hashlib
 import json
+import warnings
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -658,6 +659,13 @@ class NextGenSecurity:
         elif algorithm == "sha512":
             actual = hashlib.sha512(content).hexdigest()
         elif algorithm == "md5":
+            warnings.warn(
+                "MD5 is cryptographically broken and should not be used. "
+                "This is only supported for verifying legacy checksums. "
+                "Please use SHA-256 or SHA-512 instead.",
+                DeprecationWarning,
+                stacklevel=2
+            )
             actual = hashlib.md5(content).hexdigest()
         else:
             actual = hashlib.sha256(content).hexdigest()
