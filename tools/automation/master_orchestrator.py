@@ -415,7 +415,7 @@ class EngineRegistry:
             - `class_name` (str): Name of the BaseEngine subclass
             - `module_path` (str): Absolute path to the Python module file
             - `engine_type` (str): Engine type value from ENGINE_TYPE attribute
-                                   or defaults to "execution"
+                                   or defaults to `EngineType.EXECUTION` (the enum value; if a string is returned, it is extracted via `.value`)
 
             For YAML config discoveries, each dict contains:
             - All fields defined in the YAML file
@@ -424,7 +424,8 @@ class EngineRegistry:
         Behavior:
         ---------
         - **Non-blocking**: Discovery failures are logged at DEBUG level and
-          do not halt the overall discovery process
+          do not halt the overall discovery process.
+          Note: Because failures are logged at DEBUG level, they may not be visible in production environments unless debug logging is enabled. This can make troubleshooting discovery issues more difficult.
         - **Recursive**: Searches entire directory trees using rglob patterns
         - **Safe**: Catches and handles module loading exceptions gracefully
         - **Deduplication**: Caller is responsible for handling duplicate
@@ -515,38 +516,25 @@ class EngineRegistry:
 
     def _inspect_module(self, module_path: Path) -> List[Dict[str, Any]]:
         """
-        Inspect a Python module file to discover BaseEngine subclasses.
+        INTERNAL: Inspect a Python module file to discover BaseEngine subclasses.
 
-        This internal method dynamically loads a Python module and uses runtime
-        introspection to identify all classes that inherit from BaseEngine. It
-        extracts metadata from discovered engine classes for registration.
+        This is a private/internal method. It dynamically loads a Python module and uses
+        runtime introspection to identify all classes that inherit from BaseEngine, extracting
+        metadata for registration.
 
-        Parameters:
-        -----------
+        Do NOT call this method directly. Use the public `discover_engines()` method instead,
+        which handles engine discovery and registration in a safe and supported manner.
+
+        Parameters
+        ----------
         module_path : Path
-            Absolute or relative path to the Python module file (.py) to inspect.
+            Path to the Python module file (.py) to inspect.
 
-        Returns:
-        --------
+        Returns
+        -------
         List[Dict[str, Any]]
-            List of dictionaries containing metadata for each discovered engine class.
-            Returns an empty list if no engines are found or if module loading fails.
-
-            Each dictionary contains:
-            - `class_name` (str): The name of the discovered engine class
-            - `module_path` (str): Absolute path string to the module file
-            - `engine_type` (str): Engine type extracted from the class's ENGINE_TYPE
-                                   attribute, defaults to "execution" if not present
-
-        Discovery Process:
-        ------------------
-        1. Creates a module spec from the file path using importlib
-        2. Loads the module in an isolated namespace
-        3. Executes the module to populate its namespace
-        4. Iterates through all module-level attributes
-        5. Identifies classes that meet engine criteria
-        6. Extracts metadata from qualifying classes
-
+            List of metadata dictionaries for each discovered engine class, or an empty list.
+        """
         Engine Class Criteria:
         ----------------------
         A class is considered a valid engine if ALL of these conditions are met:
@@ -559,13 +547,22 @@ class EngineRegistry:
         --------------------
         - **class_name**: Directly from the class `__name__` attribute
         - **module_path**: Converted to string for JSON serialization
-        - **engine_type**: Reads the ENGINE_TYPE class attribute if present,
-                           otherwise defaults to EngineType.EXECUTION
+        - **engine_type**: String value extracted from the ENGINE_TYPE class 
+                           attribute if present, otherwise defaults to the 
+                           string value of EngineType.EXECUTION
 
         Error Handling:
         ---------------
         All exceptions during module loading and introspection are silently
-        caught and ignored. This ensures that:
+        caught and ignored. **No exceptions are logged at all.**
+
+        .. warning::
+           This may make debugging difficult, as any errors (e.g., syntax errors,
+           missing dependencies, or other failures) will be completely silent.
+           Unlike ``discover_engines``, which logs exceptions at DEBUG level,
+           this method does not log any errors during discovery.
+
+        This ensures that:
         - Syntax errors in modules don't crash discovery
         - Missing dependencies don't halt the process
         - Malformed modules are gracefully skipped
