@@ -60,7 +60,6 @@ const limiter = rateLimit({
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
-  message: 'Too many requests, please try again later.',
   handler: (req: Request, res: Response /*, next: NextFunction*/) => {
     res.status(429).json({
       status: 'error',
