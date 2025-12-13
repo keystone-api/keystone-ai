@@ -29,7 +29,7 @@ def load_index(index_path: Path) -> dict:
     try:
         with open(index_path) as f:
             return yaml.safe_load(f) or {}
-    except FileNotFoundError:
+    except (FileNotFoundError, yaml.YAMLError):
         return {}
 
 
