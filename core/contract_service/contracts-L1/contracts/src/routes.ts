@@ -26,6 +26,8 @@
  * @see {@link https://slsa.dev/} SLSA Framework
  */
 
+import { randomUUID } from 'crypto';
+
 import { Router, Request, Response } from 'express';
 import type { Router as RouterType } from 'express';
 import rateLimit from 'express-rate-limit';
@@ -34,6 +36,7 @@ import { AssignmentController } from './controllers/assignment';
 import { EscalationController } from './controllers/escalation';
 import { ProvenanceController } from './controllers/provenance';
 import { SLSAController } from './controllers/slsa';
+import { ErrorCode } from './errors';
 
 /** Express router instance for all API routes */
 const router: RouterType = Router();
@@ -61,11 +64,15 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req: Request, res: Response /*, next: NextFunction*/) => {
+    const traceId = req.traceId || randomUUID();
     res.status(429).json({
-      status: 'error',
-      error: 'rate_limit_exceeded',
-      message: 'Too many requests, please try again later.',
-      timestamp: new Date().toISOString(),
+      error: {
+        code: ErrorCode.RATE_LIMIT,
+        message: 'Too many requests, please try again later.',
+        status: 429,
+        traceId,
+        timestamp: new Date().toISOString(),
+      },
     });
   },
 });
