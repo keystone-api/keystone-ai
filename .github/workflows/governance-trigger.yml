@@ -10,7 +10,7 @@ jobs:
   trigger-governance:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
     env:
       GOVERNANCE_SCRIPTS_PATH: governance/dimensions/81-auto-comment/scripts
