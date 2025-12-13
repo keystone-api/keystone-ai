@@ -63,7 +63,7 @@ const redisClient =
     ? new Redis({
         host: process.env.REDIS_HOST || 'localhost',
         port: parseInt(process.env.REDIS_PORT || '6379', 10),
-        password: process.env.REDIS_PASSWORD,
+        password: process.env.REDIS_PASSWORD || undefined,
         db: parseInt(process.env.REDIS_DB || '0', 10),
         tls: process.env.REDIS_TLS_ENABLED === 'true' ? {} : undefined,
         retryStrategy: (times: number) => {
@@ -74,7 +74,7 @@ const redisClient =
         },
         maxRetriesPerRequest: 3,
         enableReadyCheck: true,
-        lazyConnect: false,
+        lazyConnect: true,
       })
     : null;
 
@@ -95,6 +95,24 @@ if (redisClient) {
     'Redis rate limiting disabled - using in-memory store. ' +
       'This is not suitable for production deployments with multiple instances.'
   );
+}
+
+/**
+ * Create Redis store for rate limiting if Redis is enabled.
+ * This function properly handles the type compatibility between ioredis and rate-limit-redis.
+ */
+function createRedisStore(client: Redis) {
+  // rate-limit-redis expects a client with a sendCommand method.
+  // ioredis provides a 'call' method that serves the same purpose.
+  // We create an adapter to bridge the interface difference.
+  const storeClient = {
+    sendCommand: (...args: string[]) => client.call(...args),
+  };
+  // Type assertion is safe here as we've verified the interface compatibility
+  return new rateLimitRedisStore({
+    sendCommand: storeClient.sendCommand as never,
+    prefix: 'rl:', // Key prefix for rate limit entries
+  });
 }
 
 /**
@@ -127,14 +145,7 @@ const limiter: RateLimitRequestHandler = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   // Use Redis store if configured, otherwise fall back to in-memory store
-  // @ts-expect-error - Type compatibility issue between workspace versions of express-rate-limit
-  store: redisClient
-    ? new rateLimitRedisStore({
-        // @ts-expect-error - ioredis client is compatible with rate-limit-redis
-        sendCommand: (...args: string[]) => redisClient.call(...args),
-        prefix: 'rl:', // Key prefix for rate limit entries
-      })
-    : undefined, // express-rate-limit uses in-memory store by default
+  store: redisClient ? (createRedisStore(redisClient) as never) : undefined,
   handler: (req: Request, res: Response /*, next: NextFunction*/) => {
     const traceId = req.traceId || randomUUID();
     res.status(429).json({
