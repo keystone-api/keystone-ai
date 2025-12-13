@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4.1.0
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
 
@@ -44,13 +44,20 @@ jobs:
             exit 0
           fi
 
+          GOVERNANCE_STATUS="success"
+          SCRIPT_ARGS=(
+            --workflow "${WORKFLOW_NAME}"
+            --run-id "${{ github.run_id }}"
+            --commit "${COMMIT_SHA}"
+            --branch "${BRANCH_NAME}"
+            --pr-number "${PR_NUMBER}"
+          )
+
           npm exec --prefix "$GOVERNANCE_SCRIPTS_PATH" ts-node -- \
-            "$GOVERNANCE_SCRIPTS_PATH/generate-comment.ts" \
-            --workflow "${WORKFLOW_NAME}" \
-            --run-id "${{ github.run_id }}" \
-            --commit "${COMMIT_SHA}" \
-            --branch "${BRANCH_NAME}" \
-            --pr-number "${PR_NUMBER}" || echo "generate-comment script failed; continuing"
+            "$GOVERNANCE_SCRIPTS_PATH/generate-comment.ts" "${SCRIPT_ARGS[@]}" || {
+              echo "generate-comment script failed; continuing";
+              GOVERNANCE_STATUS="failed";
+            }
 
           node "$GOVERNANCE_SCRIPTS_PATH/update-registry.js" \
             --event-id "auto-comment-${{ github.run_id }}" \
@@ -58,4 +65,9 @@ jobs:
             --workflow "${WORKFLOW_NAME}" \
             --commit "${COMMIT_SHA}" \
             --branch "${BRANCH_NAME}" \
-            --pr-number "${PR_NUMBER}" || echo "update-registry script failed; continuing"
+            --pr-number "${PR_NUMBER}" || {
+              echo "update-registry script failed; continuing";
+              GOVERNANCE_STATUS="failed";
+            }
+
+          echo "Governance tooling completed with status: $GOVERNANCE_STATUS"
