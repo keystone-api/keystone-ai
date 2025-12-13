@@ -71,7 +71,10 @@ async function validateAndNormalizePath(
     const normalizedPath = path.normalize(resolvedPath);
 
     // In test environment, allow temp directory paths even if file doesn't exist yet
-    if (process.env.NODE_ENV === 'test' && normalizedPath.startsWith(systemTmpDir)) {
+    if (
+      process.env.NODE_ENV === 'test' &&
+      (normalizedPath.startsWith(systemTmpDir + path.sep) || normalizedPath === systemTmpDir)
+    ) {
       // Ensure still within tmpdir after normalization (defense-in-depth)
       const relativeTmp = path.relative(systemTmpDir, normalizedPath);
       if (relativeTmp.startsWith('..') || path.isAbsolute(relativeTmp)) {
