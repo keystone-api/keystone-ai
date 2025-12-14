@@ -190,7 +190,16 @@ interface SelfHealingMetrics {
 
 ## Usage Examples
 
+> **💡 Executable Examples Available!**
+> 
+> All examples below are available as runnable TypeScript files in `examples/self-healing/`.
+> Run them with: `npm run examples:self-healing` or individually with `npm run example:basic`, etc.
+> 
+> See [Examples README](../examples/self-healing/README.md) for details.
+
 ### Basic Usage with Self-Healing
+
+**Example File:** `examples/self-healing/01-basic-usage.ts`
 
 ```typescript
 import { ProvenanceService } from './services/provenance';
@@ -207,7 +216,14 @@ try {
 }
 ```
 
+**Run this example:**
+```bash
+npm run example:basic
+```
+
 ### Custom Self-Healing Configuration
+
+**Example File:** `examples/self-healing/02-custom-configuration.ts`
 
 ```typescript
 import { SelfHealingPathValidator } from './utils/self-healing-path-validator';
@@ -225,7 +241,14 @@ const validator = new SelfHealingPathValidator({
 const service = new ProvenanceService(validator);
 ```
 
+**Run this example:**
+```bash
+npm run example:config
+```
+
 ### Monitoring and Governance
+
+**Example File:** `examples/self-healing/03-monitoring-governance.ts`
 
 ```typescript
 import { selfHealingGovernance } from './governance/self-healing-integration';
@@ -242,7 +265,14 @@ const report = selfHealingGovernance.exportGovernanceReport();
 console.log(report);
 ```
 
+**Run this example:**
+```bash
+npm run example:monitoring
+```
+
 ### Event Subscription
+
+**Example File:** `examples/self-healing/04-event-subscription.ts`
 
 ```typescript
 import { pathValidationEvents, PathValidationEventType } from './events/path-validation-events';
@@ -258,6 +288,22 @@ pathValidationEvents.on(PathValidationEventType.FALLBACK_TRIGGERED, (event) => {
   console.log('Fallback triggered for:', event.data.filePath);
   console.log('Error:', event.data.error);
 });
+```
+
+**Run this example:**
+```bash
+npm run example:events
+```
+
+### Complete Demo
+
+**Example File:** `examples/self-healing/05-complete-demo.ts`
+
+A comprehensive demonstration showing all features integrated together with real file operations.
+
+**Run this example:**
+```bash
+npm run example:demo
 ```
 
 ## CI/CD Integration
