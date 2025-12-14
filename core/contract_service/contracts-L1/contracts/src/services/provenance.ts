@@ -70,15 +70,14 @@ async function validateAndNormalizePath(
     throw new Error('Invalid file path: Null bytes are not permitted.');
   }
 
-  const systemTmpDir = tmpdir();
-
-  // Check for directory traversal in path segments (but allow absolute paths for test mode)
-  const normalizedInput = path.normalize(filePath);
-  const segments = normalizedInput.split(path.sep);
+  // Check for directory traversal in path segments BEFORE normalization
+  // This prevents path.normalize() from resolving .. segments before we can check them
+  const segments = filePath.split(path.sep);
   if (segments.includes('..')) {
     throw new Error('Invalid file path: Directory traversal is not permitted.');
   }
 
+  const systemTmpDir = tmpdir();
   const resolvedPath = resolveFilePath(filePath, safeRoot, systemTmpDir);
 
   try {
