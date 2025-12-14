@@ -142,8 +142,17 @@ class ExtremeProblemIdentifier:
         elif problem.severity == ProblemSeverity.MEDIUM:
             self.log(f"[{problem.category}] {problem.title} @ {problem.location}", "warning")
         else:
-            self.log(f"[{problem.category}] {problem.title} @ {problem.location}", "info")
-    
+            # Only log non-secret detection at info; suppress details otherwise
+            hardcoded_phrases = [
+                "Hardcoded password", "Hardcoded secret", "Hardcoded API key", "Hardcoded token"
+            ]
+            # If not a hardcoded secret match, log normally; else suppress
+            if not any(ph in problem.title for ph in hardcoded_phrases):
+                self.log(f"[{problem.category}] {problem.title} @ {problem.location}", "info")
+            else:
+                # Optionally, log a generic sanitized info message
+                if self.verbose:
+                    self.log(f"[security] Credential exposure detected (details suppressed for security)", "info")
     def detect_security_vulnerabilities(self):
         # NOTE: Consider refactoring this function (complexity > 50 lines)
         """Category 1: Security vulnerability detection"""
