@@ -3,8 +3,6 @@ import { readFile, stat, realpath } from 'fs/promises';
 import { tmpdir } from 'os';
 import * as path from 'path';
 
-import { PathValidator } from '../utils/path-validator';
-
 import { SLSAAttestationService, SLSAProvenance, BuildMetadata } from './attestation';
 
 // Define a safe root directory for allowed file operations
@@ -65,7 +63,6 @@ async function validateAndNormalizePath(
     throw new Error('Invalid file path: Path must be a non-empty string');
   }
 
-
   // If you need multi-directory paths, reject obvious traversal
   if (
     filePath.includes('\0') ||
@@ -79,13 +76,16 @@ async function validateAndNormalizePath(
   const resolvedPath = resolveFilePath(filePath, safeRoot, systemTmpDir);
 
   try {
+    // Resolve symlinks to get the canonical path
     const canonicalPath = await realpath(resolvedPath);
 
-    // FINAL GUARD: Path must start with SAFE_ROOT or allowed test directory, comparing canonical (real) paths
+    // Validate the canonical path is within allowed boundaries
     if (isInTestTmpDir(canonicalPath, systemTmpDir)) {
+      if (!isPathContained(canonicalPath, systemTmpDir)) {
+        throw new Error('Invalid file path: Access outside of allowed directory is not permitted');
+      }
       return canonicalPath;
     }
-    // Fallback for non-existent file, use normalized path and re-check boundaries
 
     if (!isPathContained(canonicalPath, safeRoot)) {
       throw new Error('Invalid file path: Access outside of allowed directory is not permitted');
@@ -93,8 +93,10 @@ async function validateAndNormalizePath(
 
     return canonicalPath;
   } catch (error) {
+    // If realpath fails (e.g., file doesn't exist), validate the normalized path
     const normalizedPath = path.normalize(resolvedPath);
 
+    // Apply the same boundary checks to the normalized path
     if (isInTestTmpDir(normalizedPath, systemTmpDir)) {
       if (!isPathContained(normalizedPath, systemTmpDir)) {
         throw new Error('Invalid file path: Access outside of allowed directory is not permitted');
@@ -170,11 +172,9 @@ export interface Dependency {
 
 export class ProvenanceService {
   private readonly slsaService: SLSAAttestationService;
-  private readonly pathValidator: PathValidator;
 
-  constructor(pathValidator?: PathValidator) {
+  constructor() {
     this.slsaService = new SLSAAttestationService();
-    this.pathValidator = pathValidator || new PathValidator();
   }
 
   /**
