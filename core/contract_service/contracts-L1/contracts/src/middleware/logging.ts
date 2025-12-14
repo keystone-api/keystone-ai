@@ -54,7 +54,7 @@ export const loggingMiddleware = (req: Request, res: Response, next: NextFunctio
       body: req.body ? '[BODY_PRESENT]' : '[NO_BODY]',
     });
   } else {
-    console.log('Request:', `${requestLog.method} ${requestLog.url} [${traceId}]`);
+    console.log('Request:', `${requestLog.method} ${requestLog.url} [${traceId}] [ip:${requestLog.ip}]`);
   }
 
   res.on('finish', () => {
