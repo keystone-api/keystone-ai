@@ -3,9 +3,9 @@ import { readFile, stat, realpath } from 'fs/promises';
 import { tmpdir } from 'os';
 import * as path from 'path';
 
-import { pathValidationEvents } from '../events/path-validation-events';
+import sanitize from 'sanitize-filename';
+
 import { PathValidator } from '../utils/path-validator';
-import { SelfHealingPathValidator } from '../utils/self-healing-path-validator';
 
 import { SLSAAttestationService, SLSAProvenance, BuildMetadata } from './attestation';
 
@@ -152,54 +152,52 @@ async function validateAndNormalizePath(
     throw new Error('Invalid file path: Path must be a non-empty string');
   }
 
-  // Reject null bytes which can be used for path traversal exploits
-  if (filePath.includes('\0')) {
-    throw new Error('Invalid file path: Null bytes are not permitted.');
-  }
+  // Check if this is a simple filename (no directory separators)
+  const hasDirectorySeparators = filePath.includes('/') || filePath.includes(path.sep);
 
-  // Check for directory traversal in path segments BEFORE normalization
-  // This prevents path.normalize() from resolving .. segments before we can check them
-  // Split on both forward and backward slashes to catch all path separator variants
-  const segments = filePath.split(/[/\\]/);
-  if (segments.some((segment) => segment === '..')) {
-    throw new Error('Invalid file path: Directory traversal is not permitted.');
+  if (!hasDirectorySeparators) {
+    // For simple filenames, use sanitize-filename to ensure safety
+    const sanitized = sanitize(filePath);
+    if (sanitized !== filePath || !sanitized) {
+      throw new Error('Invalid file path: Filename contains unsafe characters');
+    }
+  } else {
+    // For multi-directory paths, reject obvious traversal attempts
+    if (
+      filePath.includes('\0') ||
+      filePath.split(path.sep).includes('..') ||
+      filePath.includes('//')
+    ) {
+      throw new Error('Invalid file path: Directory traversal is not permitted');
+    }
   }
 
   const resolvedPath = resolveFilePath(filePath, safeRoot, systemTmpDir);
 
   try {
+    // Resolve symlinks to get the canonical path
     const canonicalPath = await realpath(resolvedPath);
 
-·    // Verify canonical path is within allowed boundaries
+    // Validate the canonical path is within allowed boundaries
     if (isInTestTmpDir(canonicalPath, systemTmpDir)) {
+      if (!isPathContained(canonicalPath, systemTmpDir)) {
+        throw new Error('Invalid file path: Access outside of allowed directory is not permitted');
+      }
       return canonicalPath;
     }
-  let pathToValidate: string;
+
+    if (!isPathContained(canonicalPath, safeRoot)) {
+      throw new Error('Invalid file path: Access outside of allowed directory is not permitted');
+    }
 
   try {
     // Try to resolve to canonical path (follows symlinks)
     pathToValidate = await realpath(resolvedPath);
   } catch (error) {
-    // Fallback for non-existent file: Event-driven structure completion mechanism
-    // This triggers the self-healing system to attempt structure recovery
-    pathValidationEvents.emitFallbackTriggered({
-      filePath,
-      resolvedPath,
-      safeRoot,
-      error: error instanceof Error ? error.message : String(error),
-      errorCode:
-        error instanceof Error && 'code' in error
-          ? (error as Error & { code: string }).code
-          : undefined,
-    });
-
+    // If realpath fails (e.g., file doesn't exist), validate the normalized path
     const normalizedPath = path.normalize(resolvedPath);
 
-    // Check for consecutive separators after normalization to detect bypass attempts
-    if (hasConsecutiveSeparators(normalizedPath)) {
-      throw new Error('Invalid file path: Path normalization bypass detected');
-    }
-
+    // Apply the same boundary checks to the normalized path
     if (isInTestTmpDir(normalizedPath, systemTmpDir)) {
       if (!isPathContained(normalizedPath, systemTmpDir)) {
         throw new Error('Invalid file path: Access outside of allowed directory is not permitted');
@@ -273,24 +271,9 @@ export interface Dependency {
 
 export class ProvenanceService {
   private readonly slsaService: SLSAAttestationService;
-  private readonly pathValidator: PathValidator | SelfHealingPathValidator;
-  private readonly selfHealingEnabled: boolean;
 
-  constructor(pathValidator?: PathValidator | SelfHealingPathValidator, enableSelfHealing = true) {
+  constructor() {
     this.slsaService = new SLSAAttestationService();
-    this.selfHealingEnabled = enableSelfHealing;
-
-    // Use self-healing validator by default if enabled
-    if (enableSelfHealing && !pathValidator) {
-      this.pathValidator = new SelfHealingPathValidator({
-        safeRoot: SAFE_ROOT,
-        enableAutoRecovery: true,
-        enableSnapshotting: true,
-        dagEnabled: true,
-      });
-    } else {
-      this.pathValidator = pathValidator || new PathValidator();
-    }
   }
 
   /**
