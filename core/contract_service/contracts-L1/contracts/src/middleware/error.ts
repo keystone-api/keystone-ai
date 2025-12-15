@@ -6,6 +6,39 @@ import config from '../config';
 import { AppError, ErrorCode, createError } from '../errors';
 
 /**
+ * File path pattern configuration for error message sanitization.
+ * Extracting these into named constants improves maintainability and prevents
+ * divergence between Unix and Windows path handling.
+ */
+class FilePathPatterns {
+  /**
+   * Common file extensions that may appear in error messages and should be redacted.
+   * This shared configuration ensures consistency across platforms.
+   */
+  private static readonly FILE_EXTENSIONS = 'js|ts|py|java|go|rb|json|yaml|yml|env|config';
+
+  /**
+   * Unix-style file path pattern (forward slashes).
+   * Matches paths like: /app/src/file.ts, ./utils/helper.js
+   * Requires at least one directory separator to avoid false positives.
+   */
+  static readonly UNIX_FILE_PATH = new RegExp(
+    `\\/(?:[\\w\\-.]+\\/)+[\\w\\-.]+\\.(?:${FilePathPatterns.FILE_EXTENSIONS})`,
+    'gi'
+  );
+
+  /**
+   * Windows-style file path pattern (backslashes with optional drive letter).
+   * Matches paths like: C:\Users\App\file.ts, \\server\share\file.js
+   * Requires at least one directory separator to avoid false positives.
+   */
+  static readonly WINDOWS_FILE_PATH = new RegExp(
+    `(?:[a-zA-Z]:)?\\\\(?:[\\w\\-.]+\\\\)+[\\w\\-.]+\\.(?:${FilePathPatterns.FILE_EXTENSIONS})`,
+    'gi'
+  );
+}
+
+/**
  * Pre-compiled regex patterns for error message sanitization.
  * These patterns are compiled once at module load time for optimal performance.
  */
@@ -36,8 +69,8 @@ class ErrorSanitizationPatterns {
    */
   static readonly SENSITIVE_PATTERNS: ReadonlyArray<RegExp> = Object.freeze([
     /at\s+[^\n:]+:\d+(?::\d+)?/gi, // Stack trace locations (at file.ts:10:5 or at file.ts:10)
-    /\/(?:[\w\-.]+\/)+[\w\-.]+\.(?:js|ts|py|java|go|rb|json|yaml|yml|env|config)/gi, // Unix file paths (require at least one directory)
-    /(?:[a-zA-Z]:)?\\(?:[\w\-.]+\\)+[\w\-.]+\.(?:js|ts|py|java|go|rb|json|yaml|yml|env|config)/gi, // Windows file paths (require drive or UNC and at least one directory)
+    FilePathPatterns.UNIX_FILE_PATH, // Unix file paths (require at least one directory)
+    FilePathPatterns.WINDOWS_FILE_PATH, // Windows file paths (require drive or UNC and at least one directory)
     /\/(?:etc|proc|var|usr|home)\/[^\s]*/gi, // System paths
     /Error:\s+[\w\s]+\n\s+at/gi, // Stack trace beginnings
     /\w+:\/\/[^\s]+/gi, // Generic connection strings (mongodb://, postgres://, etc.)
