@@ -56,7 +56,7 @@ describe('ProvenanceService', () => {
     it('should create valid attestation with required fields', async () => {
       const builder = {
         id: 'https://test.builder.com',
-        version: '1.0.0'
+        version: '1.0.0',
       };
 
       // Use relative path from SAFE_ROOT
@@ -75,16 +75,16 @@ describe('ProvenanceService', () => {
           type: 'https://slsa.dev/provenance/v1',
           builder,
           recipe: expect.objectContaining({
-            type: 'https://github.com/synergymesh/build'
+            type: 'https://github.com/synergymesh/build',
           }),
           metadata: expect.objectContaining({
             completeness: {
               parameters: true,
               environment: true,
-              materials: true
-            }
-          })
-        }
+              materials: true,
+            },
+          }),
+        },
       });
     });
 
@@ -92,7 +92,7 @@ describe('ProvenanceService', () => {
       const builder = { id: 'test-builder', version: '1.0.0' };
       const metadata = {
         reproducible: true,
-        buildInvocationId: 'test-build-123'
+        buildInvocationId: 'test-build-123',
       };
 
       const relativePath = testFilePath.replace(tmpdir(), '').substring(1);
@@ -103,10 +103,12 @@ describe('ProvenanceService', () => {
     });
 
     it('should reject directories', async () => {
-      await expect(service.createBuildAttestation(tmpdir(), {
-        id: 'test-builder',
-        version: '1.0.0'
-      })).rejects.toThrow('Subject path must be a file');
+      await expect(
+        service.createBuildAttestation(tmpdir(), {
+          id: 'test-builder',
+          version: '1.0.0',
+        })
+      ).rejects.toThrow('Subject path must be a file');
     });
   });
 
@@ -135,7 +137,7 @@ describe('ProvenanceService', () => {
         timestamp: new Date().toISOString(),
         subject: {
           name: 'test-artifact',
-          digest: 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+          digest: 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         },
         predicate: {
           type: 'https://slsa.dev/provenance/v1',
@@ -145,9 +147,9 @@ describe('ProvenanceService', () => {
             buildStartedOn: new Date().toISOString(),
             buildFinishedOn: new Date().toISOString(),
             completeness: { parameters: true, environment: true, materials: true },
-            reproducible: false
-          }
-        }
+            reproducible: false,
+          },
+        },
       };
 
       const isValid = await service.verifyAttestation(attestation);
@@ -179,14 +181,12 @@ describe('ProvenanceService', () => {
     });
 
     it('should reject invalid JSON', () => {
-      expect(() => service.importAttestation('invalid json'))
-        .toThrow();
+      expect(() => service.importAttestation('invalid json')).toThrow();
     });
 
     it('should reject JSON without required fields', () => {
       const invalidJson = JSON.stringify({ invalid: 'data' });
-      expect(() => service.importAttestation(invalidJson))
-        .toThrow('Invalid attestation format');
+      expect(() => service.importAttestation(invalidJson)).toThrow('Invalid attestation format');
     });
   });
 });

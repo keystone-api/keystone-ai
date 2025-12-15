@@ -41,12 +41,7 @@ describe('Error Middleware', () => {
     it('should handle 400 Bad Request errors', () => {
       const error = createError.validation('Invalid input');
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(400);
       expect(jsonMock).toHaveBeenCalledWith(
@@ -62,12 +57,7 @@ describe('Error Middleware', () => {
     it('should handle 401 Unauthorized errors', () => {
       const error = createError.unauthorized('Authentication required');
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(401);
       expect(jsonMock).toHaveBeenCalledWith(
@@ -83,12 +73,7 @@ describe('Error Middleware', () => {
     it('should handle 403 Forbidden errors', () => {
       const error = createError.forbidden('Access denied');
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(403);
       expect(jsonMock).toHaveBeenCalledWith(
@@ -104,12 +89,7 @@ describe('Error Middleware', () => {
     it('should handle 404 Not Found errors', () => {
       const error = createError.notFound('Resource not found');
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(404);
       expect(jsonMock).toHaveBeenCalledWith(
@@ -125,12 +105,7 @@ describe('Error Middleware', () => {
     it('should handle 409 Conflict errors', () => {
       const error = createError.conflict('Resource already exists');
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(409);
       expect(jsonMock).toHaveBeenCalledWith(
@@ -150,12 +125,7 @@ describe('Error Middleware', () => {
       ];
       const error = createError.validation('Validation failed', validationErrors);
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(422);
       expect(jsonMock).toHaveBeenCalledWith(
@@ -173,12 +143,7 @@ describe('Error Middleware', () => {
       // Create a custom AppError for rate limiting since no factory exists
       const error = new AppError('Too many requests', ErrorCode.RATE_LIMIT, 429);
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(429);
       expect(jsonMock).toHaveBeenCalledWith(
@@ -194,12 +159,7 @@ describe('Error Middleware', () => {
     it('should handle 500 Internal Server errors', () => {
       const error = createError.internal('Server error occurred');
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalledWith(
@@ -215,12 +175,7 @@ describe('Error Middleware', () => {
     it('should handle 503 Service Unavailable errors', () => {
       const error = createError.serviceUnavailable('External API');
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(503);
       expect(jsonMock).toHaveBeenCalledWith(
@@ -238,12 +193,7 @@ describe('Error Middleware', () => {
     it('should handle generic Error objects as 500', () => {
       const error = new Error('Something went wrong');
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalledWith(
@@ -260,12 +210,7 @@ describe('Error Middleware', () => {
       const error = new Error('Test error');
       error.stack = 'Error: Test error\n    at someFunction (file.ts:10:5)';
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(500);
       const response = jsonMock.mock.calls[0][0];
@@ -277,12 +222,7 @@ describe('Error Middleware', () => {
       mockRequest.url = '/api/v1/test';
       const error = createError.validation('Invalid data');
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(400);
       expect(jsonMock).toHaveBeenCalled();
@@ -293,12 +233,7 @@ describe('Error Middleware', () => {
     it('should return consistent error response structure', () => {
       const error = createError.notFound('Item not found');
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       const response = jsonMock.mock.calls[0][0];
       expect(response).toHaveProperty('error');
@@ -311,12 +246,7 @@ describe('Error Middleware', () => {
       const error = createError.internal('Server error');
       const beforeTime = Date.now();
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       const afterTime = Date.now();
       const response = jsonMock.mock.calls[0][0];
@@ -330,12 +260,7 @@ describe('Error Middleware', () => {
       const details = { field: 'username', constraint: 'unique' };
       const error = createError.validation('Validation failed', [details]);
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       const response = jsonMock.mock.calls[0][0];
       expect(response.error.details).toEqual([details]);
@@ -344,24 +269,14 @@ describe('Error Middleware', () => {
 
   describe('Edge Cases', () => {
     it('should handle null error', () => {
-      errorMiddleware(
-        null as any,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(null as any, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalled();
     });
 
     it('should handle undefined error', () => {
-      errorMiddleware(
-        undefined as any,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(undefined as any, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalled();
@@ -382,12 +297,7 @@ describe('Error Middleware', () => {
     it('should handle error without message', () => {
       const error = new Error();
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(500);
       const response = jsonMock.mock.calls[0][0];
@@ -400,12 +310,7 @@ describe('Error Middleware', () => {
       const error = createError.internal('Internal error');
       error.stack = 'Error stack trace...';
 
-      errorMiddleware(
-        error,
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      errorMiddleware(error, mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalled();
