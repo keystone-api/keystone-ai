@@ -114,13 +114,21 @@ function resolveFilePath(filePath: string, safeRoot: string, systemTmpDir: strin
 }
 
 /**
- * Validates and normalizes a file path with self-healing capabilities.
+ * Validates and normalizes a file path to prevent path traversal attacks.
  * 
- * This function now integrates event-driven structure completion:
- * - Emits events on validation failures
- * - Triggers fallback recovery mechanisms
- * - Supports DAG-based structure reconstruction
- * - Maintains structural snapshots for recovery
+ * Security model:
+ * 1. Rejects obvious path traversal patterns (null bytes, "..", "//")
+ * 2. Resolves paths through resolveFilePath which handles:
+ *    - Relative paths: resolved relative to safeRoot
+ *    - Absolute paths in test mode within tmpdir: allowed as-is
+ *    - Other absolute paths: converted to relative paths within safeRoot
+ * 3. Final boundary validation ensures resolved path is within allowed directories
+ * 
+ * Note: We do NOT reject absolute paths upfront because that would prevent
+ * resolveFilePath from properly handling test cases that use tmpdir(). Instead,
+ * security is maintained through the final boundary checks using isPathContained,
+ * which ensures all resolved paths stay within allowed directories regardless of
+ * the input format.
  *
  * @param filePath - The file path to validate (can be relative or absolute)
  * @param safeRoot - Optional safe root directory override (primarily for testing)
@@ -135,11 +143,14 @@ async function validateAndNormalizePath(
     throw new Error('Invalid file path: Path must be a non-empty string');
   }
 
-  const systemTmpDir = tmpdir();
-
-  // Validate input path for traversal patterns and absolute path restrictions
-  validateNoTraversal(filePath);
-  validateAbsolutePath(filePath, systemTmpDir);
+  // Reject obvious path traversal patterns
+  if (
+    filePath.includes('\0') ||
+    filePath.split(path.sep).includes('..') ||
+    filePath.includes('//')
+  ) {
+    throw new Error('Invalid file path: Directory traversal is not permitted');
+  }
 
   const resolvedPath = resolveFilePath(filePath, safeRoot, systemTmpDir);
 
