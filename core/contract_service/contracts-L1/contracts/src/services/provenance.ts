@@ -1,7 +1,6 @@
 import { createHash, randomUUID } from 'crypto';
-import { readFile, stat } from 'fs/promises';
+import { readFile, stat, realpath } from 'fs/promises';
 import { relative, resolve } from 'path';
-import { realpath } from 'fs/promises';
 
 import { SLSAAttestationService, SLSAProvenance, BuildMetadata } from './attestation';
 

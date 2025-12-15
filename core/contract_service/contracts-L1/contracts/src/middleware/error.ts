@@ -3,45 +3,80 @@ import { randomUUID } from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 
 import config from '../config';
+import { AppError, ErrorCode, createError } from '../errors';
 
-export enum ErrorCode {
-  VALIDATION_ERROR = 'VALIDATION_ERROR',
-  NOT_FOUND = 'NOT_FOUND',
-  UNAUTHORIZED = 'UNAUTHORIZED',
-  FORBIDDEN = 'FORBIDDEN',
-  INTERNAL_ERROR = 'INTERNAL_ERROR',
-  SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
-  RATE_LIMIT = 'RATE_LIMIT',
-}
+/**
+ * Whitelist of safe error message patterns that can be exposed to clients
+ * These are generic messages that don't reveal internal implementation details
+ */
+const SAFE_ERROR_PATTERNS = [
+  /^Invalid input/i,
+  /^Validation failed/i,
+  /^Authentication required/i,
+  /^Access denied/i,
+  /^Resource not found/i,
+  /^Too many requests/i,
+  /^Service unavailable/i,
+  /^Unauthorized/i,
+  /^Forbidden/i,
+  /^Bad request/i,
+  /^Conflict/i,
+  /^Request timeout/i,
+];
 
-export class AppError extends Error {
-  public readonly code: ErrorCode;
-  public readonly statusCode: number;
-  public readonly traceId: string;
-  public readonly timestamp: string;
-  public readonly isOperational: boolean;
+/**
+ * Patterns that indicate sensitive information that should be removed
+ */
+const SENSITIVE_PATTERNS = [
+  /at\s+[\w./\\]+:\d+:\d+/gi, // Stack trace locations (at file.ts:10:5)
+  /\/[\w\-./]+\.(?:js|ts|py|java|go|rb)/gi, // File paths
+  /\\[\w\-.\\]+\.(?:js|ts|py|java|go|rb)/gi, // Windows file paths
+  /Error:\s+[\w\s]+\n\s+at/gi, // Stack trace beginnings
+  /mongodb:\/\/[^\s]+/gi, // MongoDB connection strings
+  /postgres:\/\/[^\s]+/gi, // PostgreSQL connection strings
+  /mysql:\/\/[^\s]+/gi, // MySQL connection strings
+  /redis:\/\/[^\s]+/gi, // Redis connection strings
+  /password[=:]\s*\S+/gi, // Password parameters
+  /token[=:]\s*\S+/gi, // Token parameters
+  /api[_-]?key[=:]\s*\S+/gi, // API key parameters
+  /secret[=:]\s*\S+/gi, // Secret parameters
+];
 
-  constructor(message: string, code: ErrorCode, statusCode = 500, isOperational = true) {
-    super(message);
-    this.code = code;
-    this.statusCode = statusCode;
-    this.traceId = randomUUID();
-    this.timestamp = new Date().toISOString();
-    this.isOperational = isOperational;
-    Error.captureStackTrace(this, this.constructor);
+/**
+ * Sanitizes error messages to prevent leakage of sensitive information
+ * @param message - The error message to sanitize
+ * @returns Sanitized error message safe for client exposure
+ */
+function sanitizeErrorMessage(message: string): string {
+  if (!message) {
+    return 'Internal server error';
   }
-}
 
-export const createError = {
-  validation: (message: string) => new AppError(message, ErrorCode.VALIDATION_ERROR, 400),
-  notFound: (resource: string) => new AppError(`${resource} not found`, ErrorCode.NOT_FOUND, 404),
-  unauthorized: (message = 'Unauthorized') => new AppError(message, ErrorCode.UNAUTHORIZED, 401),
-  forbidden: (message = 'Forbidden') => new AppError(message, ErrorCode.FORBIDDEN, 403),
-  internal: (message = 'Internal server error') =>
-    new AppError(message, ErrorCode.INTERNAL_ERROR, 500, false),
-  serviceUnavailable: (service: string) =>
-    new AppError(`${service} is unavailable`, ErrorCode.SERVICE_UNAVAILABLE, 503),
-};
+  // Check if message matches any safe pattern
+  const isSafe = SAFE_ERROR_PATTERNS.some((pattern) => pattern.test(message));
+  if (isSafe) {
+    return message;
+  }
+
+  // Remove sensitive information
+  let sanitized = message;
+  for (const pattern of SENSITIVE_PATTERNS) {
+    sanitized = sanitized.replace(pattern, '[REDACTED]');
+  }
+
+  // If message was heavily redacted or contains redacted content, use generic message
+  if (sanitized.includes('[REDACTED]') || sanitized.length < 5) {
+    return 'Internal server error';
+  }
+
+  // Limit message length to prevent information disclosure through long error messages
+  const maxLength = 100;
+  if (sanitized.length > maxLength) {
+    return 'Internal server error';
+  }
+
+  return sanitized;
+}
 
 export const errorMiddleware = (
   err: Error | AppError,
@@ -51,6 +86,31 @@ export const errorMiddleware = (
 ): void => {
   const traceId = req.traceId || randomUUID();
   let logLevel: 'error' | 'warn' = 'error';
+
+  // Handle null, undefined, or non-Error objects
+  if (!err || !(err instanceof Error)) {
+    const errorResponse = {
+      error: {
+        code: ErrorCode.INTERNAL_ERROR,
+        message: 'Internal server error',
+        traceId,
+        timestamp: new Date().toISOString(),
+      },
+    };
+    res.status(500).json(errorResponse);
+    console.error('Application error:', {
+      traceId,
+      error: { message: 'Non-error object passed to error middleware', value: err },
+      request: {
+        method: req.method,
+        url: req.url,
+        userAgent: req.get('user-agent'),
+        ip: req.ip,
+      },
+      timestamp: new Date().toISOString(),
+    });
+    return;
+  }
 
   if (err instanceof AppError) {
     const errorResponse = {
@@ -66,10 +126,16 @@ export const errorMiddleware = (
     }
     res.status(err.statusCode).json(errorResponse);
   } else {
+    // Sanitize error message to prevent sensitive information leakage
+    const sanitizedMessage =
+      config.NODE_ENV === 'production'
+        ? 'Internal server error'
+        : sanitizeErrorMessage(err.message || 'Internal server error');
+
     const errorResponse = {
       error: {
         code: ErrorCode.INTERNAL_ERROR,
-        message: config.NODE_ENV === 'production' ? 'Internal server error' : err.message,
+        message: sanitizedMessage,
         traceId,
         timestamp: new Date().toISOString(),
       },
