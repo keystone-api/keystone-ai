@@ -61,7 +61,7 @@ export class ValidationError extends AppError {
     message: string,
     validationErrors?: Array<{ field: string; message: string; code: string }>
   ) {
-    super(message, ErrorCode.VALIDATION_ERROR, 400);
+    super(message, ErrorCode.VALIDATION_ERROR, 422);
     this.validationErrors = validationErrors;
     Object.setPrototypeOf(this, ValidationError.prototype);
   }
