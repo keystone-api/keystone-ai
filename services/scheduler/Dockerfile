@@ -7,16 +7,15 @@ WORKDIR /app
 COPY package*.json ./
 COPY tsconfig.json ./
 
-# Install dependencies
-RUN npm ci --only=production && \
+# Install all dependencies (including dev for build)
+RUN npm ci && \
     npm cache clean --force
 
 # Copy source code
 COPY src ./src
 
-# Build TypeScript
-RUN npm install -D typescript @types/node && \
-    npm run build && \
+# Build TypeScript and prune dev dependencies
+RUN npm run build && \
     npm prune --production
 
 # Production image

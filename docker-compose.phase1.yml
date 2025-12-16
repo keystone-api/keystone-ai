@@ -32,7 +32,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=8000
-      - JWT_SECRET=dev-secret-change-in-production
+      - JWT_SECRET=INSECURE-DEV-SECRET-CHANGE-FOR-PRODUCTION-USE
       - JWT_EXPIRES_IN=1h
       - API_RATE_LIMIT=100
       - CORS_ORIGIN=*

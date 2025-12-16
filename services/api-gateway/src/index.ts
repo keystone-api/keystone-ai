@@ -63,7 +63,9 @@ app.get('/api/docs/ui', (req, res) => {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>API Documentation - Unmanned Island System</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css" 
+        integrity="sha384-+/kNgP7D4ej/z9J/jvKNxMYHmBdJJuE1FhK9bxL6zJNFJfnXpCMh7v7kHrUb+0kJ" 
+        crossorigin="anonymous">
   <style>
     body { margin: 0; padding: 0; }
     .swagger-ui .topbar { display: none; }
@@ -71,8 +73,12 @@ app.get('/api/docs/ui', (req, res) => {
 </head>
 <body>
   <div id="swagger-ui"></div>
-  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js" 
+          integrity="sha384-GkWCaW0Wjc3gqzhyJMJe/HhxGiVNm2A7vL4nYYZ7F0CfGbEmqH5JT5j2F0nJrJvT" 
+          crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-standalone-preset.js" 
+          integrity="sha384-qQPAGDgBXaEhdKBBDxZpXvYgKQPnJqg+8c2NqXxv5Z3Wj7qJbKgFwGQN2J0GvGmJ" 
+          crossorigin="anonymous"></script>
   <script>
     window.onload = function() {
       const ui = SwaggerUIBundle({
