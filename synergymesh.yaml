@@ -223,7 +223,7 @@ capabilities:
         integration: "mind_matrix"
     orchestration:
       enabled: true  # Stage 2 feature (productionized)
-      coordinator: "island-ai/dist/collaboration/agent-coordinator.js"
+      coordinator: "island-ai/src/collaboration/agent-coordinator.ts"
       strategies:
         - sequential
         - parallel
@@ -231,11 +231,26 @@ capabilities:
         - iterative
     next_stages:
       stage_5:
-        multi_tenancy: "Multi-tenant isolation with org-level policy controls"
-        ha_deployment: "High-availability deployment patterns"
-        advanced_iam: "Advanced identity with OIDC/SAML + fine-grained RBAC"
-        cost_dashboard: "Cost management dashboard"
-        sla_monitoring: "SLA monitoring and automated reporting"
+        multi_tenancy:
+          status: "planned"
+          owner: "tbd"
+          acceptance: "Multi-tenant isolation with org-level policy controls"
+        ha_deployment:
+          status: "planned"
+          owner: "tbd"
+          acceptance: "High-availability deployment patterns"
+        advanced_iam:
+          status: "planned"
+          owner: "tbd"
+          acceptance: "Advanced identity with OIDC/SAML + fine-grained RBAC"
+        cost_dashboard:
+          status: "planned"
+          owner: "tbd"
+          acceptance: "Cost management dashboard"
+        sla_monitoring:
+          status: "planned"
+          owner: "tbd"
+          acceptance: "SLA monitoring and automated reporting"
 
   # Actuators (執行器能力)
   actuators:
