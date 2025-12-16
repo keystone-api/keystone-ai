@@ -26,7 +26,7 @@ Each agent provides an `AgentInsight[]` describing its diagnostics, while shared
 
 - **Stage 2 – Collaboration**: `AgentCoordinator` (exported from `collaboration`) supports sequential, parallel, conditional, and iterative runs with knowledge sharing and barriers.
 - **Stage 3 – Self-learning hooks**: Shared knowledge base enables iterative refinement loops you can persist in your runtime.
-- **Stage 4 – Productionization**: Orchestration defaults are wired into `synergymesh.yaml` using the TypeScript coordinator path (`src/collaboration/agent-coordinator.ts`) and strategy list, ready for dashboard/observability pipelines.
+- **Stage 4 – Productionization**: Orchestration defaults are wired into `synergymesh.yaml` with the production artifact path (`dist/collaboration/agent-coordinator.js`) and the development source (`src/collaboration/agent-coordinator.ts`) plus strategy list, ready for dashboard/observability pipelines.
 
 ## Usage
 

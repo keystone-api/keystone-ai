@@ -185,11 +185,12 @@ capabilities:
         "orchestrator",
       ]
 
-  # Island AI Multi-Agent System (Stage 4: 協作、自學習、生產化)
+  # Island AI Multi-Agent System (Stages 1-4 consolidated: 協作、自學習、生產化)
   island_ai:
     provider: "island-ai/dist/index.js"
     version: "0.1.0"
-    stage: 4
+    stage: 4  # Stages 1-3 completed; Stage 4 productionized
+    stages_completed: [1, 2, 3, 4]
     agents:
       architect:
         name: "Architect Agent"
@@ -223,7 +224,8 @@ capabilities:
         integration: "mind_matrix"
     orchestration:
       enabled: true  # Stage 2 feature (productionized)
-      coordinator: "island-ai/src/collaboration/agent-coordinator.ts"
+      coordinator: "island-ai/dist/collaboration/agent-coordinator.js"  # production artifact
+      coordinator_source: "island-ai/src/collaboration/agent-coordinator.ts"
       strategies:
         - sequential
         - parallel
