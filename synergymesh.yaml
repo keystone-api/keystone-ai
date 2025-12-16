@@ -240,25 +240,27 @@ capabilities:
         - iterative
     next_stages:
       stage_5:
+        status: "in_progress"
+        kickoff: "2025-12-16"
         multi_tenancy:
-          status: "planned"
-          owner: "tbd"
+          status: "in_progress"
+          owner: "platform"
           acceptance: "Multi-tenant isolation with org-level policy controls"
         ha_deployment:
-          status: "planned"
-          owner: "tbd"
+          status: "in_progress"
+          owner: "devops"
           acceptance: "High-availability deployment patterns"
         advanced_iam:
-          status: "planned"
-          owner: "tbd"
+          status: "in_progress"
+          owner: "security"
           acceptance: "Advanced identity with OIDC/SAML + fine-grained RBAC"
         cost_dashboard:
-          status: "planned"
-          owner: "tbd"
+          status: "in_progress"
+          owner: "finops"
           acceptance: "Cost management dashboard"
         sla_monitoring:
-          status: "planned"
-          owner: "tbd"
+          status: "in_progress"
+          owner: "observability"
           acceptance: "SLA monitoring and automated reporting"
 
   # Actuators (執行器能力)
