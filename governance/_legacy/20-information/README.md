@@ -5,7 +5,7 @@
 > **Dimension**: 20  
 > **Layer**: Innovation Governance Layer | 創新治理層  
 > **Version**: 1.0.0  
-> **Status**: Planning  
+> **Status**: Legacy (number reserved for 20-intent execution layer)  
 > **Last Updated**: 2025-12-10
 
 ## 📋 Overview | 概述

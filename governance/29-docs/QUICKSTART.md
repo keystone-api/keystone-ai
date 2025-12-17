@@ -93,7 +93,14 @@ The governance framework consists of 23 interconnected dimensions organized in l
 - 17-sociological: Sociological governance
 - 18-complex-system: Complex systems governance
 - 19-evolutionary: Evolutionary governance
-- 20-information: Information governance
+- 20-intent: Intent-based orchestration (Execution layer, active 20; docs now
+  depend on this orchestrator)
+- _legacy/20-information: Information governance (Governance layer, legacy)
+- Migration: Legacy kept for reference until 2026-03-31; route new work to
+  20-intent. After the deadline the legacy folder will be archived as
+  read-only.
+- Migration checklist: `rg "20-information" governance` to find references,
+  repoint dependencies to `20-intent`, and log changes in docs/CHANGELOG.
 - 21-ecological: Ecological governance
 - 22-aesthetic: Aesthetic governance
 

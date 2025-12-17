@@ -18,9 +18,21 @@ the new layered framework.**
 - **Conflict**: Number 20 is now used by `20-intent` (Intent-based
   Orchestration)
 - **Content**: Minimal - only dimension.yaml and README
-- **New Location**: Content deprecated or consolidated into other dimensions
+- **New Location**: Content kept in `governance/_legacy/20-information/` to keep
+  numbering unique
 - **Reason**: The new layered governance architecture uses 20-intent for
-  Intent-based Orchestration
+  Intent-based Orchestration (execution layer) while this remains a governance
+  layer reference
+- **When to use**: Leverage `20-intent/` for any active orchestration or
+  execution-layer flows; keep this legacy folder for governance-layer knowledge
+  and historical references only
+  - **Governance layer examples**: past information policies, lineage decisions,
+    archival knowledge, retired information architecture diagrams
+  - **Execution layer examples**: live intent translation, orchestration plans,
+    runtime coordination (all in `20-intent/`)
+- **Decision quick check**: runtime or intent execution → `20-intent/`; historic
+  policy or documentation reference → this legacy folder; unclear cases →
+  raise to governance-team for review
 
 ### 30-integration → Deprecated
 
