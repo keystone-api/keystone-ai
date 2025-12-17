@@ -50,19 +50,26 @@ async function resolveSafePath(userInputPath: string): Promise<string> {
     : path.resolve(safeRoot, userInputPath);
 
   let canonicalPath: string;
+  let canonicalSafeRoot: string;
   try {
     canonicalPath = await realpath(resolvedCandidate);
+    // Canonicalize the safe root directory as well for robust prefix checking
+    canonicalSafeRoot = await realpath(safeRoot);
   } catch (error) {
     // Allow caller to handle missing files (ENOENT)
     throw error;
   }
 
-  const allowedBase =
-    process.env.NODE_ENV === 'test' && isSubPath(canonicalPath, systemTmpDir)
-      ? systemTmpDir
-      : safeRoot;
+  // Ensure trailing separator for accurate prefix check
+  const safeRootWithSep = canonicalSafeRoot.endsWith(path.sep)
+    ? canonicalSafeRoot
+    : canonicalSafeRoot + path.sep;
 
-  if (!isSubPath(canonicalPath, allowedBase)) {
+  // Check that canonicalPath is within canonicalSafeRoot
+  if (
+    canonicalPath !== canonicalSafeRoot && // allow the root folder itself
+    !canonicalPath.startsWith(safeRootWithSep)
+  ) {
     throw new PathValidationError('Invalid file path');
   }
 
