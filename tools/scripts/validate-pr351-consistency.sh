@@ -8,6 +8,14 @@ set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 EXIT_CODE=0
+PRIMARY_CONFIG="machine-native-ops.yaml"
+LEGACY_CONFIG="synergymesh.yaml"
+CONFIG_TARGET="${PRIMARY_CONFIG}"
+
+if [ ! -f "${PROJECT_ROOT}/${CONFIG_TARGET}" ] && [ -f "${PROJECT_ROOT}/${LEGACY_CONFIG}" ]; then
+  CONFIG_TARGET="${LEGACY_CONFIG}"
+  echo "⚠ Using legacy config path \"${LEGACY_CONFIG}\" (primary missing)"
+fi
 
 echo "════════════════════════════════════════════════════════════════════════"
 echo "  PR #351 Consistency Validation"
@@ -23,7 +31,7 @@ REQUIRED_FILES=(
   "governance/10-policy/base-policies/security-policies.yaml"
   "governance/37-behavior-contracts/core.slsa_provenance.yaml"
   "config/unified-config-index.yaml"
-  "synergymesh.yaml"
+  "${CONFIG_TARGET}"
 )
 
 for policy_id in "${POLICY_IDS[@]}"; do
@@ -150,7 +158,7 @@ check_version() {
   fi
 }
 
-check_version "synergymesh.yaml" "version:"
+check_version "${CONFIG_TARGET}" "version:"
 check_version "config/unified-config-index.yaml" 'version: "2.0.0"'
 check_version "governance/10-policy/base-policies/security-policies.yaml" 'version: "1.0.0"'
 echo ""

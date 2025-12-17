@@ -33,7 +33,7 @@
 
 ### 5. 配置驗證 (Configuration Validation)
 
-- [ ] `synergymesh.yaml` 有效
+- [ ] `machine-native-ops.yaml` 有效（`synergymesh.yaml` 保留為相容連結）
 - [ ] 所有配置檔案在 `config/` 中
 - [ ] 所有必要的環境變數已設定
 - [ ] 資料庫連線字符串已驗證

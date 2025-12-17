@@ -55,7 +55,7 @@ platform that integrates three core subsystems:
 
 | Principle                 | Description                                                                |
 | ------------------------- | -------------------------------------------------------------------------- |
-| **Single Entry Point**    | synergymesh.yaml as the single source of truth for all configurations     |
+| **Single Entry Point**    | machine-native-ops.yaml as the single source of truth (synergymesh.yaml kept as a compatibility symlink)     |
 | **Modular Design**        | Three subsystems operate independently, collaborate via unified interfaces |
 | **Zero-Trust Security**   | SLSA L3 provenance + Sigstore signing + policy gate validation             |
 | **Autonomous Operations** | AI-driven auto-repair, intelligent assignment, escalation management       |
@@ -110,7 +110,7 @@ Node.js >= 18.0.0
 
   High-level layout (see README.md for Chinese version):
 
-  - synergymesh.yaml – unified configuration entry
+  - machine-native-ops.yaml – unified configuration entry (legacy symlink: synergymesh.yaml)
   - core/ – core platform services
   - automation/ – intelligent, autonomous, architect, hyperautomation modules
   - config/ – system manifests, AI constitution, safety mechanisms
@@ -244,7 +244,7 @@ Node.js >= 18.0.0
 
   Key configuration files:
 
-- synergymesh.yaml – global entry
+- machine-native-ops.yaml – global entry (legacy symlink: synergymesh.yaml)
 - config/system-manifest.yaml – system manifest
 - config/unified-config-index.yaml – unified config index
 - config/system-module-map.yaml – module mapping
