@@ -65,6 +65,8 @@ export interface DAGNodeState {
 export class PathValidationEventEmitter {
   private listeners: Map<PathValidationEventType, Array<(event: PathValidationEvent) => void>> =
     new Map();
+  private recentEvents: PathValidationEvent[] = [];
+  private static readonly BUFFER_SIZE = 20;
 
   /**
    * Subscribe to a specific event type
@@ -74,12 +76,27 @@ export class PathValidationEventEmitter {
       this.listeners.set(eventType, []);
     }
     this.listeners.get(eventType)!.push(handler);
+
+    // Replay recent events to new subscribers to ensure they receive latest state
+    for (const event of this.recentEvents) {
+      if (event.type === eventType) {
+        try {
+          handler(event);
+        } catch (error) {
+          console.error(`Error replaying event for ${eventType}:`, error);
+        }
+      }
+    }
   }
 
   /**
    * Emit an event to all subscribed handlers
    */
   emit(event: PathValidationEvent): void {
+    this.recentEvents.push(event);
+    if (this.recentEvents.length > PathValidationEventEmitter.BUFFER_SIZE) {
+      this.recentEvents.shift();
+    }
     const handlers = this.listeners.get(event.type);
     if (handlers) {
       handlers.forEach((handler) => {
@@ -166,4 +183,8 @@ export class PathValidationEventEmitter {
 }
 
 // Global event emitter instance
-export const pathValidationEvents = new PathValidationEventEmitter();
+const GLOBAL_EMITTER_KEY = '__pathValidationEvents__';
+const globalAny = global as unknown as Record<string, unknown>;
+export const pathValidationEvents =
+  (globalAny[GLOBAL_EMITTER_KEY] as PathValidationEventEmitter | undefined) ||
+  (globalAny[GLOBAL_EMITTER_KEY] = new PathValidationEventEmitter());

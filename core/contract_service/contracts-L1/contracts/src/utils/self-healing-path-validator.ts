@@ -9,7 +9,7 @@
  */
 
 import { createHash } from 'crypto';
-import { realpath, mkdir } from 'fs/promises';
+import { realpath, mkdir, access } from 'fs/promises';
 import * as path from 'path';
 
 import {
@@ -90,6 +90,21 @@ export class SelfHealingPathValidator extends PathValidator {
   async validateAndResolvePath(filePath: string): Promise<string> {
     const attemptKey = filePath;
     const attempts = this.recoveryAttempts.get(attemptKey) || 0;
+    const safeRoot = this.config.safeRoot || process.cwd();
+    const normalizedInput = path.normalize(filePath);
+
+    if (!normalizedInput.includes('..')) {
+      try {
+        const candidatePath = path.resolve(safeRoot, normalizedInput);
+        await access(candidatePath);
+      } catch {
+        pathValidationEvents.emitStructureMissing({
+          filePath,
+          safeRoot,
+          error: 'ENOENT',
+        });
+      }
+    }
 
     try {
       // Attempt normal validation
@@ -108,19 +123,21 @@ export class SelfHealingPathValidator extends PathValidator {
       // Emit validation failed event
       const eventData: PathValidationEventData = {
         filePath,
-        safeRoot: this.config.safeRoot || process.cwd(),
+        safeRoot,
         error: error instanceof Error ? error.message : String(error),
         errorCode: error instanceof PathValidationError ? error.code : undefined,
       };
 
       pathValidationEvents.emitValidationFailed(eventData);
 
-      // Check if this is a structure missing error (ENOENT)
-      if (
-        error instanceof Error &&
-        'code' in error &&
-        (error as Error & { code: string }).code === 'ENOENT'
-      ) {
+      // Emit structure missing only for missing/invalid structure to drive recovery flows
+      const isStructureMissing =
+        (error instanceof Error &&
+          'code' in error &&
+          (error as Error & { code: string }).code === 'ENOENT') ||
+        error instanceof PathValidationError;
+
+      if (isStructureMissing) {
         pathValidationEvents.emitStructureMissing(eventData);
 
         // Attempt recovery if enabled and within retry limits
