@@ -167,7 +167,7 @@ class UnmannedIslandValidator:
             ("governance/00-vision-strategy/AI-BEHAVIOR-CONTRACT.md", "AI 行為契約"),
             ("governance/00-vision-strategy/INSTANT-EXECUTION-MANIFEST.yaml", "即時執行清單"),
             ("governance/14-improvement/self-healing-self-healing.yaml", "自我修復框架"),
-            ("governance/30-integration/self-healing-integration-manifest.md", "整合清單"),
+            ("governance/dimensions/83-integration/self-healing-integration-manifest.md", "整合清單"),
             ("governance/39-automation/self_healing_integration_engine.py", "整合引擎"),
         ]
         
@@ -247,7 +247,7 @@ class UnmannedIslandValidator:
             ("00-vision-strategy", "Vision & Strategy"),
             ("14-improvement", "Improvement & Learning"),
             ("28-tests", "Tests & Validation"),
-            ("30-integration", "Integration & Coordination"),
+            ("83-integration", "Integration & Coordination"),
             ("39-automation", "Automation & Orchestration"),
         ]
         
@@ -288,7 +288,7 @@ class UnmannedIslandValidator:
         result = ValidationResult("API Endpoints")
         
         # 檢查整合清單中定義的 API 端點
-        manifest_path = self.governance_root / "30-integration/self-healing-integration-manifest.md"
+        manifest_path = self.governance_root / "83-integration/self-healing-integration-manifest.md"
         if manifest_path.exists():
             result.add_pass("整合清單存在")
             

@@ -23,9 +23,9 @@ These directories conflicted with the new layered governance framework:
 
 | Old Path          | New Path                  | Reason                     | Migration Target                               |
 | ----------------- | ------------------------- | -------------------------- | ---------------------------------------------- |
-| `10-stakeholder/` | `_legacy/10-stakeholder/` | Conflicts with `10-policy` | Content consolidated into other dimensions     |
+| `82-stakeholder/` | `_legacy/82-stakeholder/` | Conflicts with `10-policy` | Content consolidated into other dimensions     |
 | `20-information/` | `_legacy/20-information/` | Conflicts with `20-intent` | Minimal content, deprecated                    |
-| `30-integration/` | `_legacy/30-integration/` | Conflicts with `30-agents` | Integration coordination moved to `30-agents/` |
+| `83-integration/` | `_legacy/83-integration/` | Conflicts with `30-agents` | Integration coordination moved to `30-agents/` |
 
 ### 2. Shared Resources Consolidated
 
@@ -130,9 +130,9 @@ If you have code, scripts, or documentation that references the old structure:
 ### For Documentation
 
 - [ ] Update documentation links pointing to:
-  - `governance/10-stakeholder/` → Reference appropriate alternative dimension
+  - `governance/82-stakeholder/` → `governance/dimensions/82-stakeholder/`
   - `governance/20-information/` → Content consolidated elsewhere
-  - `governance/30-integration/` → Use `governance/30-agents/`
+  - `governance/83-integration/` → `governance/dimensions/83-integration/`
   - `governance/policies/` → `governance/23-policies/`
   - `governance/schemas/` → `governance/31-schemas/`
   - `governance/scripts/` → `governance/35-scripts/`
@@ -171,7 +171,7 @@ grep -r "from governance.policies\|from governance.schemas\|from governance.scri
 grep -r "governance/policies/\|governance/schemas/\|governance/scripts/" --include="*.py" --include="*.yaml" --include="*.sh"
 
 # Find legacy dimension references
-grep -r "10-stakeholder\|20-information\|30-integration" --include="*.py" --include="*.yaml" --include="*.md"
+grep -r "82-stakeholder\|20-information\|83-integration" --include="*.py" --include="*.yaml" --include="*.md"
 ```
 
 ## 📚 File Mapping Reference

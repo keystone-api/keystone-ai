@@ -179,7 +179,7 @@ kubectl apply -k gitops/kustomization-instances.yaml
 
 - **Informs**: All other 22 dimensions | 影響其他 22 個維度
 - **Informed by**: External stakeholders, market analysis | 由外部利益相關者、市場分析影響
-- **Related**: 01-architecture, 10-stakeholder | 相關：01-架構、10-利益相關者
+- **Related**: 01-architecture, 82-stakeholder | 相關：01-架構、10-利益相關者
 - **Deployed via**: Kubernetes CRDs, OPA Gatekeeper, Argo CD | 通過 Kubernetes CRDs、OPA Gatekeeper、Argo CD 部署
 
 ## 📊 Key Metrics | 關鍵指標

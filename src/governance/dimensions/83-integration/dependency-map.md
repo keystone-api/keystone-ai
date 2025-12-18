@@ -20,7 +20,7 @@
 - 07-audit → All dimensions
 - 08-process → 09
 - 09-performance → 13
-- 10-stakeholder → All dimensions
+- 82-stakeholder → All dimensions
 
 ### Support Dependencies
 

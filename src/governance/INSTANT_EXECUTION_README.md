@@ -142,9 +142,9 @@ instant-governance-cli.py deploy
 ### 自動更新的引用
 
 1. **目錄路徑**
-   - `governance/10-stakeholder` → `governance/_legacy/10-stakeholder`
+   - `governance/82-stakeholder` → `governance/dimensions/82-stakeholder`
    - `governance/20-information` → `governance/_legacy/20-information`
-   - `governance/30-integration` → `governance/_legacy/30-integration`
+   - `governance/83-integration` → `governance/dimensions/83-integration`
 
 2. **共享資源**
    - `governance/policies` → `governance/23-policies`
@@ -152,9 +152,9 @@ instant-governance-cli.py deploy
    - `governance/scripts` → `governance/35-scripts`
 
 3. **維度引用**
-   - `30-integration` → `30-agents`
+   - `83-integration` → `30-agents`
    - `20-information` → `20-intent`
-   - `10-stakeholder` → `10-policy`
+   - `82-stakeholder` → `10-policy`
 
 ### 掃描範圍
 

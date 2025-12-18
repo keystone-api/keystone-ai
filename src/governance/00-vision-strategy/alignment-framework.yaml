@@ -189,7 +189,7 @@ alignment_layers:
       - objective_id: "OBJ-05"
         title: "建立市場領導地位"
         governance_dimensions:
-          - dimension: "10-stakeholder"
+          - dimension: "82-stakeholder"
             role: "Primary"
             activities:
               - "Customer success tracking"

@@ -37,7 +37,7 @@
         {
           "check": "整合清單 存在",
           "status": "PASS",
-          "message": "/home/runner/work/SynergyMesh/SynergyMesh/governance/30-integration/unmanned-island-integration-manifest.md"
+          "message": "/home/runner/work/SynergyMesh/SynergyMesh/governance/dimensions/83-integration/unmanned-island-integration-manifest.md"
         },
         {
           "check": "整合引擎 存在",
@@ -168,9 +168,9 @@
           "message": "找到 1 個相關文件"
         },
         {
-          "check": "Integration & Coordination (30-integration) 維度存在",
+          "check": "Integration & Coordination (83-integration) 維度存在",
           "status": "PASS",
-          "message": "/home/runner/work/SynergyMesh/SynergyMesh/governance/30-integration"
+          "message": "/home/runner/work/SynergyMesh/SynergyMesh/governance/dimensions/83-integration"
         },
         {
           "check": "Integration & Coordination 有無人島整合文件",

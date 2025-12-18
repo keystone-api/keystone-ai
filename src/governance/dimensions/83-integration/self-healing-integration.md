@@ -174,7 +174,7 @@ dimension_28:
 ```yaml
 dimension_30:
   name: "Integration & Coordination"
-  path: "governance/30-integration"
+  path: "governance/dimensions/83-integration"
   
   integration_files:
     integration_manifest:
@@ -257,7 +257,7 @@ ceo_agent:
   
   integrated_dimensions:
     - "00-vision-strategy"
-    - "10-stakeholder"
+    - "82-stakeholder"
     - "15-economic"
   
   responsibilities:
@@ -291,7 +291,7 @@ architect_agent:
   integrated_dimensions:
     - "01-architecture"
     - "14-improvement"
-    - "30-integration"
+    - "83-integration"
   
   responsibilities:
     - "系統架構設計與優化"
@@ -451,7 +451,7 @@ coordinator_agent:
   location: "ai-agents/orchestrator"
   
   integrated_dimensions:
-    - "30-integration"
+    - "83-integration"
     - "39-automation"
     - "所有維度 (協調中樞)"
   

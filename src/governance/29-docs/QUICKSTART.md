@@ -77,7 +77,7 @@ The governance framework consists of 23 interconnected dimensions organized in l
 - 07-audit: Audit governance
 - 08-process: Process governance
 - 09-performance: Performance governance
-- 10-stakeholder: Stakeholder governance
+- 82-stakeholder: Stakeholder governance
 
 **支撐層 | Support Layer (11-14)**
 

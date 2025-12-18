@@ -19,7 +19,7 @@
       "dimensions": ["30-agents", "06-security", "05-compliance", "07-audit", "70-audit"],
       "controls": [
         {"id": "4.1", "name": "Understanding the organization", "dimension": "00-vision-strategy", "status": "implemented"},
-        {"id": "4.2", "name": "Interested parties", "dimension": "10-stakeholder", "status": "implemented"},
+        {"id": "4.2", "name": "Interested parties", "dimension": "82-stakeholder", "status": "implemented"},
         {"id": "5.1", "name": "Leadership commitment", "dimension": "00-vision-strategy", "status": "implemented"},
         {"id": "5.2", "name": "AI Policy", "dimension": "10-policy", "status": "implemented"},
         {"id": "6.1", "name": "Risk assessment", "dimension": "04-risk", "status": "implemented"},
@@ -62,7 +62,7 @@
           "name": "Map",
           "categories": [
             {"id": "2.1", "name": "Context mapping", "dimension": "01-architecture", "status": "implemented"},
-            {"id": "2.2", "name": "Stakeholder identification", "dimension": "10-stakeholder", "status": "implemented"},
+            {"id": "2.2", "name": "Stakeholder identification", "dimension": "82-stakeholder", "status": "implemented"},
             {"id": "2.3", "name": "AI categorization", "dimension": "30-agents", "status": "implemented"}
           ]
         },

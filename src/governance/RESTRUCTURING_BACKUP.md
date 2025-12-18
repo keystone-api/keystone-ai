@@ -6,9 +6,9 @@
 
 ### Problem 1: Conflicting Directory Numbers
 
-- 10-stakeholder (legacy) vs 10-policy (new layered framework)
+- 82-stakeholder (legacy) vs 10-policy (new layered framework)
 - 20-information (legacy) vs 20-intent (new layered framework)
-- 30-integration (legacy) vs 30-agents (new layered framework)
+- 83-integration (legacy) vs 30-agents (new layered framework)
 
 ### Problem 2: Duplicate Audit Directories
 
@@ -39,10 +39,10 @@ These directories represent the new layered governance framework:
 
 To avoid conflicts, legacy dimensions are renamed:
 
-- 10-stakeholder → 11-stakeholder (moved to next available number)
+- 82-stakeholder → 11-stakeholder (moved to next available number)
 - 20-information → 21-information (moved to next available number, but
   21-ecological exists, so use different approach)
-- 30-integration → Will consolidate into 30-agents or create coordination
+- 83-integration → Will consolidate into 30-agents or create coordination
   subdirectory
 
 ### Consolidate Shared Resources
@@ -58,17 +58,17 @@ from 70-audit (execution audit trail)
 
 ## Original File Inventory
 
-### 10-stakeholder files
+### 82-stakeholder files
 
-$(find 10-stakeholder -type f 2>/dev/null | wc -l) files
+$(find 82-stakeholder -type f 2>/dev/null | wc -l) files
 
 ### 20-information files
 
 $(find 20-information -type f 2>/dev/null | wc -l) files
 
-### 30-integration files
+### 83-integration files
 
-$(find 30-integration -type f 2>/dev/null | wc -l) files
+$(find 83-integration -type f 2>/dev/null | wc -l) files
 
 ### Root-level shared resources
 
@@ -78,9 +78,9 @@ $(find 30-integration -type f 2>/dev/null | wc -l) files
 
 ## Migration Plan
 
-1. Rename 10-stakeholder to avoid conflict with 10-policy
+1. Rename 82-stakeholder to avoid conflict with 10-policy
 2. Consolidate 20-information content (minimal, just dimension.yaml and README)
-3. Merge 30-integration functionality into 30-agents or create subdirectory
+3. Merge 83-integration functionality into 30-agents or create subdirectory
 4. Move root-level policies/ into 23-policies/
 5. Move root-level schemas/ into 31-schemas/
 6. Move root-level scripts/ into 35-scripts/

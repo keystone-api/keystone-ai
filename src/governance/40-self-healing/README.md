@@ -59,7 +59,7 @@ boundaries:
 - **28-tests/**
   - `self-healing-validation.py` - Validation test suite
 
-- **30-integration/**
+- **83-integration/**
   - `self-healing-integration.md` - Integration manifest
 
 - **39-automation/**

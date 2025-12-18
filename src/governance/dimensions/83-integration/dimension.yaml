@@ -1,17 +1,17 @@
 apiVersion: governance.machinenativeops.io/v2
 kind: DimensionModule
 metadata:
-  id: 30-integration
+  id: 83-integration
   name: 整合治理
   name_en: Integration Governance
   version: 1.0.0
   created_at: '2025-12-11T22:17:20.940366Z'
-  updated_at: '2025-12-11T22:17:20.940373Z'
+  updated_at: '2025-12-18T00:00:00Z'
   owner: governance-bot
-  category: execution
+  category: extended
   tags:
-  - 30_integration
-  - execution
+  - 83_integration
+  - extended
 spec:
   description: Integration Governance dimension for SynergyMesh governance framework
   schema:

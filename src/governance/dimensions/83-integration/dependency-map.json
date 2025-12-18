@@ -62,7 +62,7 @@
       "dependencies": ["00", "01", "08"],
       "dependents": ["13"]
     },
-    "10-stakeholder": {
+    "82-stakeholder": {
       "name": "Stakeholder",
       "layer": "implementation",
       "dependencies": ["00", "01"],

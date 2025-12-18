@@ -277,7 +277,7 @@ class SelfHealingIntegrationEngine:
                 'agents': [AIAgentType.TESTER, AIAgentType.COORDINATOR]
             },
             {
-                'id': '30-integration',
+                'id': '83-integration',
                 'name': 'Cross-Dimension Integration',
                 'integration_points': [
                     'self-healing-integration-manifest.md'

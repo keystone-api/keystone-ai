@@ -147,7 +147,7 @@ DASHBOARD_HTML = """
                     <small>Active • 100%</small>
                 </div>
                 <div class="status-item status-active">
-                    <strong>10-stakeholder</strong><br>
+                    <strong>82-stakeholder</strong><br>
                     <small>Active • 100%</small>
                 </div>
                 <div class="status-item status-active">

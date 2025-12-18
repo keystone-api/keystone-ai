@@ -108,12 +108,12 @@
 
 <<<<<<< HEAD
 <<<<<<< HEAD
-### 階段 4: 在 governance/\_legacy/30-integration (deprecated - see 30-agents) 中創建跨維度整合 ✅
+### 階段 4: 在 governance/\_legacy/83-integration (deprecated - see 30-agents) 中創建跨維度整合 ✅
 =======
-### 階段 4: 在 governance/30-integration 中創建跨維度整合 ✅
+### 階段 4: 在 governance/dimensions/83-integration 中創建跨維度整合 ✅
 >>>>>>> origin/alert-autofix-37
 =======
-### 階段 4: 在 governance/30-integration 中創建跨維度整合 ✅
+### 階段 4: 在 governance/dimensions/83-integration 中創建跨維度整合 ✅
 >>>>>>> origin/copilot/sub-pr-402
 
 **已創建文件:**
@@ -205,7 +205,7 @@ Agents 列表:
   1. 00-vision-strategy (Vision & Strategy) - ✅ 100%
   2. 14-improvement (Improvement & Learning) - ✅ 100%
   3. 28-tests (Tests & Validation) - ✅ 100%
-  4. 30-integration (Integration & Coordination) - ✅ 100%
+  4. 83-integration (Integration & Coordination) - ✅ 100%
   5. 39-automation (Automation & Orchestration) - ✅ 100%
 ```
 

@@ -84,7 +84,7 @@ def status():
         ("07-audit", "Active", "100%"),
         ("08-process", "Active", "100%"),
         ("09-performance", "Active", "100%"),
-        ("10-stakeholder", "Active", "100%"),
+        ("82-stakeholder", "Active", "100%"),
         ("11-tools-systems", "Active", "100%"),
         ("12-culture-capability", "Active", "100%"),
         ("13-metrics-reporting", "Active", "100%"),

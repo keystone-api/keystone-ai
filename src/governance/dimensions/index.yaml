@@ -1,8 +1,8 @@
 # =============================================================================
 # SynergyMesh Governance - Dimensions Index
-# Machine-First Governance Framework (00-80 Dimensions)
+# Machine-First Governance Framework (00-83 Dimensions)
 # =============================================================================
-# Total Dimensions: 81 (00-80)
+# Total Dimensions: 84 (00-83, including extended layer 81-83)
 # Format: Machine-Friendly YAML
 # Validation: JSON Schema Enforced
 # =============================================================================
@@ -11,11 +11,11 @@ apiVersion: governance.machinenativeops.io/v2
 kind: DimensionIndex
 metadata:
   name: governance-dimensions-index
-  version: "2.0.0"
+  version: "2.1.0"
   created_at: "2025-12-11T00:00:00Z"
-  updated_at: "2025-12-11T00:00:00Z"
+  updated_at: "2025-12-18T00:00:00Z"
   owner: governance-bot
-  total_dimensions: 81
+  total_dimensions: 84
 
 # =============================================================================
 # DIMENSION SCHEMA REFERENCE
@@ -25,7 +25,7 @@ schema:
   validation: required
 
 # =============================================================================
-# DIMENSIONS REGISTRY (00-80)
+# DIMENSIONS REGISTRY (00-83)
 # =============================================================================
 dimensions:
   # ===========================================================================
@@ -1339,18 +1339,70 @@ dimensions:
       tags: [synthesis, integration, holistic, optimization]
       compliance: [Systems-Thinking]
 
+  # ===========================================================================
+  # EXTENDED LAYER (81+)
+  # ===========================================================================
+  - id: "81-auto-comment"
+    name: "自動評論治理"
+    name_en: "Auto Comment Governance"
+    version: "1.0.0"
+    category: extended
+    status: active
+    path: "./81-auto-comment/"
+    schema: "./81-auto-comment/schema.json"
+    policy: "./81-auto-comment/policy.rego"
+    dependencies: ["39-automation", "80-synthesis"]
+    description: "CI/CD自動診斷、評論生成與修復建議"
+    metadata:
+      owner: governance-bot
+      tags: [auto-comment, ci, diagnosis, repair]
+      compliance: [DevOps, GitOps]
+
+  - id: "82-stakeholder"
+    name: "利害關係人治理"
+    name_en: "Stakeholder Governance"
+    version: "1.0.0"
+    category: extended
+    status: active
+    path: "./82-stakeholder/"
+    schema: "./82-stakeholder/schema.json"
+    policy: "./82-stakeholder/policy.rego"
+    dependencies: ["00-vision-strategy"]
+    description: "利害關係人識別、管理與參與治理"
+    metadata:
+      owner: governance-bot
+      tags: [stakeholder, engagement, management]
+      compliance: [ISO-42001]
+
+  - id: "83-integration"
+    name: "整合治理"
+    name_en: "Integration Governance"
+    version: "1.0.0"
+    category: extended
+    status: active
+    path: "./83-integration/"
+    schema: "./83-integration/schema.json"
+    policy: "./83-integration/policy.rego"
+    dependencies: ["01-architecture"]
+    description: "整合模式、編排策略與互操作性治理"
+    metadata:
+      owner: governance-bot
+      tags: [integration, orchestration, interoperability]
+      compliance: [Enterprise-Integration]
+
 # =============================================================================
 # STATISTICS
 # =============================================================================
 statistics:
-  total_dimensions: 81
+  total_dimensions: 84
   categories:
     strategic: 10
     operational: 20
     execution: 20
     observability: 20
     feedback: 11
+    extended: 3
   status:
-    active: 81
+    active: 84
     deprecated: 0
     draft: 0

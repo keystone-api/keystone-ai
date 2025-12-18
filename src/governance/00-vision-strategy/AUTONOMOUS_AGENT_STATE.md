@@ -65,18 +65,8 @@ immediate_actions_available:
 ## 📍 Instant State Query
 
 ### Q: What is the current project state?
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-**A**: Phase 1-4 complete (62 files). AI-enhanced production ready. Zero
-blockers.
-=======
-**A**: Phase 1-4 complete (62 files). AI-enhanced production ready. Zero blockers.
->>>>>>> origin/alert-autofix-37
-=======
 
 **A**: Phase 1-4 complete (62 files). AI-enhanced production ready. Zero blockers.
->>>>>>> origin/copilot/sub-pr-402
 
 ### Q: What can I do right now?
 
@@ -276,30 +266,13 @@ AI Agent Starts → Queries This File (< 1 sec)
 - ✅ **Phase 4: Cross-Platform Integration** (event-driven)
 
 ### Phase 4 Features (ACTIVE - Instant Execution)
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-1. ✅ **AI Policy Generation**: Auto-generate OPA policies from strategic YAMLs
-   using LLM
-   - Status: ACTIVE
-   - Execution: < 1 second
-   - Files: `policy/ai-policy-enhanced.rego`
-
-2. ✅ **Self-Healing**: Auto-fix policy violations without human intervention
-=======
-=======
-
->>>>>>> origin/copilot/sub-pr-402
 1. ✅ **AI Policy Generation**: Auto-generate OPA policies from strategic YAMLs using LLM
    - Status: ACTIVE
    - Execution: < 1 second
    - Files: `policy/ai-policy-enhanced.rego`
 
-2. ✅ **Self-Healing**: Auto-fix policy violations without human intervention  
-<<<<<<< HEAD
->>>>>>> origin/alert-autofix-37
-=======
->>>>>>> origin/copilot/sub-pr-402
+2. ✅ **Self-Healing**: Auto-fix policy violations without human intervention
    - Status: ACTIVE
    - Execution: INSTANT
    - Files: `k8s/self-healing-controller.yaml`
@@ -497,19 +470,9 @@ self_healing_integration:
         - "跨維度自動化"
     
     integration_manifest:
-<<<<<<< HEAD
-<<<<<<< HEAD
-      file: 'governance/_legacy/30-integration/unmanned-island-integration-manifest.md'
-      status: DEPRECATED_LEGACY
-      note: 'Integration coordination moved to 30-agents/'
-=======
-      file: "governance/30-integration/unmanned-island-integration-manifest.md"
+      file: "governance/dimensions/83-integration/unmanned-island-integration-manifest.md"
       status: ACTIVE
->>>>>>> origin/alert-autofix-37
-=======
-      file: "governance/30-integration/unmanned-island-integration-manifest.md"
-      status: ACTIVE
->>>>>>> origin/copilot/sub-pr-402
+      note: "Renamed from 30-integration to 83-integration for ID consistency"
       documents:
         - "跨維度整合點"
         - "API 端點與事件流"
@@ -543,25 +506,12 @@ self_healing_integration:
     business_value: "INSTANT (< 1 hour concept-to-production)"
   
   governance_dimensions_integrated:
-<<<<<<< HEAD
-<<<<<<< HEAD
-    - '00-vision-strategy: AI 行為契約與執行標準'
-    - '14-improvement: 自我修復與持續改進'
-    - '30-agents: AI Agent Governance (formerly 30-integration)'
-    - '39-automation: 自動化引擎與島嶼協調'
-    - '28-tests: 驗證與測試框架'
-=======
-=======
->>>>>>> origin/copilot/sub-pr-402
     - "00-vision-strategy: AI 行為契約與執行標準"
     - "14-improvement: 自我修復與持續改進"
-    - "30-integration: 跨維度整合協調"
+    - "30-agents: AI Agent Governance"
+    - "83-integration: 跨維度整合協調 (formerly 30-integration)"
     - "39-automation: 自動化引擎與島嶼協調"
     - "28-tests: 驗證與測試框架"
-<<<<<<< HEAD
->>>>>>> origin/alert-autofix-37
-=======
->>>>>>> origin/copilot/sub-pr-402
 ```
 
 ---

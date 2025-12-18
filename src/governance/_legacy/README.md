@@ -5,7 +5,7 @@ the new layered framework.**
 
 ## Migrated Directories
 
-### 10-stakeholder → Deprecated
+### 82-stakeholder → Deprecated
 
 - **Conflict**: Number 10 is now used by `10-policy` (Policy as Code Framework)
 - **Content**: Stakeholder management, engagement plans, satisfaction surveys
@@ -34,7 +34,7 @@ the new layered framework.**
   policy or documentation reference → this legacy folder; unclear cases →
   raise to governance-team for review
 
-### 30-integration → Deprecated
+### 83-integration → Deprecated
 
 - **Conflict**: Number 30 is now used by `30-agents` (AI Agent Governance)
 - **Content**: Integration coordination, dependency maps, governance integration
@@ -74,11 +74,11 @@ for complete details.
 
 If you have references to these legacy dimensions:
 
-1. **10-stakeholder**: Use dimensions/11-tools-systems or create stakeholder
+1. **82-stakeholder**: Use dimensions/11-tools-systems or create stakeholder
    content in appropriate governance dimensions
 2. **20-information**: Content was minimal, information architecture is now part
    of overall governance
-3. **30-integration**: Integration coordination is now handled by `30-agents/`
+3. **83-integration**: Integration coordination is now handled by `30-agents/`
    and the automation framework
 
 ## Questions?

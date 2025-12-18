@@ -23,11 +23,11 @@ numbers.
 
 ```
 governance/
-├── 10-stakeholder/      # Conflict!
+├── 82-stakeholder/      # Conflict!
 ├── 10-policy/           # Conflict!
 ├── 20-information/      # Conflict!
 ├── 20-intent/           # Conflict!
-├── 30-integration/      # Conflict!
+├── 83-integration/      # Conflict!
 └── 30-agents/           # Conflict!
 ```
 
@@ -39,9 +39,9 @@ governance/
 ├── 20-intent/           # ✅ Primary (Layered Framework)
 ├── 30-agents/           # ✅ Primary (Layered Framework)
 └── _legacy/
-    ├── 10-stakeholder/  # ✅ Moved (Preserved)
+    ├── 82-stakeholder/  # ✅ Moved (Preserved)
     ├── 20-information/  # ✅ Moved (Preserved)
-    └── 30-integration/  # ✅ Moved (Preserved)
+    └── 83-integration/  # ✅ Moved (Preserved)
 ```
 
 ### ✅ Issue 2: Responsibility Confusion
@@ -100,9 +100,9 @@ governance/
 
 ### Files Moved
 
-- `10-stakeholder/` → `_legacy/10-stakeholder/` (12 files)
+- `82-stakeholder/` → `_legacy/82-stakeholder/` (12 files)
 - `20-information/` → `_legacy/20-information/` (2 files)
-- `30-integration/` → `_legacy/30-integration/` (10 files)
+- `83-integration/` → `_legacy/83-integration/` (10 files)
 
 ### Files Copied/Consolidated
 

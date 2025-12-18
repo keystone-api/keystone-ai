@@ -35,7 +35,7 @@ dimensions:
           description: "Self-healing automation engine"
           
       integration:
-        - path: "governance/30-integration/self-healing-integration.md"
+        - path: "governance/dimensions/83-integration/self-healing-integration.md"
           description: "Integration manifest"
         - path: "governance/14-improvement/self-healing-improvement.yaml"
           description: "Improvement policies"
@@ -64,7 +64,7 @@ dimensions:
 <<<<<<< HEAD
 
       - dimension: "30-agents"
-        note: "formerly 30-integration - now handles AI Agent Governance"
+        note: "formerly 83-integration - now handles AI Agent Governance"
         assets:
           - "coordination/self-healing-integration.md"
 
@@ -72,7 +72,7 @@ dimensions:
 =======
 >>>>>>> origin/copilot/sub-pr-402
           
-      - dimension: "30-integration"
+      - dimension: "83-integration"
         assets:
           - "self-healing-integration.md"
           
