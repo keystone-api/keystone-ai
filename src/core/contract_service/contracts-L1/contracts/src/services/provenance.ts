@@ -43,10 +43,12 @@ const assertPathValid = (filePath: string): void => {
     return;
   }
 
-  // For multi-component paths, forbid traversal segments and duplicate separators.
+  // For multi-component paths, perform basic syntactic validation and forbid traversal segments and duplicate separators.
+  // Note: split(/[\\/]+/) already collapses duplicate separators, but we still explicitly
+  // reject raw inputs containing repeated separators as a defense-in-depth measure and to
+  // fail fast on syntactically malformed paths before any resolution logic runs.
   const segments = filePath.split(/[\\/]+/);
   if (segments.includes('..') || filePath.includes('//') || filePath.includes('\\\\')) {
-  // Basic syntactic validation on the raw user input.
     throw new PathValidationError('Invalid file path');
   }
 };
@@ -61,20 +63,19 @@ async function resolveSafePath(userInputPath: string): Promise<string> {
   let canonicalSafeRoot: string;
   try {
     // Canonicalize the safe root directory for robust prefix checking.
+    canonicalSafeRoot = await realpath(safeRoot);
 
     // Always resolve user input relative to the canonical safe root.
     const resolvedCandidate = path.resolve(canonicalSafeRoot, normalizedInput);
 
     // Canonicalize the candidate to resolve any symlinks.
     canonicalPath = await realpath(resolvedCandidate);
-    canonicalSafeRoot = await realpath(safeRoot);
   } catch (error) {
     // Allow caller to handle missing files (ENOENT) or root misconfiguration.
     throw error;
   }
 
   // Ensure the canonical path is strictly within the canonical safe root.
-    !rel || // empty string means exactly the root directory; disallow for strictness
   const rel = path.relative(canonicalSafeRoot, canonicalPath);
   if (
     rel.startsWith('..') ||
