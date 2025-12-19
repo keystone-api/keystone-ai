@@ -38,6 +38,7 @@ git clone https://github.com/axmops/axiom-enterprise-platform.git
 cd axiom-enterprise-platform
 
 # 配置環境
+# 命名空間必須全小寫，僅允許小寫字母、數字與連字號（符合 `^[a-z0-9-]+$`）
 export AXIOM_ENV=production
 export AXIOM_NAMESPACE=axiom-system
 
