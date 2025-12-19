@@ -5,6 +5,7 @@ import path from 'path';
 import sanitize from 'sanitize-filename';
 
 import { PathValidationError } from '../errors';
+
 import { SLSAAttestationService, SLSAProvenance, BuildMetadata } from './attestation';
 
 const getSafeRoot = (): string =>
@@ -54,22 +55,14 @@ async function resolveSafePath(userInputPath: string): Promise<string> {
   const safeRoot = getSafeRoot();
   const normalizedInput = path.normalize(userInputPath);
 
-  let canonicalSafeRoot: string;
-  try {
-    // Canonicalize the safe root directory for robust prefix checking.
-    canonicalSafeRoot = await realpath(safeRoot);
+  // Canonicalize the safe root directory for robust prefix checking.
+  const canonicalSafeRoot = await realpath(safeRoot);
 
-  let canonicalPath: string;
-  try {
-    // Always resolve user input relative to the canonical safe root.
-    const resolvedCandidate = path.resolve(canonicalSafeRoot, normalizedInput);
+  // Always resolve user input relative to the canonical safe root.
+  const resolvedCandidate = path.resolve(canonicalSafeRoot, normalizedInput);
 
-    // Canonicalize the candidate to resolve any symlinks.
-    canonicalPath = await realpath(resolvedCandidate);
-  } catch (error) {
-    // Allow caller to handle missing files (ENOENT) or root misconfiguration.
-    throw error;
-  }
+  // Canonicalize the candidate to resolve any symlinks.
+  const canonicalPath = await realpath(resolvedCandidate);
 
   // Ensure the canonical path is strictly within the canonical safe root.
   const rel = path.relative(canonicalSafeRoot, canonicalPath);

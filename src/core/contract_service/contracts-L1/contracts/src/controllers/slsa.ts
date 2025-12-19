@@ -1,9 +1,10 @@
-import { Request, Response } from 'express';
-import { z } from 'zod';
 import * as path from 'path';
 
-import { SLSAAttestationService } from '../services/attestation';
+import { Request, Response } from 'express';
+import { z } from 'zod';
+
 import { PathValidationError } from '../errors';
+import { SLSAAttestationService } from '../services/attestation';
 
 // Define a safe root directory for allowed file operations
 const SAFE_ROOT = path.resolve(process.cwd(), 'safefiles');

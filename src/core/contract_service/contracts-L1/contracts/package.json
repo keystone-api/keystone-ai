@@ -11,7 +11,7 @@
     "build:clean": "npm run clean && npm run build",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
-    "lint": "eslint src/**/*.ts --max-warnings 0 --ignore-pattern \"**/*.test.ts\" --ignore-pattern \"**/__tests__/**\" --no-warn-ignored",
+    "lint": "eslint 'src/**/*.ts' --max-warnings 0 --ignore-pattern '**/*.test.ts' --ignore-pattern '**/__tests__/**'",
     "lint:fix": "eslint src/**/*.ts --fix --ignore-pattern \"**/*.test.ts\" --ignore-pattern \"**/__tests__/**\"",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch --passWithNoTests",
