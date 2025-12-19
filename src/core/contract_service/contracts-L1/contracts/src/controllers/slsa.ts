@@ -78,7 +78,7 @@ export class SLSAController {
         const fs = await import('fs/promises');
         const { normalized, resolved } = this.resolveSubjectPath(validatedInput.subjectPath);
         const content = await fs.readFile(resolved);
-        subjects = [this.slsaService.createSubjectFromContent(validatedInput.subjectPath, content)];
+        subjects = [this.slsaService.createSubjectFromContent(normalized, content)];
       } else {
         // 從摘要創建主體
         subjects = [

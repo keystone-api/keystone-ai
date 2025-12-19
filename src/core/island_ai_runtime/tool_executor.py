@@ -109,8 +109,10 @@ class CodeRunner(Tool):
 
     def _build_execution_command(self, lang_config: dict[str, str], temp_file: str) -> list[str]:
         """
-        Construct an execution command from the validated language configuration sourced from
-        SUPPORTED_LANGUAGES.
+        Build a subprocess command array from a validated language configuration.
+        `lang_config` must include a `cmd` entry sourced from SUPPORTED_LANGUAGES.
+        Returns a list suitable for subprocess.run where index 0 is the executable and index 1 is
+        the temporary file path.
         """
         return [lang_config["cmd"], temp_file]
 
