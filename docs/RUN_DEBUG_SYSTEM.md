@@ -42,6 +42,7 @@
 ### 1. 執行管理 (Execution Management)
 
 #### 1.1 配置系統
+
 支援標準 launch.json 格式，範例配置：
 
 **Python 配置**
@@ -81,6 +82,7 @@
 ### 3. 終端機偵錯介面
 
 #### 3.1 命令列工具
+
 ```bash
 # 啟動偵錯會話
 $ mno debug start --config python-debug

@@ -88,6 +88,7 @@ await engine.step_over(session_id)
 - ✅ 附加模式
 
 **技術特點**:
+
 - 使用 asyncio 進行非同步通訊
 - 實作完整的 DAP 訊息協議
 - 支援所有標準偵錯操作
@@ -182,6 +183,7 @@ response = await interface.process_message("如何優化？")
 - AttributeError
 
 **分析內容**:
+
 - 錯誤說明
 - 可能原因
 - 建議修復方法
@@ -206,6 +208,7 @@ response = await interface.process_message("如何優化？")
 - 最佳實踐
 
 ### 2. 快速入門 (RUN_DEBUG_QUICKSTART.md)
+
 - 5 分鐘快速開始
 - 常見使用場景
 - 進階功能
@@ -228,6 +231,7 @@ response = await interface.process_message("如何優化？")
 - **聊天介面**: 適合自然語言互動
 
 ### 2. 智能診斷
+
 - 自動錯誤分析
 - 原因推斷
 - 修復建議
@@ -240,6 +244,7 @@ response = await interface.process_message("如何優化？")
 - 對話管理
 
 ### 4. 擴充性設計
+
 - 語言適配器系統
 - 自訂診斷規則
 - 插件架構
@@ -270,6 +275,7 @@ AI: 我發現以下優化機會：
 ```
 
 ### 場景 4：遠端偵錯
+
 ```json
 {
   "name": "Remote Debug",
