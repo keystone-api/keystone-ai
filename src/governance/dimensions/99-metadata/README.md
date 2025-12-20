@@ -477,6 +477,7 @@ dependencies:
 ## 元規範約束 (Meta-Specification Constraints)
 
 作為元規範層維度，99-metadata：
+
 - ✅ 可被其他維度依賴
 - ❌ 不可依賴下游模組（防止循環）
 - ✅ 定義元數據管理的基礎標準
