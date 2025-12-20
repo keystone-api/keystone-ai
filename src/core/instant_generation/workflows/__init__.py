@@ -520,6 +520,7 @@ class InstantGenerationWorkflow:
                 "stats": self.workflow_stats.copy()
             }
         except Exception as e:
+            self.logger.error(f"Health check failed: {e}", exc_info=True)
             return {
                 "status": "unhealthy",
                 "error": str(e)
