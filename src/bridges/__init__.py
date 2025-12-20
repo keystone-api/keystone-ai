@@ -18,10 +18,10 @@ if (_hyphen_pkg / "__init__.py").exists():
         _hyphen_pkg / "__init__.py",
         submodule_search_locations=[str(_hyphen_pkg)]
     )
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    if spec.loader:
+    if spec is not None and spec.loader is not None:
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
         spec.loader.exec_module(module)
-    language_islands = module
+        language_islands = module
 
 __all__ = ["language_islands"]
