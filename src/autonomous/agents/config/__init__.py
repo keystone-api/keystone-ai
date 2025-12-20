@@ -20,7 +20,6 @@ def _import_agent_config():
     if spec and spec.loader:
         module = importlib.util.module_from_spec(spec)
         sys.modules[module_name] = module
-        sys.modules['agents.config.agent_config'] = module
         spec.loader.exec_module(module)
         return module
     return None
