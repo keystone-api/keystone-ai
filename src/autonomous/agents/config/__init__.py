@@ -15,9 +15,11 @@ def _import_agent_config():
     module_path = Path(__file__).parent / 'agent-config.py'
     if not module_path.exists():
         return None
-    spec = importlib.util.spec_from_file_location('agents.config.agent_config', module_path)
+    module_name = 'autonomous.agents.config.agent_config'
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
     if spec and spec.loader:
         module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
         sys.modules['agents.config.agent_config'] = module
         spec.loader.exec_module(module)
         return module
