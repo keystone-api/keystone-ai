@@ -15,7 +15,6 @@ spec = importlib.util.spec_from_file_location(_qualified_name, _module_path)
 if spec and spec.loader:
     _module = importlib.util.module_from_spec(spec)
     sys.modules[_qualified_name] = _module
-    sys.modules['bridges.language-islands.config.island-config'] = _module
     spec.loader.exec_module(_module)
     IslandConfig = _module.IslandConfig
 else:
