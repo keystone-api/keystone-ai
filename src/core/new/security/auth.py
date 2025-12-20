@@ -124,15 +124,15 @@ class SecurityManager:
             if password_from_env:
                 logger.info("✅ 使用環境變量 ADMIN_DEFAULT_PASSWORD 設置的管理員密碼")
             else:
-                # 將密碼輸出到標準輸出供部署者記錄（僅在首次創建時）
+                # 出於安全考量，不再在控制台輸出明文密碼
                 print(f"\n{'='*60}")
                 print(f"🔐 默認管理員密碼已生成")
                 print(f"用戶名: admin")
-                print(f"密碼: {default_password}")
-                print(f"⚠️  請立即保存此密碼並在首次登入後修改！")
+                print(f"⚠️  出於安全考量，默認密碼不會在日誌或控制台中顯示，請使用安全流程重置或查詢該密碼。")
+                print(f"⚠️  請在首次登入後立即修改此密碼！")
                 print(f"{'='*60}\n")
                 
-                logger.warning("⚠️ 默認管理員密碼已生成並輸出到控制台，請妥善保管並立即修改")
+                logger.warning("⚠️ 默認管理員密碼已生成，未在控制台輸出明文，請通過安全流程獲取並立即修改")
                 # 記錄密碼生成事件但不包含密碼本身
                 await self._log_security_event("admin_password_generated", {
                     "username": "admin",
