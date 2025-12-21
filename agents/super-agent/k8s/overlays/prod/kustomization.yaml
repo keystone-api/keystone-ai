@@ -24,7 +24,6 @@ replicas:
 # Production-specific configuration
 configMapGenerator:
 - name: super-agent-env
-  behavior: create
   literals:
   - LOG_LEVEL=WARN
   - ENVIRONMENT=prod
@@ -33,15 +32,10 @@ configMapGenerator:
 patches:
 - patch: |-
     - op: add
-      path: /spec/template/spec/containers/0/env/-
+      path: /spec/template/spec/containers/0/envFrom
       value:
-        name: LOG_LEVEL
-        value: WARN
-    - op: add
-      path: /spec/template/spec/containers/0/env/-
-      value:
-        name: ENVIRONMENT
-        value: prod
+      - configMapRef:
+          name: super-agent-env
     - op: replace
       path: /spec/template/spec/containers/0/resources/requests/memory
       value: 256Mi

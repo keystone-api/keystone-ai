@@ -23,24 +23,18 @@ images:
 # Staging-specific configuration
 configMapGenerator:
 - name: super-agent-env
-  behavior: create
   literals:
   - LOG_LEVEL=INFO
   - ENVIRONMENT=staging
 
-# Patches for staging-specific resources
+# Mount the configMap in the deployment
 patches:
 - patch: |-
     - op: add
-      path: /spec/template/spec/containers/0/env/-
+      path: /spec/template/spec/containers/0/envFrom
       value:
-        name: LOG_LEVEL
-        value: INFO
-    - op: add
-      path: /spec/template/spec/containers/0/env/-
-      value:
-        name: ENVIRONMENT
-        value: staging
+      - configMapRef:
+          name: super-agent-env
   target:
     kind: Deployment
     name: super-agent

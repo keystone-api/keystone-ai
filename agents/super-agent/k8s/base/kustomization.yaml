@@ -17,5 +17,4 @@ labels:
 # Image configuration - can be overridden by overlays
 images:
 - name: axiom-system/super-agent
-  newName: axiom-system/super-agent
   newTag: v1.0.0

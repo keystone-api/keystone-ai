@@ -26,24 +26,18 @@ replicas:
 # Dev-specific configuration
 configMapGenerator:
 - name: super-agent-env
-  behavior: create
   literals:
   - LOG_LEVEL=DEBUG
   - ENVIRONMENT=dev
 
-# Patches for dev-specific resources
+# Mount the configMap in the deployment
 patches:
 - patch: |-
     - op: add
-      path: /spec/template/spec/containers/0/env/-
+      path: /spec/template/spec/containers/0/envFrom
       value:
-        name: LOG_LEVEL
-        value: DEBUG
-    - op: add
-      path: /spec/template/spec/containers/0/env/-
-      value:
-        name: ENVIRONMENT
-        value: dev
+      - configMapRef:
+          name: super-agent-env
   target:
     kind: Deployment
     name: super-agent
