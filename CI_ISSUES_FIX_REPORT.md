@@ -131,6 +131,7 @@ gh issue create --title "webhook.py event_name usage clarification needed" --bod
 2. **流程問題**：PR 模板邏輯不一致
 
 這正是 Phase 1 MVP 系統價值的體現——通過嚴格的閘門驗證，我們能夠：
+
 - 🎯 **及早發現問題**：CI 失敗立即暴露
 - 🔍 **精確定位問題**：明確的錯誤訊息
 - 🛠️ **系統性修復**：不僅解決當前問題，還改進了模板

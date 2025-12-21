@@ -21,6 +21,7 @@
 **效果**: 解決 "actions must be pinned to a full-length commit SHA" 錯誤
 
 ### 2. PR 模板邏輯一致性修復
+
 **檔案**: `.github/PULL_REQUEST_TEMPLATE.md`
 
 **新增功能**:
