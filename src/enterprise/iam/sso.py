@@ -18,7 +18,6 @@ from urllib.parse import urlencode, urlparse
 from enterprise.iam.models import (
     User,
     SSOConfig,
-    OIDCProvider,
     Membership,
     Role,
 )
