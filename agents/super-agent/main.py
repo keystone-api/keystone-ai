@@ -25,6 +25,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import uvicorn
+from gate_handler import gate_handler
 
 # Configure logging
 logging.basicConfig(
@@ -109,6 +110,7 @@ class SuperAgent:
             MessageType.FIX_PROPOSAL: self.handle_fix_proposal,
             MessageType.VERIFICATION_REPORT: self.handle_verification_report,
             MessageType.EXECUTION_RESULT: self.handle_execution_result,
+            MessageType.GATE_VALIDATION_REQUEST: self.handle_gate_validation_request,
         }
         
     def generate_trace_id(self) -> str:
@@ -454,11 +456,24 @@ async def get_metrics():
         "timestamp": datetime.now().isoformat()
     }
 
+    def handle_gate_validation_request(self, envelope: MessageEnvelope) -> Dict[str, Any]:
+        """Handle gate validation requests"""
+        try:
+            request_data = envelope.payload
+            return asyncio.run(gate_handler.handle_gate_validation_request(request_data))
+        except Exception as e:
+            logger.error(f"Gate validation request failed: {e}")
+            return {
+                "status": "FAILED",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
+
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8080,
+        port=8082,  # Updated to match unified gates workflow
         reload=True,
         log_level="info"
     )
