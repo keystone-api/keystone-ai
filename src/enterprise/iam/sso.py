@@ -8,8 +8,8 @@ the backend interfaces for OIDC/SAML integration.
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any, Protocol
-from uuid import UUID, uuid4
+from typing import Optional, Dict, Any, Protocol
+from uuid import UUID
 import hashlib
 import secrets
 import logging
@@ -335,7 +335,7 @@ class SSOManager:
         org_id = UUID(pending["org_id"])
         code_verifier = pending["code_verifier"]
         redirect_uri = pending["redirect_uri"]
-        nonce = pending["nonce"]
+        # TODO: In production, validate nonce from pending["nonce"] against ID token claims
 
         # Clean up pending auth
         del self._pending_auth[state]
