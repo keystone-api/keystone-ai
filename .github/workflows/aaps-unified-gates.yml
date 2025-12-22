@@ -1,4 +1,6 @@
 name: AAPS Unified Gates v2
+permissions:
+  contents: read
 on:
   pull_request:
     branches: [ main ]
