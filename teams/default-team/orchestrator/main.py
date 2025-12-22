@@ -20,7 +20,7 @@ import time
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,7 +36,7 @@ from models.messages import (
     MessageResponse,
     Urgency,
 )
-from models.incidents import IncidentState
+from models.incidents import IncidentState, Incident
 from models.consensus import VoteType, ConsensusState
 from services.state_machine import IncidentStateMachine
 from services.event_store import EventStore
@@ -77,14 +77,46 @@ class SuperAgentCore:
     def __init__(self):
         self.incidents: Dict[str, Incident] = {}
         self.startup_time = datetime.now()
+        self._start_time = datetime.now()
+        
+        # Initialize core services
+        self.metrics = MetricsCollector()
+        self.circuit_breakers = CircuitBreakerRegistry()
+        self.backpressure = BackpressureController()
+        self.event_store = EventStore()
+        self.audit_trail = AuditTrail()
+        self.agent_registry = AgentRegistry()
+        self.agent_client = AgentClient(registry=self.agent_registry)
+        self.consensus = ConsensusManager()
+        self.state_machine = IncidentStateMachine(event_store=self.event_store)
+        
         self.message_handlers = {
             MessageType.INCIDENT_SIGNAL: self.handle_incident_signal,
             MessageType.RCA_REPORT: self.handle_rca_report,
             MessageType.FIX_PROPOSAL: self.handle_fix_proposal,
             MessageType.VERIFICATION_REPORT: self.handle_verification_report,
             MessageType.EXECUTION_RESULT: self.handle_execution_result,
-            MessageType.GATE_VALIDATION_REQUEST: self.handle_gate_validation_request,
         }
+    
+    async def initialize(self) -> None:
+        """Initialize all services."""
+        logger.info("Initializing SuperAgent services...")
+        if hasattr(self.event_store, 'initialize'):
+            await self.event_store.initialize()
+        if hasattr(self.audit_trail, 'initialize'):
+            await self.audit_trail.initialize()
+        if hasattr(self.metrics, 'initialize'):
+            await self.metrics.initialize()
+        if hasattr(self.agent_registry, 'initialize'):
+            await self.agent_registry.initialize()
+        logger.info("SuperAgent services initialized")
+    
+    async def shutdown(self) -> None:
+        """Shutdown all services gracefully."""
+        logger.info("Shutting down SuperAgent services...")
+        await self.agent_client.close()
+        await self.circuit_breakers.reset_all()
+        logger.info("SuperAgent services shut down")
         
     def generate_trace_id(self) -> str:
         """Generate unique trace ID"""
@@ -112,7 +144,7 @@ class SuperAgentCore:
         else:
             return f"{seconds}s"
     
-    def validate_message_envelope(self, envelope: MessageEnvelope) -> bool:
+    def validate_message_envelope(self, envelope: MessageEnvelope) -> Tuple[bool, Optional[str]]:
         """Validate message envelope structure and required fields"""
         try:
             meta = envelope.meta
