@@ -1,0 +1,88 @@
+version: v1
+name: "boot"
+description: "團隊啟動流程 - Orchestrator 啟動時自動執行"
+
+triggers:
+  - on_startup: true
+
+steps:
+  - id: "load_registry"
+    action: "core.registry.load"
+    description: "載入代理註冊表"
+    outputs:
+      - registry_data
+
+  - id: "team_healthcheck"
+    action: "agents.healthcheck"
+    description: "檢查所有團隊成員狀態"
+    targets:
+      - "ai.architect"
+      - "ai.security"
+      - "ai.devops"
+      - "ai.qa"
+      - "services.code-analyzer"
+      - "services.auto-repair"
+      - "services.dependency-manager"
+      - "instant.input-analysis"
+      - "synergy.ecosystem"
+    fail_fast: false
+    outputs:
+      - healthcheck_results
+
+  - id: "load_personas"
+    action: "personas.load"
+    description: "載入角色人設檔案"
+    inputs:
+      profiles_dir: "profiles/"
+    outputs:
+      - loaded_personas
+
+  - id: "initialize_event_bus"
+    action: "events.initialize"
+    description: "初始化事件總線"
+    outputs:
+      - event_bus_status
+
+  - id: "write_startup_report"
+    action: "artifacts.write"
+    description: "生成啟動報告"
+    inputs:
+      name: "startup_report"
+      type: "markdown"
+      content: |
+        # Team Boot Activated
+        
+        ## 團隊資訊
+        - team_id: default-team
+        - activated_at: ${timestamp}
+        - status: ${healthcheck_results.summary}
+        
+        ## 健康檢查結果
+        ${healthcheck_results.details}
+        
+        ## 已載入角色
+        ${loaded_personas.list}
+        
+        ## 事件總線
+        - status: ${event_bus_status}
+        
+        ---
+        *自動生成於 Team Boot Playbook*
+
+  - id: "emit_team_activated"
+    action: "events.emit"
+    description: "發送團隊激活事件"
+    inputs:
+      event_type: "TEAM_ACTIVATED"
+      payload:
+        team_id: "default-team"
+        timestamp: "${timestamp}"
+        members_count: 25
+
+audit:
+  enabled: true
+  events:
+    - "PLAYBOOK_STARTED"
+    - "STEP_COMPLETED"
+    - "PLAYBOOK_COMPLETED"
+    - "ERROR"
