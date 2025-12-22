@@ -339,6 +339,7 @@ class SSOManager:
         nonce = pending["nonce"]
         code_verifier = pending["code_verifier"]
         redirect_uri = pending["redirect_uri"]
+        nonce = pending["nonce"]
 
         # Clean up pending auth
         del self._pending_auth[state]
@@ -387,6 +388,20 @@ class SSOManager:
             signing_key = jwks_client.get_signing_key_from_jwt(tokens.id_token)
             
             # Decode and verify the ID token with full signature verification
+        # Validate ID token with proper JWT signature verification using JWKS
+        try:
+            # Get JWKS URI from discovery document
+            jwks_uri = discovery.get("jwks_uri")
+            if not jwks_uri:
+                raise ValueError("JWKS URI not found in discovery document")
+            
+            # Create JWKS client to fetch and cache signing keys
+            jwks_client = PyJWKClient(jwks_uri)
+            
+            # Get the signing key from the JWT header
+            signing_key = jwks_client.get_signing_key_from_jwt(tokens.id_token)
+            
+            # Verify and decode the ID token with full signature verification
             id_token_claims = pyjwt.decode(
                 tokens.id_token,
                 key=signing_key.key,
@@ -407,6 +422,8 @@ class SSOManager:
             raise ValueError(f"ID token signature is invalid: {e}")
         except pyjwt.DecodeError as e:
             raise ValueError(f"Failed to decode ID token: {e}")
+        except pyjwt.InvalidTokenError as e:
+            raise ValueError(f"Invalid ID token: {e}")
 
         # Get user info
         userinfo_endpoint = discovery.get("userinfo_endpoint")
