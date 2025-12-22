@@ -1,20 +1,38 @@
 """
-MachineNativeOps Auto Monitor
-System monitoring with quantum state tracking
+MachineNativeOps Auto-Monitor Package
+機器原生運維自動監控套件
+
+This package provides automated monitoring capabilities for MachineNativeOps infrastructure.
 """
 
-__version__ = "2.0.0"
-__author__ = "MachineNativeOps Team"
-__email__ = "team@machinenativeops.io"
-__description__ = "System monitoring with quantum state tracking"
+__version__ = "1.0.0"
+__author__ = "MachineNativeOps"
 
-from .app import MachineNativeOpsAutoMonitor
-from .config import Config
-from .collectors import SystemCollector, QuantumCollector
-
+# Lazy imports to avoid dependency issues
 __all__ = [
-    "MachineNativeOpsAutoMonitor",
-    "Config", 
-    "SystemCollector",
-    "QuantumCollector",
+    'AutoMonitorApp',
+    'MetricsCollector',
+    'LogCollector',
+    'EventCollector',
+    'AlertManager',
+    'AlertRule',
+    'MonitorConfig',
 ]
+
+def __getattr__(name):
+    """Lazy import to avoid loading dependencies at package import time."""
+    if name == 'AutoMonitorApp':
+        from .app import AutoMonitorApp
+        return AutoMonitorApp
+    elif name in ('MetricsCollector', 'LogCollector', 'EventCollector'):
+        from .collectors import MetricsCollector, LogCollector, EventCollector
+        return {'MetricsCollector': MetricsCollector, 
+                'LogCollector': LogCollector,
+                'EventCollector': EventCollector}[name]
+    elif name in ('AlertManager', 'AlertRule'):
+        from .alerts import AlertManager, AlertRule
+        return {'AlertManager': AlertManager, 'AlertRule': AlertRule}[name]
+    elif name == 'MonitorConfig':
+        from .config import MonitorConfig
+        return MonitorConfig
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

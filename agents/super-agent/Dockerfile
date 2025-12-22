@@ -51,6 +51,14 @@ ENV PYTHONUNBUFFERED=1 \
 # Expose port
 EXPOSE 8080
 
+# Health check (using Python instead of curl for smaller image)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import sys, urllib.request; \
+try: \
+    resp = urllib.request.urlopen('http://localhost:8080/health', timeout=5); \
+    sys.exit(0 if 200 <= resp.getcode() < 400 else 1); \
+except Exception: \
+    sys.exit(1)"
 # Health check using Python (curl not available in slim image)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/health', timeout=5)" || exit 1

@@ -1,6 +1,10 @@
 apiVersion: machinenativeops.io/v2
 kind: Namespace
 metadata:
+  name: machinenativeops
+  labels:
+    name: machinenativeops
+    purpose: multi-agent-orchestration
   name: machinenativenops-system
   labels:
     machinenativeops.io/name: machinenativenops-system
@@ -92,6 +96,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: super-agent
+  namespace: machinenativeops
   namespace: machinenativenops-system
 ---
 apiVersion: machinenativeops.io/v2
@@ -127,6 +132,11 @@ spec:
         fsGroup: 1000
       containers:
       - name: super-agent
+        # NOTE: 'machinenativeops/super-agent:v1.0.0' uses the cluster's default container registry.
+        # Ensure this image is built and pushed to your configured registry namespace (for example,
+        # registry.machinenativeops.io/machinenativeops/super-agent:v1.0.0) or otherwise made
+        # available to the cluster before deployment.
+        image: machinenativeops/super-agent:v1.0.0
         image: machinenativenops-system/super-agent:v1.0.0
         imagePullPolicy: IfNotPresent
         ports:

@@ -94,6 +94,7 @@ class SuperAgentTester:
                 "schema_version": "v1.0.0"
             },
             "context": {
+                "namespace": "machinenativeops",
                 "namespace": "machinenativenops-system",
                 "cluster": "test-cluster",
                 "urgency": "P1"
@@ -167,6 +168,7 @@ class SuperAgentTester:
                     # Missing required fields
                 },
                 "context": {
+                    "namespace": "machinenativeops"
                     "namespace": "machinenativenops-system"
                 },
                 "payload": {}
