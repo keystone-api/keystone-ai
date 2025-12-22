@@ -308,7 +308,7 @@ status:
   conditions:
     - type: "Validated"
       status: "True"
-      lastTransitionTime: "2025-12-22T06:40:00Z"
+      last_transition_time: "2025-12-22T06:40:00Z"
       reason: "ConfigurationComplete"
       message: "Namespace configuration is complete and active"
   
