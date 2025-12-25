@@ -1,170 +1,116 @@
-# ChatOps Assistant - Multi-Platform Automation Platform
+# SynergyMesh
 
-## Overview
-A web-based ChatOps automation assistant that allows users to manage infrastructure across multiple platforms (GitHub, Cloudflare, AWS, Azure, GCP, Kubernetes) through a conversational interface with approval workflows, rollback capabilities, and comprehensive audit logging.
+Next-generation cloud-native platform for intelligent business automation and seamless data orchestration.
 
-## Demo Mode
-**Note**: This MVP runs in demo mode without real OAuth connections:
-- GitHub connector uses mock data for capability discovery and action execution
-- All actions simulate realistic delays and responses
-- Snapshots and audit logs are created with mock data
-- To enable real OAuth, set `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `GITHUB_REDIRECT_URI` environment variables
+## Project Overview
 
-## Core Features
-- **Chat Interface**: Natural language commands to manage infrastructure
-- **Plan Cards**: Visual representation of proposed changes with risk assessment
-- **Approval Workflow**: "同意操作" (Approve) button with risk-based confirmations
-- **Rollback**: "Rollback here" capability to revert changes using snapshots
-- **Capability Discovery**: Automatic detection of available actions based on OAuth permissions
-- **Graceful Degradation**: Falls back to PLAN_ONLY mode when permissions are insufficient
+SynergyMesh is an autonomous coordination grid system (無人化自主協同網格系統) that combines AI agents, multi-agent orchestration, and enterprise automation capabilities.
 
-## Architecture
+## Project Architecture
 
-### Frontend (client/)
-- **Framework**: React 19 with Vite
-- **Styling**: Tailwind CSS v4
-- **Routing**: wouter
-- **State Management**: @tanstack/react-query
-- **Components**:
-  - `Layout.tsx` - Main layout with sidebar navigation
-  - `Chat.tsx` - Chat interface with message history
-  - `PlanCard.tsx` - Plan card with risk badges and action buttons
-  - `ConnectionCard.tsx` - Connection status and capabilities
+This is a polyglot monorepo containing:
 
-### Backend (server/)
-- **Framework**: Express.js with TypeScript
-- **Database**: PostgreSQL with Drizzle ORM
-- **Real-time**: WebSocket for live updates
-- **Key Services**:
-  - `storage.ts` - Database operations
-  - `routes.ts` - API endpoints
-  - `connectors/` - Platform connectors (GitHub, etc.)
-  - `services/planner.ts` - Plan generation
-  - `services/executor.ts` - Plan execution with snapshots
+### Languages & Frameworks
 
-### Database Schema (shared/schema.ts)
-- `tenants` - Multi-tenant support
-- `users` - User accounts
-- `connections` - OAuth connections with auth levels
-- `capability_profiles` - Discovered capabilities per connection
-- `chat_sessions` & `messages` - Conversation history
-- `plans` - Generated operation plans
-- `runs` - Execution records with status
-- `snapshots` - Pre-state snapshots for rollback
-- `rollbacks` - Rollback history
-- `audit_events` - Immutable audit trail
-- `feature_flags` - Feature toggles per tenant
+- **TypeScript/JavaScript**: Frontend (React) and tooling
+- **Python**: Core AI/ML modules, automation, and backend services
+- **Rust**: High-performance runtime components (planned)
+- **Go**: Microservices (planned)
 
-## API Endpoints
+### Directory Structure
 
-### Authentication
-- `POST /api/auth/demo-login` - Demo login (creates demo user)
+```
+apps/
+  web/           # React frontend application (esbuild + Tailwind) - STATIC ONLY
+  web-backend/   # Python backend services (moved from web/ for deployment compatibility)
 
-### Connections
-- `GET /api/connections` - List connections
-- `POST /api/connections/:provider/start` - Start OAuth flow
-- `POST /api/connections/:provider/discover` - Discover capabilities
-- `GET /api/connections/:id/capabilities` - Get capability profile
+core/
+  modules/       # Python AI/automation modules
+  safety_mechanisms/
+  slsa_provenance/
+  unified_integration/
 
-### Chat
-- `GET /api/chat/sessions` - List sessions
-- `POST /api/chat/sessions` - Create session
-- `GET /api/chat/sessions/:id/messages` - Get messages
-- `POST /api/chat/sessions/:id/messages` - Send message
-
-### Plans & Runs
-- `GET /api/plans/:id` - Get plan
-- `POST /api/plans/:id/dry-run` - Dry run
-- `POST /api/plans/:id/approve` - Approve and execute
-- `GET /api/runs/:id` - Get run status
-- `POST /api/runs/:id/rollback` - Rollback
-
-### Audit
-- `GET /api/audit` - Query audit events
-
-## Connector SDK
-
-### Interface
-```typescript
-interface Connector {
-  id: string;
-  generateOAuthUrl(state: string): string;
-  exchangeCodeForToken(code: string): Promise<TokenResponse>;
-  discoverCapabilities(accessToken: string): Promise<CapabilityDiscoveryResult>;
-  getActions(): ActionCapability[];
-  executeAction<I, O>(actionId: string, params: ActionExecuteParams<I>): Promise<ActionResult<O>>;
-}
+mcp-servers/     # MCP server implementations
+island-ai/       # Island AI components
+tools/           # Development utilities
+docs/            # Documentation
+tests/           # Test suites
 ```
 
-### Auth Levels
-- `READ` - Read-only access
-- `WRITE_LOW` - Low-risk write operations
-- `WRITE_HIGH` - High-risk write operations (admin)
+### Package Managers
 
-### Risk Levels
-- `LOW` - No confirmation required
-- `MED` - Double confirmation required
-- `HIGH` - Must type CONFIRM to proceed
-
-### Rollbackability
-- `YES` - Fully reversible
-- `PARTIAL` - Partially reversible (e.g., DNS TTL delays)
-- `NO` - Cannot be rolled back
-
-## Baseline Packs
-
-### GitHub Security Baseline v1
-- Branch protection enabled
-- Required PR reviews (≥1)
-- Force push disabled
-- Vulnerability alerts enabled
-- Automated security fixes enabled
+- **npm**: Primary JavaScript package manager (workspaces in package.json)
+- **pnpm**: Alternative JS package manager (pnpm-workspace.yaml)
+- **pip/uv**: Python dependencies (pyproject.toml)
 
 ## Development
 
-### Start Development Server
+### Frontend
+
 ```bash
-npm run dev
+cd apps/web && npm run dev
 ```
 
-### Push Database Schema
+- Runs on port 5000
+- Uses esbuild for bundling
+- Tailwind CSS for styling
+
+### Python
+
 ```bash
-npm run db:push
+pip install -e ".[dev]"
 ```
 
-### Environment Variables
-- `DATABASE_URL` - PostgreSQL connection string
-- `GITHUB_CLIENT_ID` - GitHub OAuth App client ID
-- `GITHUB_CLIENT_SECRET` - GitHub OAuth App client secret
-- `GITHUB_REDIRECT_URI` - OAuth callback URL
+## Workflows
 
-## User Preferences
-- Language: Chinese (Traditional) for UI labels
-- Risk confirmations required for HIGH risk operations
-- Audit logging for all operations
+- **Frontend**: `cd apps/web && npm run dev` - React development server on port 5000
 
-## Project Structure
+## Deployment
+
+The frontend is configured for static deployment:
+
+- Build: `npm run build --workspace apps/web`
+- Output: `apps/web/dist/`
+
+## Configuration Files
+
+| File | Purpose |
+|------|---------|
+| `package.json` | npm workspaces configuration |
+| `pnpm-workspace.yaml` | pnpm workspaces (synced with npm) |
+| `pyproject.toml` | Python project configuration |
+| `Cargo.toml` | Rust workspace (members pending) |
+| `go.work` | Go workspace (modules pending) |
+| `tsconfig.json` | TypeScript configuration |
+
+## Path Tools - 路徑掃描辨識與修復工具
+
+位於 `tools/path_tools/` 目錄：
+
+| 工具 | 用途 |
+|------|------|
+| `path_scanner.py` | 掃描專案目錄，識別所有檔案路徑並生成索引 |
+| `path_validator.py` | 驗證路徑有效性，檢測斷開連結、無效引用 |
+| `path_fixer.py` | 自動修復常見路徑問題 |
+
+### 使用方式
+
+```bash
+# 掃描目錄
+python tools/path_tools/path_scanner.py --target ./docs --summary
+
+# 驗證路徑
+python tools/path_tools/path_validator.py --target ./docs
+
+# 修復問題 (乾運行)
+python tools/path_tools/path_fixer.py --target ./docs --dry-run
+
+# 套用修復
+python tools/path_tools/path_fixer.py --target ./docs --fix --backup
 ```
-├── client/                 # Frontend React app
-│   ├── src/
-│   │   ├── components/    # Reusable components
-│   │   ├── pages/         # Page components
-│   │   ├── hooks/         # Custom hooks
-│   │   └── lib/           # Utilities and API client
-├── server/                 # Backend Express server
-│   ├── connectors/        # Platform connectors
-│   ├── services/          # Business logic
-│   └── baselines/         # Baseline pack definitions
-├── shared/                 # Shared types and schemas
-│   ├── schema.ts          # Drizzle schema
-│   └── types.ts           # TypeScript types
-└── db/                     # Database connection
-```
 
-## Recent Changes
-- Initial project setup (December 23, 2025)
-- Created full-stack application with Chat UI
-- Implemented GitHub connector with OAuth
-- Added Plan Card with risk badges and approval workflow
-- Created GitHub Security Baseline Pack v1
-- Set up PostgreSQL database with full schema
+## Notes
+
+- Rust crates in Cargo.toml are commented out (pending implementation)
+- Go services in go.work are commented out (pending implementation)
+- Frontend binds to 0.0.0.0:5000 for Replit compatibility

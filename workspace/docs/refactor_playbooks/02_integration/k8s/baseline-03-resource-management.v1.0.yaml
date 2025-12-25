@@ -1,188 +1,351 @@
-apiVersion: machinenativeops.io/v2
+---
+apiVersion: v1
 kind: ResourceQuota
 metadata:
   name: baseline-resource-quota
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.level: L-A
-    machinenativeops.io/baseline.version: v1.0.0
-    machinenativeops.io/baseline.type: resource-management
-    machinenativeops.io/baseline.dependency: namespace-governance,security-rbac
+    baseline.level: L-A
+    baseline.version: v1.0.0
+    baseline.type: resource-management
+    baseline.dependency: namespace-governance,security-rbac
   annotations:
-    machinenativeops.io/description: 資源配額與限制基線 / Resource Quotas and Limits Foundation
-    machinenativeops.io/purpose: 建立多租戶資源隔離與公平分配機制 / Establish multi-tenant resource
-      isolation and fair allocation
-    machinenativeops.io/capability-scope: compute-limits,storage-limits,object-counts
-    machinenativeops.io/conflict-priority: '900'
+    baseline.io/description: "資源配額與限制基線 / Resource Quotas and Limits Foundation"
+    baseline.io/purpose: "建立多租戶資源隔離與公平分配機制 / Establish multi-tenant resource isolation and fair allocation"
+    baseline.io/capability-scope: "compute-limits,storage-limits,object-counts"
+    baseline.io/conflict-priority: "900"
 spec:
   hard:
-    requests.cpu: '100'
-    requests.memory: 200Gi
-    limits.cpu: '200'
-    limits.memory: 400Gi
-    requests.storage: 1Ti
-    persistentvolumeclaims: '50'
-    pods: '500'
-    services: '100'
-    services.loadbalancers: '10'
-    services.nodeports: '20'
-    configmaps: '200'
-    secrets: '200'
-    count/deployments.apps: '100'
-    count/statefulsets.apps: '50'
-    count/jobs.batch: '200'
-    count/cronjobs.batch: '50'
-    count/ingresses.networking.k8s.io: '50'
+    requests.cpu: "100"
+    requests.memory: "200Gi"
+    limits.cpu: "200"
+    limits.memory: "400Gi"
+    requests.storage: "1Ti"
+    persistentvolumeclaims: "50"
+    pods: "500"
+    services: "100"
+    services.loadbalancers: "10"
+    services.nodeports: "20"
+    configmaps: "200"
+    secrets: "200"
+    count/deployments.apps: "100"
+    count/statefulsets.apps: "50"
+    count/jobs.batch: "200"
+    count/cronjobs.batch: "50"
+    count/ingresses.networking.k8s.io: "50"
   scopeSelector:
     matchExpressions:
-    - operator: In
-      scopeName: PriorityClass
-      values:
-      - high-priority
-      - medium-priority
-      - low-priority
+      - operator: In
+        scopeName: PriorityClass
+        values:
+          - "high-priority"
+          - "medium-priority"
+          - "low-priority"
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: v1
 kind: LimitRange
 metadata:
   name: baseline-limit-range
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.component: limit-enforcement
+    baseline.component: limit-enforcement
   annotations:
-    machinenativeops.io/description: 容器資源限制範圍 / Container resource limit ranges
+    baseline.io/description: "容器資源限制範圍 / Container resource limit ranges"
 spec:
   limits:
-  - type: Pod
-    max:
-      cpu: '16'
-      memory: 64Gi
-    min:
-      cpu: 10m
-      memory: 64Mi
-  - type: Container
-    default:
-      cpu: 500m
-      memory: 512Mi
-    defaultRequest:
-      cpu: 100m
-      memory: 128Mi
-    max:
-      cpu: '8'
-      memory: 32Gi
-    min:
-      cpu: 10m
-      memory: 64Mi
-    maxLimitRequestRatio:
-      cpu: '4'
-      memory: '4'
-  - type: PersistentVolumeClaim
-    max:
-      storage: 100Gi
-    min:
-      storage: 1Gi
+    - type: Pod
+      max:
+        cpu: "16"
+        memory: "64Gi"
+      min:
+        cpu: "10m"
+        memory: "64Mi"
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      max:
+        cpu: "8"
+        memory: "32Gi"
+      min:
+        cpu: "10m"
+        memory: "64Mi"
+      maxLimitRequestRatio:
+        cpu: "4"
+        memory: "4"
+    - type: PersistentVolumeClaim
+      max:
+        storage: "100Gi"
+      min:
+        storage: "1Gi"
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: resource-allocation-policy
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.component: resource-policy
+    baseline.component: resource-policy
 data:
-  tenant-tier-definitions.yaml: "version: v1.0.0\ntenant_tiers:\n  enterprise:\n \
-    \   description: \"企業級租戶 / Enterprise tier tenant\"\n    quotas:\n      cpu_requests:\
-    \ \"80\"\n      memory_requests: \"160Gi\"\n      cpu_limits: \"160\"\n      memory_limits:\
-    \ \"320Gi\"\n      storage: \"500Gi\"\n      pods: \"400\"\n    priority_class:\
-    \ \"high-priority\"\n    sla_target: \"99.95\"\n    support_level: \"24x7\"\n\
-    \    cost_per_month: \"10000\"\n  business:\n    description: \"商業級租戶 / Business\
-    \ tier tenant\"\n    quotas:\n      cpu_requests: \"40\"\n      memory_requests:\
-    \ \"80Gi\"\n      cpu_limits: \"80\"\n      memory_limits: \"160Gi\"\n      storage:\
-    \ \"200Gi\"\n      pods: \"200\"\n    priority_class: \"medium-priority\"\n  \
-    \  sla_target: \"99.9\"\n    support_level: \"business-hours\"\n    cost_per_month:\
-    \ \"5000\"\n  startup:\n    description: \"新創級租戶 / Startup tier tenant\"\n   \
-    \ quotas:\n      cpu_requests: \"20\"\n      memory_requests: \"40Gi\"\n     \
-    \ cpu_limits: \"40\"\n      memory_limits: \"80Gi\"\n      storage: \"100Gi\"\n\
-    \      pods: \"100\"\n    priority_class: \"low-priority\"\n    sla_target: \"\
-    99.5\"\n    support_level: \"email-only\"\n    cost_per_month: \"1000\"\n  development:\n\
-    \    description: \"開發測試環境 / Development environment\"\n    quotas:\n      cpu_requests:\
-    \ \"10\"\n      memory_requests: \"20Gi\"\n      cpu_limits: \"20\"\n      memory_limits:\
-    \ \"40Gi\"\n      storage: \"50Gi\"\n      pods: \"50\"\n    priority_class: \"\
-    low-priority\"\n    sla_target: \"99.0\"\n    support_level: \"best-effort\"\n\
-    \    cost_per_month: \"500\"\n"
-  resource-optimization-rules.yaml: "version: v1.0.0\noptimization_strategies:\n \
-    \ vertical_pod_autoscaler:\n    enabled: true\n    update_mode: \"Auto\"\n   \
-    \ target_cpu_utilization: \"80\"\n    target_memory_utilization: \"80\"\n    min_replicas:\
-    \ 2\n    recommendation_margin: \"15\"\n  horizontal_pod_autoscaler:\n    enabled:\
-    \ true\n    metrics:\n      - type: \"Resource\"\n        name: \"cpu\"\n    \
-    \    target_utilization: 70\n      - type: \"Resource\"\n        name: \"memory\"\
-    \n        target_utilization: 80\n    scale_up_stabilization_window: \"60\"\n\
-    \    scale_down_stabilization_window: \"300\"\n    behavior:\n      scale_up:\n\
-    \        policies:\n          - type: \"Percent\"\n            value: 50\n   \
-    \         period_seconds: 60\n          - type: \"Pods\"\n            value: 4\n\
-    \            period_seconds: 60\n      scale_down:\n        policies:\n      \
-    \    - type: \"Percent\"\n            value: 25\n            period_seconds: 300\n\
-    \  resource_bin_packing:\n    enabled: true\n    algorithm: \"best-fit\"\n   \
-    \ fragmentation_threshold: \"0.3\"\n    rebalance_trigger: \"node-pressure\"\n\
-    \  overcommitment_policy:\n    cpu_overcommit_ratio: \"1.5\"\n    memory_overcommit_ratio:\
-    \ \"1.0\"\n    eviction_policy: \"priority-based\"\n    guaranteed_qos_protection:\
-    \ true\n"
-  cost-allocation-model.yaml: "version: v1.0.0\ncost_model:\n  compute:\n    cpu_core_hour:\
-    \ \"0.05\"\n    memory_gb_hour: \"0.01\"\n    gpu_hour: \"2.00\"\n  storage:\n\
-    \    ssd_gb_month: \"0.20\"\n    hdd_gb_month: \"0.05\"\n    backup_gb_month:\
-    \ \"0.02\"\n  network:\n    ingress_gb: \"0.00\"\n    egress_gb: \"0.09\"\n  \
-    \  load_balancer_hour: \"0.025\"\n  support:\n    enterprise_user_month: \"100\"\
-    \n    business_user_month: \"50\"\n    startup_user_month: \"10\"\nbilling_cycle:\
-    \ \"monthly\"\ncurrency: \"USD\"\ndiscount_tiers:\n  - usage_threshold: \"10000\"\
-    \n    discount_percent: \"10\"\n  - usage_threshold: \"50000\"\n    discount_percent:\
-    \ \"20\"\n  - usage_threshold: \"100000\"\n    discount_percent: \"30\"\nshowback_reports:\n\
-    \  frequency: \"weekly\"\n  recipients:\n    - \"finance@example.com\"\n    -\
-    \ \"engineering-leads@example.com\"\n  format: \"csv\"\n"
-  quota-enforcement-policy.yaml: "version: v1.0.0\nenforcement_modes:\n  hard_limit:\n\
-    \    description: \"硬限制，超過立即拒絕 / Hard limit, reject immediately when exceeded\"\
-    \n    applies_to:\n      - \"cpu.limits\"\n      - \"memory.limits\"\n      -\
-    \ \"storage.requests\"\n    action: \"reject\"\n    alert: true\n  soft_limit:\n\
-    \    description: \"軟限制，超過發出警告 / Soft limit, warn when exceeded\"\n    applies_to:\n\
-    \      - \"cpu.requests\"\n      - \"memory.requests\"\n    action: \"warn\"\n\
-    \    grace_period_hours: 24\n    escalation: \"notify-team-lead\"\n  burst_allowance:\n\
-    \    description: \"突發允許，短期超額 / Burst allowance, short-term overrun\"\n    applies_to:\n\
-    \      - \"cpu.limits\"\n    burst_ratio: \"1.2\"\n    burst_duration_minutes:\
-    \ 15\n    cooldown_minutes: 60\nviolation_handling:\n  first_violation:\n    action:\
-    \ \"log\"\n    notification: \"email\"\n  repeated_violations:\n    threshold:\
-    \ 3\n    window_hours: 24\n    action: \"throttle\"\n    notification: \"pagerduty\"\
-    \n  critical_violations:\n    threshold: \"resource-exhaustion\"\n    action:\
-    \ \"pod-eviction\"\n    notification: \"incident-manager\"\nremediation:\n  auto_scale_down:\n\
-    \    enabled: true\n    target_utilization: \"70\"\n  pod_preemption:\n    enabled:\
-    \ true\n    priority_threshold: \"medium-priority\"\n  graceful_degradation:\n\
-    \    enabled: true\n    non_critical_services:\n      - \"background-jobs\"\n\
-    \      - \"batch-processing\"\n"
+  tenant-tier-definitions.yaml: |
+    version: v1.0.0
+    tenant_tiers:
+      enterprise:
+        description: "企業級租戶 / Enterprise tier tenant"
+        quotas:
+          cpu_requests: "80"
+          memory_requests: "160Gi"
+          cpu_limits: "160"
+          memory_limits: "320Gi"
+          storage: "500Gi"
+          pods: "400"
+        priority_class: "high-priority"
+        sla_target: "99.95"
+        support_level: "24x7"
+        cost_per_month: "10000"
+      business:
+        description: "商業級租戶 / Business tier tenant"
+        quotas:
+          cpu_requests: "40"
+          memory_requests: "80Gi"
+          cpu_limits: "80"
+          memory_limits: "160Gi"
+          storage: "200Gi"
+          pods: "200"
+        priority_class: "medium-priority"
+        sla_target: "99.9"
+        support_level: "business-hours"
+        cost_per_month: "5000"
+      startup:
+        description: "新創級租戶 / Startup tier tenant"
+        quotas:
+          cpu_requests: "20"
+          memory_requests: "40Gi"
+          cpu_limits: "40"
+          memory_limits: "80Gi"
+          storage: "100Gi"
+          pods: "100"
+        priority_class: "low-priority"
+        sla_target: "99.5"
+        support_level: "email-only"
+        cost_per_month: "1000"
+      development:
+        description: "開發測試環境 / Development environment"
+        quotas:
+          cpu_requests: "10"
+          memory_requests: "20Gi"
+          cpu_limits: "20"
+          memory_limits: "40Gi"
+          storage: "50Gi"
+          pods: "50"
+        priority_class: "low-priority"
+        sla_target: "99.0"
+        support_level: "best-effort"
+        cost_per_month: "500"
+  resource-optimization-rules.yaml: |
+    version: v1.0.0
+    optimization_strategies:
+      vertical_pod_autoscaler:
+        enabled: true
+        update_mode: "Auto"
+        target_cpu_utilization: "80"
+        target_memory_utilization: "80"
+        min_replicas: 2
+        recommendation_margin: "15"
+      horizontal_pod_autoscaler:
+        enabled: true
+        metrics:
+          - type: "Resource"
+            name: "cpu"
+            target_utilization: 70
+          - type: "Resource"
+            name: "memory"
+            target_utilization: 80
+        scale_up_stabilization_window: "60"
+        scale_down_stabilization_window: "300"
+        behavior:
+          scale_up:
+            policies:
+              - type: "Percent"
+                value: 50
+                period_seconds: 60
+              - type: "Pods"
+                value: 4
+                period_seconds: 60
+          scale_down:
+            policies:
+              - type: "Percent"
+                value: 25
+                period_seconds: 300
+      resource_bin_packing:
+        enabled: true
+        algorithm: "best-fit"
+        fragmentation_threshold: "0.3"
+        rebalance_trigger: "node-pressure"
+      overcommitment_policy:
+        cpu_overcommit_ratio: "1.5"
+        memory_overcommit_ratio: "1.0"
+        eviction_policy: "priority-based"
+        guaranteed_qos_protection: true
+  cost-allocation-model.yaml: |
+    version: v1.0.0
+    cost_model:
+      compute:
+        cpu_core_hour: "0.05"
+        memory_gb_hour: "0.01"
+        gpu_hour: "2.00"
+      storage:
+        ssd_gb_month: "0.20"
+        hdd_gb_month: "0.05"
+        backup_gb_month: "0.02"
+      network:
+        ingress_gb: "0.00"
+        egress_gb: "0.09"
+        load_balancer_hour: "0.025"
+      support:
+        enterprise_user_month: "100"
+        business_user_month: "50"
+        startup_user_month: "10"
+    billing_cycle: "monthly"
+    currency: "USD"
+    discount_tiers:
+      - usage_threshold: "10000"
+        discount_percent: "10"
+      - usage_threshold: "50000"
+        discount_percent: "20"
+      - usage_threshold: "100000"
+        discount_percent: "30"
+    showback_reports:
+      frequency: "weekly"
+      recipients:
+        - "finance@example.com"
+        - "engineering-leads@example.com"
+      format: "csv"
+  quota-enforcement-policy.yaml: |
+    version: v1.0.0
+    enforcement_modes:
+      hard_limit:
+        description: "硬限制，超過立即拒絕 / Hard limit, reject immediately when exceeded"
+        applies_to:
+          - "cpu.limits"
+          - "memory.limits"
+          - "storage.requests"
+        action: "reject"
+        alert: true
+      soft_limit:
+        description: "軟限制，超過發出警告 / Soft limit, warn when exceeded"
+        applies_to:
+          - "cpu.requests"
+          - "memory.requests"
+        action: "warn"
+        grace_period_hours: 24
+        escalation: "notify-team-lead"
+      burst_allowance:
+        description: "突發允許，短期超額 / Burst allowance, short-term overrun"
+        applies_to:
+          - "cpu.limits"
+        burst_ratio: "1.2"
+        burst_duration_minutes: 15
+        cooldown_minutes: 60
+    violation_handling:
+      first_violation:
+        action: "log"
+        notification: "email"
+      repeated_violations:
+        threshold: 3
+        window_hours: 24
+        action: "throttle"
+        notification: "pagerduty"
+      critical_violations:
+        threshold: "resource-exhaustion"
+        action: "pod-eviction"
+        notification: "incident-manager"
+    remediation:
+      auto_scale_down:
+        enabled: true
+        target_utilization: "70"
+      pod_preemption:
+        enabled: true
+        priority_threshold: "medium-priority"
+      graceful_degradation:
+        enabled: true
+        non_critical_services:
+          - "background-jobs"
+          - "batch-processing"
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cluster-capacity-planning
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.component: capacity-planning
+    baseline.component: capacity-planning
 data:
-  capacity-model.yaml: "version: v1.0.0\ncluster_capacity:\n  total_nodes: 50\n  node_types:\n\
-    \    compute_optimized:\n      count: 30\n      cpu_cores: 32\n      memory_gb:\
-    \ 128\n      labels:\n        node.kubernetes.io/instance-type: \"compute-optimized\"\
-    \n    memory_optimized:\n      count: 15\n      cpu_cores: 16\n      memory_gb:\
-    \ 256\n      labels:\n        node.kubernetes.io/instance-type: \"memory-optimized\"\
-    \n    gpu_enabled:\n      count: 5\n      cpu_cores: 24\n      memory_gb: 192\n\
-    \      gpu_count: 4\n      gpu_type: \"nvidia-a100\"\n      labels:\n        node.kubernetes.io/instance-type:\
-    \ \"gpu-enabled\"\nutilization_targets:\n  cpu_target: \"70\"\n  memory_target:\
-    \ \"75\"\n  storage_target: \"80\"\ngrowth_projections:\n  monthly_growth_rate:\
-    \ \"5\"\n  capacity_buffer: \"20\"\n  lead_time_weeks: 4\nscaling_thresholds:\n\
-    \  scale_up_trigger: \"85\"\n  scale_down_trigger: \"40\"\n  evaluation_window_minutes:\
-    \ 30\n"
-  node-affinity-rules.yaml: "version: v1.0.0\naffinity_policies:\n  tenant_isolation:\n\
-    \    enabled: true\n    rule_type: \"required\"\n    label_selector: \"tenant-id\"\
-    \n    description: \"租戶隔離到專屬節點 / Isolate tenants to dedicated nodes\"\n  environment_separation:\n\
-    \    enabled: true\n    rule_type: \"preferred\"\n    label_selectors:\n     \
-    \ - \"environment=production\"\n      - \"environment=staging\"\n    weight: 100\n\
-    \  availability_zone_spread:\n    enabled: true\n    topology_key: \"topology.kubernetes.io/zone\"\
-    \n    max_skew: 1\n    when_unsatisfiable: \"DoNotSchedule\"\n  cost_optimization:\n\
-    \    enabled: true\n    rule_type: \"preferred\"\n    label_selector: \"spot-instance=true\"\
-    \n    weight: 50\n    applies_to:\n      - \"batch-jobs\"\n      - \"non-critical-workloads\""
+  capacity-model.yaml: |
+    version: v1.0.0
+    cluster_capacity:
+      total_nodes: 50
+      node_types:
+        compute_optimized:
+          count: 30
+          cpu_cores: 32
+          memory_gb: 128
+          labels:
+            node.kubernetes.io/instance-type: "compute-optimized"
+        memory_optimized:
+          count: 15
+          cpu_cores: 16
+          memory_gb: 256
+          labels:
+            node.kubernetes.io/instance-type: "memory-optimized"
+        gpu_enabled:
+          count: 5
+          cpu_cores: 24
+          memory_gb: 192
+          gpu_count: 4
+          gpu_type: "nvidia-a100"
+          labels:
+            node.kubernetes.io/instance-type: "gpu-enabled"
+    utilization_targets:
+      cpu_target: "70"
+      memory_target: "75"
+      storage_target: "80"
+    growth_projections:
+      monthly_growth_rate: "5"
+      capacity_buffer: "20"
+      lead_time_weeks: 4
+    scaling_thresholds:
+      scale_up_trigger: "85"
+      scale_down_trigger: "40"
+      evaluation_window_minutes: 30
+  node-affinity-rules.yaml: |
+    version: v1.0.0
+    affinity_policies:
+      tenant_isolation:
+        enabled: true
+        rule_type: "required"
+        label_selector: "tenant-id"
+        description: "租戶隔離到專屬節點 / Isolate tenants to dedicated nodes"
+      environment_separation:
+        enabled: true
+        rule_type: "preferred"
+        label_selectors:
+          - "environment=production"
+          - "environment=staging"
+        weight: 100
+      availability_zone_spread:
+        enabled: true
+        topology_key: "topology.kubernetes.io/zone"
+        max_skew: 1
+        when_unsatisfiable: "DoNotSchedule"
+      cost_optimization:
+        enabled: true
+        rule_type: "preferred"
+        label_selector: "spot-instance=true"
+        weight: 50
+        applies_to:
+          - "batch-jobs"
+          - "non-critical-workloads"

@@ -1,229 +1,294 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+#                    CI/CD Unified Configuration
+#                    CI/CD 統一配置
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Purpose: Single source of truth for all CI/CD workflows
+# 目的: 所有 CI/CD 工作流程的單一真實來源
+#
+# Usage: Import this config in GitHub Actions workflows
+# 使用: 在 GitHub Actions 工作流程中導入此配置
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
 ci_configuration:
-  build:
-    go:
-      command: go build
-      output_dir: bin
-    npm:
-      command: npm run build
-      output_dir: dist
+  version: "1.0.0"
+  
+  # Runtime Versions
+  # 運行時版本
+  runtimes:
     python:
-      command: python -m build
-      output_dir: dist
-    rust:
-      command: cargo build --release
-      output_dir: target/release
-  cache:
-    cargo:
-      key: cargo-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
-      paths:
-      - ~/.cargo/registry
-      - ~/.cargo/git
-      - target
-    enabled: true
+      default: "3.11"
+      supported: ["3.10", "3.11", "3.12"]
+      setup_action: "actions/setup-python@v5"
+    
+    node:
+      default: "20"
+      supported: ["18", "20", "21"]
+      setup_action: "actions/setup-node@v6"
+    
     go:
-      key: go-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
-      paths:
-      - ~/go/pkg/mod
-      - ~/.cache/go-build
-    npm:
-      key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-      paths:
-      - ~/.npm
-      - node_modules
-    pip:
-      key: pip-${{ runner.os }}-${{ hashFiles('**/requirements*.txt', '**/pyproject.toml')
-        }}
-      paths:
-      - ~/.cache/pip
-      - .venv
-  checkout:
-    default_action: actions/checkout@v4
-    fetch_depth: 0
-    submodules: false
+      default: "1.21"
+      supported: ["1.20", "1.21", "1.22"]
+      setup_action: "actions/setup-go@v5"
+    
+    rust:
+      default: "stable"
+      supported: ["stable", "nightly"]
+      setup_action: "actions-rust-lang/setup-rust-toolchain@v1"
+    
+    java:
+      default: "17"
+      supported: ["11", "17", "21"]
+      setup_action: "actions/setup-java@v4"
+      distribution: "temurin"
+  
+  # Workflow Timeouts
+  # 工作流程超時設置
+  timeouts:
+    default: 10  # minutes
+    validation: 5
+    test: 15
+    build: 20
+    integration: 30
+    deployment: 60
+    security_scan: 30
+  
+  # Concurrency Settings
+  # 並發設置
   concurrency:
     cancel_in_progress: true
-    group_pattern: ${{ github.workflow }}-${{ github.ref }}
+    group_pattern: "${{ github.workflow }}-${{ github.ref }}"
+  
+  # Checkout Settings
+  # 代碼檢出設置
+  checkout:
+    default_action: "actions/checkout@v4"
+    fetch_depth: 0  # Full history for proper analysis
+    submodules: false
+  
+  # Cache Settings
+  # 緩存設置
+  cache:
+    enabled: true
+    
+    npm:
+      key: "npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}"
+      paths:
+        - "~/.npm"
+        - "node_modules"
+    
+    pip:
+      key: "pip-${{ runner.os }}-${{ hashFiles('**/requirements*.txt', '**/pyproject.toml') }}"
+      paths:
+        - "~/.cache/pip"
+        - ".venv"
+    
+    go:
+      key: "go-${{ runner.os }}-${{ hashFiles('**/go.sum') }}"
+      paths:
+        - "~/go/pkg/mod"
+        - "~/.cache/go-build"
+    
+    cargo:
+      key: "cargo-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}"
+      paths:
+        - "~/.cargo/registry"
+        - "~/.cargo/git"
+        - "target"
+  
+  # Validation Rules
+  # 驗證規則
+  validation:
+    yaml:
+      enabled: true
+      tool: "python3 -c 'import yaml; yaml.safe_load(open(\"$file\"))'"
+      extensions: [".yaml", ".yml"]
+    
+    json:
+      enabled: true
+      tool: "python3 -c 'import json; json.load(open(\"$file\"))'"
+      extensions: [".json"]
+    
+    markdown:
+      enabled: true
+      tool: "markdownlint"
+      config: ".markdownlint.json"
+    
+    python:
+      enabled: true
+      linter: "ruff"
+      formatter: "black"
+      type_checker: "mypy"
+    
+    typescript:
+      enabled: true
+      linter: "eslint"
+      formatter: "prettier"
+      type_checker: "tsc"
+  
+  # Test Settings
+  # 測試設置
+  testing:
+    unit:
+      timeout: 10
+      coverage_threshold: 80
+    
+    integration:
+      timeout: 20
+      coverage_threshold: 70
+    
+    e2e:
+      timeout: 30
+      coverage_threshold: 60
+    
+    frameworks:
+      python: "pytest"
+      typescript: "jest"
+      go: "go test"
+      rust: "cargo test"
+  
+  # Build Settings
+  # 構建設置
+  build:
+    npm:
+      command: "npm run build"
+      output_dir: "dist"
+    
+    python:
+      command: "python -m build"
+      output_dir: "dist"
+    
+    go:
+      command: "go build"
+      output_dir: "bin"
+    
+    rust:
+      command: "cargo build --release"
+      output_dir: "target/release"
+  
+  # Deployment Settings
+  # 部署設置
+  deployment:
+    environments:
+      - name: "development"
+        auto_deploy: true
+        approval_required: false
+      
+      - name: "staging"
+        auto_deploy: true
+        approval_required: true
+        approvers: ["SynergyMesh-admin"]
+      
+      - name: "production"
+        auto_deploy: false
+        approval_required: true
+        approvers: ["SynergyMesh-admin"]
+        requires_tests: true
+    
+    docker:
+      registry: "ghcr.io"
+      image_prefix: "machinenativeops-admin"
+      tag_strategy: "git-sha"
+    
+    kubernetes:
+      enabled: true
+      namespace_pattern: "unmanned-island-${{ environment }}"
+  
+  # Security Settings
+  # 安全設置
+  security:
+    codeql:
+      enabled: true
+      languages: ["python", "javascript-typescript", "go"]
+      queries: "security-and-quality"
+    
+    dependency_scan:
+      enabled: true
+      tools: ["dependabot", "snyk"]
+      auto_fix: true
+    
+    secret_scan:
+      enabled: true
+      tool: "gitleaks"
+    
+    container_scan:
+      enabled: true
+      tool: "trivy"
+      severity_threshold: "HIGH"
+  
+  # Notification Settings
+  # 通知設置
+  notifications:
+    slack:
+      enabled: false
+      webhook_secret: "SLACK_WEBHOOK_URL"
+      channels:
+        success: "#ci-success"
+        failure: "#ci-failures"
+        security: "#security-alerts"
+    
+    github:
+      enabled: true
+      create_issue_on_failure: true
+      auto_assign: true
+  
+  # Cost Optimization
+  # 成本優化
   cost_optimization:
     enabled: true
     max_concurrent_jobs: 10
     prefer_cache: true
-    rules:
-    - action: skip_expensive_checks
-      condition: github.event_name == 'pull_request' && github.event.pull_request.draft
-        == true
-    - action: skip_all
-      condition: contains(github.event.head_commit.message, '[skip ci]')
-    - action: docs_only
-      condition: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/docs/')
     skip_redundant_builds: true
-  deployment:
-    docker:
-      image_prefix: machinenativeops-admin
-      registry: ghcr.io
-      tag_strategy: git-sha
-    environments:
-    - approval_required: false
-      auto_deploy: true
-      name: development
-    - approval_required: true
-      approvers:
-      - SynergyMesh-admin
-      auto_deploy: true
-      name: staging
-    - approval_required: true
-      approvers:
-      - SynergyMesh-admin
-      auto_deploy: false
-      name: production
-      requires_tests: true
-    kubernetes:
-      enabled: true
-      namespace_pattern: unmanned-island-${{ environment }}
+    
+    rules:
+      - condition: "github.event_name == 'pull_request' && github.event.pull_request.draft == true"
+        action: "skip_expensive_checks"
+      
+      - condition: "contains(github.event.head_commit.message, '[skip ci]')"
+        action: "skip_all"
+      
+      - condition: "github.event_name == 'push' && startsWith(github.ref, 'refs/heads/docs/')"
+        action: "docs_only"
+  
+  # Monitoring
+  # 監控
   monitoring:
-    dashboards:
-    - name: CI Cost Dashboard
-      url: https://github.com/${{ github.repository }}/actions/workflows/ci-cost-dashboard.yml
-    - name: Security Dashboard
-      url: https://github.com/${{ github.repository }}/security
     enabled: true
+    
     metrics:
-    - workflow_duration
-    - job_duration
-    - cache_hit_rate
-    - test_success_rate
-    - deployment_frequency
-  notifications:
-    github:
-      auto_assign: true
-      create_issue_on_failure: true
-      enabled: true
-    slack:
-      channels:
-        failure: '#ci-failures'
-        security: '#security-alerts'
-        success: '#ci-success'
-      enabled: false
-      webhook_secret: SLACK_WEBHOOK_URL
+      - "workflow_duration"
+      - "job_duration"
+      - "cache_hit_rate"
+      - "test_success_rate"
+      - "deployment_frequency"
+    
+    dashboards:
+      - name: "CI Cost Dashboard"
+        url: "https://github.com/${{ github.repository }}/actions/workflows/ci-cost-dashboard.yml"
+      
+      - name: "Security Dashboard"
+        url: "https://github.com/${{ github.repository }}/security"
+  
+  # Reusable Workflows
+  # 可重用工作流程
   reusable_workflows:
-    build:
-      description: Build artifacts
-      path: .github/workflows/reusable-build.yml
-    docker:
-      description: Docker image build and push
-      path: .github/workflows/reusable-docker-build.yml
     setup:
-      description: Common setup steps (checkout, cache, install)
-      path: .github/workflows/reusable-setup.yml
-    test:
-      description: Test execution with coverage
-      path: .github/workflows/reusable-test.yml
+      path: ".github/workflows/reusable-setup.yml"
+      description: "Common setup steps (checkout, cache, install)"
+    
     validation:
-      description: Validation steps (YAML, JSON, Markdown)
-      path: .github/workflows/reusable-validation.yml
-  runtimes:
-    go:
-      default: '1.21'
-      setup_action: actions/setup-go@v5
-      supported:
-      - '1.20'
-      - '1.21'
-      - '1.22'
-    java:
-      default: '17'
-      distribution: temurin
-      setup_action: actions/setup-java@v4
-      supported:
-      - '11'
-      - '17'
-      - '21'
-    node:
-      default: '20'
-      setup_action: actions/setup-node@v6
-      supported:
-      - '18'
-      - '20'
-      - '21'
-    python:
-      default: '3.11'
-      setup_action: actions/setup-python@v5
-      supported:
-      - '3.10'
-      - '3.11'
-      - '3.12'
-    rust:
-      default: stable
-      setup_action: actions-rust-lang/setup-rust-toolchain@v1
-      supported:
-      - stable
-      - nightly
-  security:
-    codeql:
-      enabled: true
-      languages:
-      - python
-      - javascript-typescript
-      - go
-      queries: security-and-quality
-    container_scan:
-      enabled: true
-      severity_threshold: HIGH
-      tool: trivy
-    dependency_scan:
-      auto_fix: true
-      enabled: true
-      tools:
-      - dependabot
-      - snyk
-    secret_scan:
-      enabled: true
-      tool: gitleaks
-  testing:
-    e2e:
-      coverage_threshold: 60
-      timeout: 30
-    frameworks:
-      go: go test
-      python: pytest
-      rust: cargo test
-      typescript: jest
-    integration:
-      coverage_threshold: 70
-      timeout: 20
-    unit:
-      coverage_threshold: 80
-      timeout: 10
-  timeouts:
-    build: 20
-    default: 10
-    deployment: 60
-    integration: 30
-    security_scan: 30
-    test: 15
-    validation: 5
-  validation:
-    json:
-      enabled: true
-      extensions:
-      - .json
-      tool: python3 -c 'import json; json.load(open("$file"))'
-    markdown:
-      config: .markdownlint.json
-      enabled: true
-      tool: markdownlint
-    python:
-      enabled: true
-      formatter: black
-      linter: ruff
-      type_checker: mypy
-    typescript:
-      enabled: true
-      formatter: prettier
-      linter: eslint
-      type_checker: tsc
-    yaml:
-      enabled: true
-      extensions:
-      - .yaml
-      - .yml
-      tool: python3 -c 'import yaml; yaml.safe_load(open("$file"))'
-  version: 1.0.0
+      path: ".github/workflows/reusable-validation.yml"
+      description: "Validation steps (YAML, JSON, Markdown)"
+    
+    test:
+      path: ".github/workflows/reusable-test.yml"
+      description: "Test execution with coverage"
+    
+    build:
+      path: ".github/workflows/reusable-build.yml"
+      description: "Build artifacts"
+    
+    docker:
+      path: ".github/workflows/reusable-docker-build.yml"
+      description: "Docker image build and push"

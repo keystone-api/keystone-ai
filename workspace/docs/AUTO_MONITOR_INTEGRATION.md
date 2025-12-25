@@ -11,7 +11,6 @@ The MachineNativeOps Auto-Monitor is a production-ready monitoring solution inte
 The Auto-Monitor is registered in `root.modules.yaml` as a core monitoring module:
 
 ```yaml
-
 - name: machinenativenops-auto-monitor
   version: 2.0.0
   description: Production-ready auto-monitoring with quantum state tracking
@@ -46,17 +45,14 @@ Stage 5: super-execution-engine
 ## Resource Allocation
 
 ### CPU Resources
-
 - **Request**: 200m (0.2 CPU cores)
 - **Limit**: 1000m (1.0 CPU core)
 
 ### Memory Resources
-
 - **Request**: 256Mi
 - **Limit**: 1Gi
 
 ### Storage Resources
-
 - **Request**: 500Mi
 - **Limit**: 5Gi
 
@@ -77,7 +73,6 @@ The Auto-Monitor is configured through the following environment variables:
 ### Configuration File
 
 The Auto-Monitor can also be configured via YAML file at:
-
 - `/etc/machinenativenops/monitor_config.yaml` (system-wide)
 - Custom path via `MNO_CONFIG_FILE` environment variable
 
@@ -88,26 +83,21 @@ The Auto-Monitor can also be configured via YAML file at:
 The Auto-Monitor is integrated into the AAPS Unified Gates workflow (`.github/workflows/aaps-unified-gates.yml`):
 
 ```yaml
-
 - name: Setup AAPS Environment
   run: |
     # Install Auto-Monitor dependencies
-
     pip install -r engine/machinenativenops-auto-monitor/requirements.txt
     
     # Start Auto-Monitor in background
-
     machinenativenops-auto-monitor serve &
     MONITOR_PID=$!
     
     # Wait for service to be ready
-
     sleep 15
 
 - name: Execute SuperAgent Gate Orchestration
   run: |
     # Check Auto-Monitor is running
-
     curl -f http://localhost:8000/health || exit 1
 ```
 
@@ -116,15 +106,12 @@ The Auto-Monitor is integrated into the AAPS Unified Gates workflow (`.github/wo
 During gate validation, the workflow collects metrics from the Auto-Monitor:
 
 ```yaml
-
 - name: Collect Monitoring Metrics
   run: |
     # Get Prometheus metrics
-
     curl -X GET http://localhost:8000/metrics --fail | tee gate_metrics.txt
     
     # Get system status
-
     curl -X GET http://localhost:8000/status --fail | tee system_status.txt
 ```
 
@@ -134,15 +121,12 @@ Auto-Monitor metrics are included in the comprehensive gate validation report:
 
 ```markdown
 ## System Metrics
-
 ### Auto-Monitor Metrics
-
 ```
 $(cat gate_metrics.txt)
 ```
 
 ### System Status
-
 ```
 $(cat system_status.txt)
 ```
@@ -247,11 +231,9 @@ When thresholds are exceeded:
 
 ```bash
 # Install the package
-
 pip install machinenativenops-auto-monitor
 
 # Run the service
-
 machinenativenops-auto-monitor serve
 ```
 
@@ -285,11 +267,9 @@ spec:
   template:
     spec:
       containers:
-
       - name: monitor
         image: machinenativenops/auto-monitor:v2.0.0
         ports:
-
         - containerPort: 8000
           name: metrics
         livenessProbe:
@@ -307,14 +287,11 @@ services:
   auto-monitor:
     image: machinenativenops/auto-monitor:v2.0.0
     ports:
-
       - "8000:8000"
     environment:
-
       - MNO_LOG_LEVEL=INFO
       - QUANTUM_ENABLED=false
     volumes:
-
       - monitor-data:/var/lib/machinenativenops/auto_monitor
 ```
 
@@ -326,10 +303,8 @@ Add the Auto-Monitor to your Prometheus configuration:
 
 ```yaml
 scrape_configs:
-
   - job_name: 'machinenativenops-auto-monitor'
     static_configs:
-
       - targets: ['localhost:8000']
     metrics_path: '/metrics'
     scrape_interval: 30s
@@ -355,7 +330,6 @@ The Auto-Monitor exposes the following Prometheus metrics:
 
 ```bash
 # Change the port
-
 export MNO_PROMETHEUS_PORT=8001
 machinenativenops-auto-monitor serve
 ```
@@ -364,11 +338,9 @@ machinenativenops-auto-monitor serve
 
 ```bash
 # Check for other running instances
-
 ps aux | grep machinenativenops-auto-monitor
 
 # Kill stale processes
-
 pkill -f machinenativenops-auto-monitor
 ```
 
@@ -376,7 +348,6 @@ pkill -f machinenativenops-auto-monitor
 
 ```bash
 # Ensure proper permissions
-
 sudo chown -R machinenativenops:machinenativenops /var/lib/machinenativenops/auto_monitor
 sudo chmod 755 /var/lib/machinenativenops/auto_monitor
 ```
@@ -387,11 +358,9 @@ Enable debug logging for troubleshooting:
 
 ```bash
 # Via environment variable
-
 MNO_LOG_LEVEL=DEBUG machinenativenops-auto-monitor serve
 
 # Via command line
-
 machinenativenops-auto-monitor serve --log-level DEBUG
 ```
 
@@ -401,11 +370,9 @@ View logs:
 
 ```bash
 # Systemd logs
-
 journalctl -u machinenativenops-auto-monitor -f
 
 # Application logs
-
 tail -f /var/log/machinenativenops/monitor.log
 ```
 
@@ -453,7 +420,6 @@ kind: Role
 metadata:
   name: machinenativenops-auto-monitor
 rules:
-
 - apiGroups: [""]
   resources: ["pods", "services"]
   verbs: ["get", "list", "watch"]
@@ -479,8 +445,8 @@ rules:
 ## Support
 
 - **Documentation**: https://docs.machinenativenops.io
-- **Issues**: https://github.com/MachineNativeOps/machine-native-ops/issues
-- **Community**: https://github.com/MachineNativeOps/machine-native-ops/discussions
+- **Issues**: https://github.com/MachineNativeOps/machine-native-ops-aaps/issues
+- **Community**: https://github.com/MachineNativeOps/machine-native-ops-aaps/discussions
 
 ## References
 

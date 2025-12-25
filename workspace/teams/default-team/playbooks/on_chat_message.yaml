@@ -1,0 +1,124 @@
+version: v1
+name: "on_chat_message"
+description: "聊天訊息處理流程 - 事件驅動的對話協作"
+
+triggers:
+  - event: "CHAT_MESSAGE_CREATED"
+
+inputs:
+  - name: "message_id"
+    type: "string"
+    required: true
+  - name: "session_id"
+    type: "string"
+    required: true
+  - name: "content"
+    type: "string"
+    required: true
+  - name: "model_id"
+    type: "string"
+    required: false
+  - name: "modality"
+    type: "string"
+    default: "text"
+
+steps:
+  - id: "parse_intent"
+    action: "agents.invoke"
+    description: "解析用戶意圖"
+    agent_id: "synergy.nlp"
+    inputs:
+      message: "${content}"
+      session_context: "${session_id}"
+    outputs:
+      - intent
+      - entities
+      - suggested_agents
+
+  - id: "select_persona"
+    action: "personas.match"
+    description: "根據意圖匹配最佳角色人設"
+    depends_on: ["parse_intent"]
+    inputs:
+      intent: "${intent}"
+      available_personas:
+        - "tech_writer"
+        - "it_architect"
+        - "security_expert"
+        - "career_counselor"
+        - "statistician"
+        - "fullstack_developer"
+        - "ml_engineer"
+    outputs:
+      - selected_persona
+      - confidence
+
+  - id: "route_to_model"
+    action: "models.route"
+    description: "路由到指定或最佳模型"
+    depends_on: ["parse_intent"]
+    inputs:
+      model_id: "${model_id}"
+      modality: "${modality}"
+      intent: "${intent}"
+    outputs:
+      - provider
+      - model
+      - endpoint
+
+  - id: "generate_response"
+    action: "llm.invoke"
+    description: "生成回覆"
+    depends_on: ["select_persona", "route_to_model"]
+    inputs:
+      provider: "${provider}"
+      model: "${model}"
+      persona: "${selected_persona}"
+      message: "${content}"
+      session_id: "${session_id}"
+    outputs:
+      - response
+      - tokens_used
+      - latency
+
+  - id: "post_process"
+    action: "response.enhance"
+    description: "後處理回覆（格式化、工件提取）"
+    depends_on: ["generate_response"]
+    inputs:
+      raw_response: "${response}"
+      intent: "${intent}"
+    outputs:
+      - formatted_response
+      - extracted_artifacts
+
+  - id: "save_artifacts"
+    action: "artifacts.write_batch"
+    description: "保存生成的工件"
+    depends_on: ["post_process"]
+    condition: "${extracted_artifacts.length > 0}"
+    inputs:
+      artifacts: "${extracted_artifacts}"
+      session_id: "${session_id}"
+
+  - id: "send_response"
+    action: "chat.reply"
+    description: "發送回覆給用戶"
+    depends_on: ["post_process"]
+    inputs:
+      session_id: "${session_id}"
+      message_id: "${message_id}"
+      content: "${formatted_response}"
+      metadata:
+        model: "${model}"
+        persona: "${selected_persona}"
+        tokens: "${tokens_used}"
+
+audit:
+  enabled: true
+  events:
+    - "MESSAGE_RECEIVED"
+    - "INTENT_PARSED"
+    - "MODEL_SELECTED"
+    - "RESPONSE_GENERATED"
+    - "MESSAGE_SENT"

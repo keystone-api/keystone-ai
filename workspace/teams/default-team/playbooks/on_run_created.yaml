@@ -1,0 +1,166 @@
+version: v1
+name: "on_run_created"
+description: "任務建立時的協作流程 - 驅動多代理協作產出 artifacts"
+
+triggers:
+  - event: "RUN_CREATED"
+
+inputs:
+  - name: "run_id"
+    type: "string"
+    required: true
+  - name: "user_request"
+    type: "string"
+    required: true
+  - name: "context"
+    type: "object"
+    required: false
+
+steps:
+  - id: "input_analysis"
+    action: "agents.invoke"
+    description: "分析用戶輸入，提取意圖與需求"
+    agent_id: "instant.input-analysis"
+    inputs:
+      user_request: "${user_request}"
+      context: "${context}"
+    outputs:
+      - analysis_result
+      - intent
+      - entities
+    artifacts:
+      - name: "input_analysis"
+        type: "json"
+
+  - id: "architect_proposal"
+    action: "agents.invoke"
+    description: "根據需求設計架構方案"
+    agent_id: "ai.architect"
+    depends_on: ["input_analysis"]
+    inputs:
+      analysis: "${analysis_result}"
+      intent: "${intent}"
+    outputs:
+      - architecture_proposal
+    artifacts:
+      - name: "architecture_proposal"
+        type: "markdown"
+
+  - id: "security_review"
+    action: "agents.invoke"
+    description: "安全審查架構方案"
+    agent_id: "ai.security"
+    depends_on: ["architect_proposal"]
+    inputs:
+      architecture: "${architecture_proposal}"
+    outputs:
+      - security_findings
+      - risk_level
+    artifacts:
+      - name: "security_review"
+        type: "markdown"
+
+  - id: "devops_plan"
+    action: "agents.invoke"
+    description: "制定 DevOps 部署計劃"
+    agent_id: "ai.devops"
+    depends_on: ["architect_proposal"]
+    inputs:
+      architecture: "${architecture_proposal}"
+    outputs:
+      - devops_plan
+      - infrastructure_requirements
+    artifacts:
+      - name: "devops_plan"
+        type: "markdown"
+
+  - id: "qa_strategy"
+    action: "agents.invoke"
+    description: "制定測試策略"
+    agent_id: "ai.qa"
+    depends_on: ["architect_proposal"]
+    inputs:
+      architecture: "${architecture_proposal}"
+    outputs:
+      - test_strategy
+      - quality_gates
+    artifacts:
+      - name: "qa_strategy"
+        type: "markdown"
+
+  - id: "code_generation"
+    action: "agents.invoke"
+    description: "根據架構生成代碼"
+    agent_id: "instant.code-generation"
+    depends_on: ["architect_proposal", "security_review"]
+    condition: "${intent.type == 'implementation'}"
+    inputs:
+      architecture: "${architecture_proposal}"
+      security_requirements: "${security_findings}"
+    outputs:
+      - generated_code
+      - file_manifest
+    artifacts:
+      - name: "generated_code"
+        type: "code"
+
+  - id: "optimization_review"
+    action: "agents.invoke"
+    description: "優化審查"
+    agent_id: "instant.optimization"
+    depends_on: ["code_generation"]
+    condition: "${generated_code != null}"
+    inputs:
+      code: "${generated_code}"
+      architecture: "${architecture_proposal}"
+    outputs:
+      - optimization_suggestions
+      - performance_metrics
+    artifacts:
+      - name: "optimization_report"
+        type: "markdown"
+
+  - id: "writer_summary"
+    action: "agents.invoke"
+    description: "整理執行摘要"
+    agent_id: "ai.product-manager"
+    depends_on:
+      - "architect_proposal"
+      - "security_review"
+      - "devops_plan"
+      - "qa_strategy"
+    inputs:
+      architecture: "${architecture_proposal}"
+      security: "${security_findings}"
+      devops: "${devops_plan}"
+      qa: "${test_strategy}"
+      optimization: "${optimization_suggestions}"
+    outputs:
+      - exec_summary
+    artifacts:
+      - name: "exec_summary"
+        type: "markdown"
+
+  - id: "finalize_run"
+    action: "runs.complete"
+    description: "完成任務執行"
+    depends_on: ["writer_summary"]
+    inputs:
+      run_id: "${run_id}"
+      status: "completed"
+      summary: "${exec_summary}"
+
+audit:
+  enabled: true
+  events:
+    - "PLAYBOOK_STARTED"
+    - "AGENT_DISPATCHED"
+    - "ARTIFACT_WRITTEN"
+    - "STEP_COMPLETED"
+    - "PLAYBOOK_COMPLETED"
+    - "ERROR"
+
+error_handling:
+  on_step_failure: "continue"
+  max_retries: 2
+  fallback_agent: "core.orchestrator"

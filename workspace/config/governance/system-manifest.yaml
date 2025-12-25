@@ -1,493 +1,512 @@
-boot_sequence:
-- environment
-- dependencies
-- constitution
-- virtual_experts
-- safety
-- mind_matrix
-configs:
-- description: 統一配置索引 - 所有配置的單一真實來源
-  file: config/unified-config-index.yaml
-  id: unified_index
-  is_primary: true
-  kind: index
-- description: 系統模組映射 - 統一目錄結構與元件整合
-  file: config/system-module-map.yaml
-  id: module_map
-  kind: module-map
-- file: config/environment.yaml
-  id: environment
-  kind: environment
-- file: config/dependencies.yaml
-  id: dependencies
-  kind: dependencies
-- file: config/ai-constitution.yaml
-  id: constitution
-  kind: governance
-- file: config/agents/team/virtual-experts.yaml
-  id: virtual_experts
-  kind: experts
-- file: config/safety-mechanisms.yaml
-  id: safety
-  kind: safety
-- depends_on:
-  - environment
-  - dependencies
-  - constitution
-  - virtual_experts
-  - safety
-  description: 核心拓撲自稠密演化心智矩陣（含 Executive 層）
-  file: config/topology-mind-matrix.yaml
-  id: mind_matrix
-  kind: topology
-  provides:
-  - MindMatrixTopology
-  - ExecutiveSystem
-  - MultiAgentHypergraph
-  - ToolPipeline
-  - YAMLValidationPipeline
-description: 'SynergyMesh 系統宣告清單 - 次世代雲原生智能自動化平台
+# ═══════════════════════════════════════════════════════════════════════════════
+#                    SynergyMesh System Manifest Configuration
+#                    系統宣告清單（整合心智矩陣 + 執行長系統）
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# 唯一入口 manifest，無重複定義
+# Single entry point manifest, no duplicate definitions
+#
+# This is the root configuration that references all other configs.
+# ═══════════════════════════════════════════════════════════════════════════════
 
+version: "2.1.0"
+id: "machinenativeops.system"
+description: |
+  SynergyMesh 系統宣告清單 - 次世代雲原生智能自動化平台
   整合心智矩陣 + 執行長系統 + 增強統一整合 + Phase 2 配置整合 + 治理框架對齊
-
-
+  
   Strategic Vision: 實現「無人值守」的智能運維，讓企業專注於創新而非維運
-
   Governance: 遵循 23 維度治理矩陣，確保全局優化與架構合規
 
-  '
-enhanced_boot_sequence:
-- components:
-  - environment
-  - dependencies
-  - constitution
-  - virtual_experts
-  - safety
-  phase: core_configs
-- components:
-  - mind_matrix
-  phase: mind_matrix
-- components:
-  - service_registry
-  - cognitive_processor
-  - configuration_optimizer
-  - work_configuration_manager
-  phase: enhanced_integration
-- components:
-  - contracts-l1
-  - mcp-servers
-  - slsa-provenance
-  phase: services
-enhanced_integration:
-  cognitive_processor:
-    class: EnhancedCognitiveProcessor
-    description: 增強認知處理器 - 四層認知架構
-    id: cognitive_processor
-    layers:
-    - 'L1-Perception: 感知層（遙測收集、異常偵測、時序漂移識別）'
-    - 'L2-Reasoning: 推理層（因果圖構建、風險評分、策略選擇）'
-    - 'L3-Execution: 執行層（多代理協作、同步屏障、回滾點生成）'
-    - 'L4-Proof: 證明層（審計鏈固化、SLSA 證據、行為可驗證性）'
-    module: core.unified_integration.cognitive_processor
-    provides:
-    - PerceptionLayer
-    - ReasoningLayer
-    - ExecutionLayer
-    - ProofLayer
-  configuration_optimizer:
-    class: ConfigurationOptimizer
-    description: 配置優化器 - 智能配置管理與調優
-    id: configuration_optimizer
-    module: core.unified_integration.configuration_optimizer
-    provides:
-    - ConfigValidation
-    - DriftDetection
-    - OptimizationRecommendations
-    - AutoTuning
-  service_registry:
-    class: ServiceRegistry
-    description: 統一服務註冊表 - 服務發現與管理
-    id: service_registry
-    module: core.unified_integration.service_registry
-    provides:
-    - ServiceDiscovery
-    - HealthMonitoring
-    - DependencyResolution
-  work_configuration_manager:
-    class: WorkConfigurationManager
-    description: 工作配置管理器 - 統一工作流程與策略整合
-    id: work_configuration_manager
-    module: core.unified_integration.work_configuration_manager
-    provides:
-    - ModuleMappingIntegration
-    - StrategyPolicyManagement
-    - CrossReferenceValidation
-    - CapabilityRegistryAlignment
-    - WorkConfigurationLifecycle
-entrypoint:
-  class: MindMatrix
-  method: bootstrap
-  module: runtime.mind_matrix.main
+# ============================================================================
+# Governance Framework (治理框架)
+# ============================================================================
 governance:
-  architecture_review_board:
-    chair: VP Architecture
-    decision_authority: Architectural & Technical
-    meeting_frequency: Weekly
-    members:
-    - Principal Architect
-    - Lead Platform Engineer
-    - Lead Security Engineer
-  executive_team:
-  - responsibility: 最終決策權威、戰略方向制定
-    role: CEO
-  - responsibility: 技術戰略制定、架構方向把關
-    role: CTO
-  - responsibility: 工程實踐標準、交付質量保證
-    role: VP Engineering
-  - responsibility: 產品方向定義、功能路線圖
-    role: VP Product
-  - responsibility: 架構治理執行、23維度矩陣維護
-    role: VP Architecture
   vision_strategy:
-    charter: governance/00-vision-strategy/governance-charter.yaml
-    compliance_rate: 100%
-    dimension: 00-vision-strategy
-    objectives: governance/00-vision-strategy/strategic-objectives.yaml
-    status: PRODUCTION_READY
-    vision: governance/00-vision-strategy/vision-statement.yaml
-id: machinenativeops.system
+    dimension: "00-vision-strategy"
+    charter: "governance/00-vision-strategy/governance-charter.yaml"
+    objectives: "governance/00-vision-strategy/strategic-objectives.yaml"
+    vision: "governance/00-vision-strategy/vision-statement.yaml"
+    status: "PRODUCTION_READY"
+    compliance_rate: "100%"
+  
+  executive_team:
+    - role: "CEO"
+      responsibility: "最終決策權威、戰略方向制定"
+    - role: "CTO"
+      responsibility: "技術戰略制定、架構方向把關"
+    - role: "VP Engineering"
+      responsibility: "工程實踐標準、交付質量保證"
+    - role: "VP Product"
+      responsibility: "產品方向定義、功能路線圖"
+    - role: "VP Architecture"
+      responsibility: "架構治理執行、23維度矩陣維護"
+  
+  architecture_review_board:
+    chair: "VP Architecture"
+    members:
+      - "Principal Architect"
+      - "Lead Platform Engineer"
+      - "Lead Security Engineer"
+    meeting_frequency: "Weekly"
+    decision_authority: "Architectural & Technical"
+
+# ============================================================================
+# Configuration Hierarchy (配置層級) - Phase 2 Consolidated
+# ============================================================================
+configs:
+  # Phase 2: Unified Configuration Index - 統一配置索引
+  - id: "unified_index"
+    kind: "index"
+    file: "config/unified-config-index.yaml"
+    description: "統一配置索引 - 所有配置的單一真實來源"
+    is_primary: true
+  - id: "module_map"
+    kind: "module-map"
+    file: "config/system-module-map.yaml"
+    description: "系統模組映射 - 統一目錄結構與元件整合"
+  - id: "environment"
+    kind: "environment"
+    file: "config/environment.yaml"
+  - id: "dependencies"
+    kind: "dependencies"
+    file: "config/dependencies.yaml"
+  - id: "constitution"
+    kind: "governance"
+    file: "config/ai-constitution.yaml"
+  - id: "virtual_experts"
+    kind: "experts"
+    file: "config/agents/team/virtual-experts.yaml"
+  - id: "safety"
+    kind: "safety"
+    file: "config/safety-mechanisms.yaml"
+  - id: "mind_matrix"
+    kind: "topology"
+    file: "config/topology-mind-matrix.yaml"
+    description: "核心拓撲自稠密演化心智矩陣（含 Executive 層）"
+    depends_on: ["environment", "dependencies", "constitution", "virtual_experts", "safety"]
+    provides:
+      - "MindMatrixTopology"
+      - "ExecutiveSystem"
+      - "MultiAgentHypergraph"
+      - "ToolPipeline"
+      - "YAMLValidationPipeline"
+
+# Enhanced Integration Components (新增增強整合元件)
+enhanced_integration:
+  service_registry:
+    id: "service_registry"
+    module: "core.unified_integration.service_registry"
+    class: "ServiceRegistry"
+    description: "統一服務註冊表 - 服務發現與管理"
+    provides:
+      - "ServiceDiscovery"
+      - "HealthMonitoring"
+      - "DependencyResolution"
+  
+  cognitive_processor:
+    id: "cognitive_processor"
+    module: "core.unified_integration.cognitive_processor"
+    class: "EnhancedCognitiveProcessor"
+    description: "增強認知處理器 - 四層認知架構"
+    provides:
+      - "PerceptionLayer"
+      - "ReasoningLayer"
+      - "ExecutionLayer"
+      - "ProofLayer"
+    layers:
+      - "L1-Perception: 感知層（遙測收集、異常偵測、時序漂移識別）"
+      - "L2-Reasoning: 推理層（因果圖構建、風險評分、策略選擇）"
+      - "L3-Execution: 執行層（多代理協作、同步屏障、回滾點生成）"
+      - "L4-Proof: 證明層（審計鏈固化、SLSA 證據、行為可驗證性）"
+  
+  configuration_optimizer:
+    id: "configuration_optimizer"
+    module: "core.unified_integration.configuration_optimizer"
+    class: "ConfigurationOptimizer"
+    description: "配置優化器 - 智能配置管理與調優"
+    provides:
+      - "ConfigValidation"
+      - "DriftDetection"
+      - "OptimizationRecommendations"
+      - "AutoTuning"
+
+  # NEW: Work Configuration Manager
+  work_configuration_manager:
+    id: "work_configuration_manager"
+    module: "core.unified_integration.work_configuration_manager"
+    class: "WorkConfigurationManager"
+    description: "工作配置管理器 - 統一工作流程與策略整合"
+    provides:
+      - "ModuleMappingIntegration"
+      - "StrategyPolicyManagement"
+      - "CrossReferenceValidation"
+      - "CapabilityRegistryAlignment"
+      - "WorkConfigurationLifecycle"
+
+boot_sequence: ["environment", "dependencies", "constitution", "virtual_experts", "safety", "mind_matrix"]
+
+# Enhanced Boot Sequence for Full System Integration
+enhanced_boot_sequence:
+  - phase: "core_configs"
+    components: ["environment", "dependencies", "constitution", "virtual_experts", "safety"]
+  - phase: "mind_matrix"
+    components: ["mind_matrix"]
+  - phase: "enhanced_integration"
+    components: ["service_registry", "cognitive_processor", "configuration_optimizer", "work_configuration_manager"]
+  - phase: "services"
+    components: ["contracts-l1", "mcp-servers", "slsa-provenance"]
+
+entrypoint:
+  module: "runtime.mind_matrix.main"
+  class: "MindMatrix"
+  method: "bootstrap"
+
+# Integration Mappings (整合映射)
 integration_mappings:
+  # Service to Registry Mappings
   services:
-  - name: mind-matrix
-    provides:
-    - cognitive-processing
-    - governance-validation
-    registry_category: core
-  - depends_on:
-    - mind-matrix
-    name: execution-engine
-    provides:
-    - action-execution
-    - rollback
-    registry_category: execution
-  - depends_on:
-    - execution-engine
-    name: system-orchestrator
-    provides:
-    - workflow-management
-    - task-scheduling
-    registry_category: orchestration
-  - name: integration-hub
-    provides:
-    - message-routing
-    - event-pub-sub
-    registry_category: integration
-  - name: configuration-manager
-    provides:
-    - config-management
-    - secret-management
-    registry_category: core
-  - name: slsa-provenance
-    provides:
-    - attestation
-    - signature-verification
-    registry_category: security
-  - depends_on:
-    - slsa-provenance
-    name: contracts-l1
-    provides:
-    - contract-management
-    - provenance-attestation
-    registry_category: core
+    - name: "mind-matrix"
+      registry_category: "core"
+      provides: ["cognitive-processing", "governance-validation"]
+    - name: "execution-engine"
+      registry_category: "execution"
+      provides: ["action-execution", "rollback"]
+      depends_on: ["mind-matrix"]
+    - name: "system-orchestrator"
+      registry_category: "orchestration"
+      provides: ["workflow-management", "task-scheduling"]
+      depends_on: ["execution-engine"]
+    - name: "integration-hub"
+      registry_category: "integration"
+      provides: ["message-routing", "event-pub-sub"]
+    - name: "configuration-manager"
+      registry_category: "core"
+      provides: ["config-management", "secret-management"]
+    - name: "slsa-provenance"
+      registry_category: "security"
+      provides: ["attestation", "signature-verification"]
+    - name: "contracts-l1"
+      registry_category: "core"
+      provides: ["contract-management", "provenance-attestation"]
+      depends_on: ["slsa-provenance"]
+
+# Strategy Policies (策略配置)
 strategy_policies:
   auto_optimization:
-    approval_required: true
-    categories:
-    - performance
-    - reliability
     enabled: false
+    categories: ["performance", "reliability"]
+    approval_required: true
+  drift_detection:
+    enabled: true
+    check_interval_seconds: 300
+    alert_threshold: 0.1
   cognitive_processing:
     auto_execute_threshold: 0.85
-    layers_enabled:
-      execution: true
-      perception: true
-      proof: true
-      reasoning: true
     require_approval_threshold: 0.6
-  drift_detection:
-    alert_threshold: 0.1
-    check_interval_seconds: 300
-    enabled: true
+    layers_enabled:
+      perception: true
+      reasoning: true
+      execution: true
+      proof: true
   pipeline_memory:
-    integrity_placeholders:
-      blake3: <TO_BE_FILLED_BY_PIPELINE>
-      sha3_512: <TO_BE_FILLED_BY_PIPELINE>
-    lazy_attestation: true
-    path: ops/policies/pipeline.memory.policy.v1.0.0.yaml.txt
+    path: "ops/policies/pipeline.memory.policy.v1.0.0.yaml.txt"
     ssot_binding: true
-version: 2.1.0
+    integrity_placeholders:
+      sha3_512: "<TO_BE_FILLED_BY_PIPELINE>"
+      blake3: "<TO_BE_FILLED_BY_PIPELINE>"
+    lazy_attestation: true
+
+# ============================================================================
+# Workflow System Configuration (工作流程系統配置)
+# ============================================================================
+# Integrated from config/main-configuration.yaml
 workflow_system:
-  ai_governance:
-    analysis_engine:
-      conflict_detection:
-        auto_resolve: false
-        enabled: true
-        priority_rules:
-        - security_first
-        - performance_second
-        - maintainability_third
-        suggest_resolution: true
-      enabled: true
-      pattern_recognition:
-        confidence_threshold: 0.85
-        enabled: true
-      risk_assessment:
-        decision_tree:
-          root: risk_level_assessment
-        enabled: true
-    policies:
-      code_quality:
-        max_complexity: 15
-        max_file_lines: 500
-        max_function_lines: 50
-        min_test_coverage: 80
-      performance:
-        max_cpu_percent: 80
-        max_execution_time_ms: 5000
-        max_memory_mb: 512
-      security:
-        block_on_critical: true
-        block_on_high: false
-        scan_enabled: true
-        vulnerability_db: nvd
-  behavior_contracts: governance/policies/workflow/behavior-contracts.yaml
+  version: "2.0.0"
+  enabled: true
+  
+  # Core Engine Configuration
   core_engine:
     contract_engine:
       enabled: true
-      execution_mode: strict
+      version: "2.0.0"
+      execution_mode: "strict"  # strict | permissive | audit
+      module: "core.contract_engine"
+      registry:
+        type: "distributed"
+        storage_backend: "postgresql"
+        cache_enabled: true
+        cache_ttl_seconds: 300
+      validation:
+        pre_execution: true
+        post_execution: true
+        async_validation: true
+        validation_timeout_seconds: 30
       lifecycle:
         auto_upgrade: false
         deprecation_period_days: 90
         rollback_enabled: true
         rollback_max_versions: 5
-      module: core.contract_engine
-      registry:
-        cache_enabled: true
-        cache_ttl_seconds: 300
-        storage_backend: postgresql
-        type: distributed
-      validation:
-        async_validation: true
-        post_execution: true
-        pre_execution: true
-        validation_timeout_seconds: 30
-      version: 2.0.0
+    
     plugin_system:
-      auto_discovery: true
       enabled: true
-      module: core.plugin_system
+      auto_discovery: true
+      module: "core.plugin_system"
       plugin_directories:
-      - /app/plugins
-      - /app/core/plugins
-      - /app/custom_plugins
-      registry:
-        remote_url: https://plugins.machinenativeops.io
-        sync_interval_seconds: 3600
-        type: local
+        - "/app/plugins"
+        - "/app/core/plugins"
+        - "/app/custom_plugins"
       security:
-        allowed_capabilities:
-        - network.http
-        - storage.read
-        - storage.write
-        - compute.execute
         sandbox_enabled: true
         signature_verification: true
-  deployment:
-    health_checks:
-      liveness:
-        enabled: true
-        failure_threshold: 3
-        interval_seconds: 30
-        path: /health/live
-        timeout_seconds: 5
-      readiness:
-        enabled: true
-        failure_threshold: 3
-        interval_seconds: 10
-        path: /health/ready
-        timeout_seconds: 3
-    strategy:
-      blue_green:
-        enabled: true
-        rollback_on_failure: true
-        switch_mode: automated
-        verification_period_seconds: 300
-      type: blue_green
-  enabled: true
-  feature_flags:
-    advanced_security: true
-    ai_governance: true
-    automated_rollback: true
-    blue_green_deployment: true
-    canary_deployment: false
-    distributed_tracing: true
-    multi_layer_validation: true
-    self_improvement: true
-  integrations:
-    cicd:
-      auto_trigger: true
-      provider: github_actions
-    communication:
-      channels:
-      - enabled: true
-        type: slack
-        webhook_url: ${SLACK_WEBHOOK_URL}
-      - enabled: true
-        smtp_host: ${SMTP_HOST}
-        type: email
-    issue_tracking:
-      auto_create: true
-      provider: github_issues
-    vcs:
-      provider: github
-      webhook_enabled: true
-  observability:
-    logging:
-      aggregation:
-        backend: elasticsearch
-        enabled: true
-        retention_days: 30
+        allowed_capabilities:
+          - "network.http"
+          - "storage.read"
+          - "storage.write"
+          - "compute.execute"
+      registry:
+        type: "local"
+        remote_url: "https://plugins.machinenativeops.io"
+        sync_interval_seconds: 3600
+  
+  # AI Governance Configuration
+  ai_governance:
+    analysis_engine:
       enabled: true
-      format: json
-      level: info
-      structured:
+      pattern_recognition:
+        confidence_threshold: 0.85
         enabled: true
-    metrics:
-      backend: prometheus
-      enabled: true
-      retention_days: 15
-      scrape_interval_seconds: 15
-    tracing:
-      backend: jaeger
-      enabled: true
-      sampler: probabilistic
-      sampling_rate: 0.1
-  pipeline:
-    execution:
-      concurrency: 10
-      mode: orchestrated
-      retry_policy:
-        backoff_strategy: exponential
+      conflict_detection:
         enabled: true
-        initial_delay_seconds: 5
-        max_retries: 3
-      timeout_seconds: 3600
-    quality_gates:
-    - blocking: true
-      criteria:
-        complexity: <= 15
-        duplication: <= 3%
-        test_coverage: '>= 80%'
-      name: code_quality
-      stage: validation
-    - blocking: true
-      criteria:
-        critical_vulnerabilities: == 0
-        high_vulnerabilities: <= 2
-      name: security
-      stage: validation
-    - blocking: false
-      criteria:
-        error_rate: <= 0.1%
-        response_time_p95: <= 200ms
-      name: performance
-      stage: deployment
-  security:
-    authentication:
-      enabled: true
-      provider: oauth2
-      token_expiry_seconds: 3600
-    authorization:
-      enabled: true
-      model: rbac
-      rbac:
-        roles:
-        - name: admin
-          permissions:
-          - '*'
-        - name: developer
-          permissions:
-          - deploy:dev
-          - deploy:staging
-          - view:*
-        - name: viewer
-          permissions:
-          - view:*
-    encryption:
-      algorithm: AES-256-GCM
-      enabled: true
-      key_rotation_days: 90
-    network:
-      mtls_enabled: true
-      tls_enabled: true
-      tls_version: '1.3'
-    secrets:
-      backend: vault
-      rotation_enabled: true
-      rotation_interval_days: 30
-  self_improvement:
-    enabled: true
-    learning:
-      enabled: true
-      feedback_loop:
+        auto_resolve: false
+        suggest_resolution: true
+        priority_rules:
+          - "security_first"
+          - "performance_second"
+          - "maintainability_third"
+      risk_assessment:
         enabled: true
-        sources:
-        - deployment_outcomes
-        - validation_results
-        - user_feedback
-        - incident_reports
-      pattern_learning:
-        confidence_threshold: 0.9
-        enabled: true
-        min_samples: 100
-        update_frequency: daily
-    model_updates:
-      auto_promotion: false
-      enabled: true
-      strategy: shadow_mode
-      validation_period_days: 14
-  validation_rules: governance/policies/workflow/validation-rules.yaml
+        decision_tree:
+          root: "risk_level_assessment"
+    
+    policies:
+      code_quality:
+        min_test_coverage: 80
+        max_complexity: 15
+        max_function_lines: 50
+        max_file_lines: 500
+      security:
+        scan_enabled: true
+        block_on_critical: true
+        block_on_high: false
+        vulnerability_db: "nvd"
+      performance:
+        max_execution_time_ms: 5000
+        max_memory_mb: 512
+        max_cpu_percent: 80
+  
+  # Validation System Configuration
   validation_system:
     multi_layer:
       enabled: true
       fail_fast: false
-      layers:
-      - enabled: true
-        name: syntax
-        order: 1
-        severity: critical
-        timeout_seconds: 10
-      - enabled: true
-        name: semantic
-        order: 2
-        severity: high
-        timeout_seconds: 30
-      - enabled: true
-        name: security
-        order: 3
-        severity: critical
-        timeout_seconds: 60
-      - enabled: true
-        name: performance
-        order: 4
-        severity: medium
-        timeout_seconds: 45
-      - enabled: true
-        name: compliance
-        order: 5
-        severity: high
-        timeout_seconds: 20
-      max_parallel_validators: 5
-      module: core.validators.multi_layer_validator
       parallel_execution: true
-  version: 2.0.0
+      max_parallel_validators: 5
+      module: "core.validators.multi_layer_validator"
+      layers:
+        - name: "syntax"
+          order: 1
+          enabled: true
+          severity: "critical"
+          timeout_seconds: 10
+        - name: "semantic"
+          order: 2
+          enabled: true
+          severity: "high"
+          timeout_seconds: 30
+        - name: "security"
+          order: 3
+          enabled: true
+          severity: "critical"
+          timeout_seconds: 60
+        - name: "performance"
+          order: 4
+          enabled: true
+          severity: "medium"
+          timeout_seconds: 45
+        - name: "compliance"
+          order: 5
+          enabled: true
+          severity: "high"
+          timeout_seconds: 20
+  
+  # Pipeline Configuration
+  pipeline:
+    execution:
+      mode: "orchestrated"  # orchestrated | distributed | serverless
+      concurrency: 10
+      timeout_seconds: 3600
+      retry_policy:
+        enabled: true
+        max_retries: 3
+        backoff_strategy: "exponential"
+        initial_delay_seconds: 5
+    
+    quality_gates:
+      - name: "code_quality"
+        stage: "validation"
+        criteria:
+          test_coverage: ">= 80%"
+          complexity: "<= 15"
+          duplication: "<= 3%"
+        blocking: true
+      - name: "security"
+        stage: "validation"
+        criteria:
+          critical_vulnerabilities: "== 0"
+          high_vulnerabilities: "<= 2"
+        blocking: true
+      - name: "performance"
+        stage: "deployment"
+        criteria:
+          response_time_p95: "<= 200ms"
+          error_rate: "<= 0.1%"
+        blocking: false
+  
+  # Deployment Configuration
+  deployment:
+    strategy:
+      type: "blue_green"  # blue_green | canary | rolling | recreate
+      blue_green:
+        enabled: true
+        switch_mode: "automated"
+        verification_period_seconds: 300
+        rollback_on_failure: true
+    health_checks:
+      liveness:
+        enabled: true
+        path: "/health/live"
+        interval_seconds: 30
+        timeout_seconds: 5
+        failure_threshold: 3
+      readiness:
+        enabled: true
+        path: "/health/ready"
+        interval_seconds: 10
+        timeout_seconds: 3
+        failure_threshold: 3
+  
+  # Observability Configuration
+  observability:
+    logging:
+      enabled: true
+      level: "info"
+      format: "json"
+      structured:
+        enabled: true
+      aggregation:
+        enabled: true
+        backend: "elasticsearch"
+        retention_days: 30
+    tracing:
+      enabled: true
+      sampler: "probabilistic"
+      sampling_rate: 0.1
+      backend: "jaeger"
+    metrics:
+      enabled: true
+      backend: "prometheus"
+      scrape_interval_seconds: 15
+      retention_days: 15
+  
+  # Security Configuration
+  security:
+    authentication:
+      enabled: true
+      provider: "oauth2"
+      token_expiry_seconds: 3600
+    authorization:
+      enabled: true
+      model: "rbac"
+      rbac:
+        roles:
+          - name: "admin"
+            permissions: ["*"]
+          - name: "developer"
+            permissions:
+              - "deploy:dev"
+              - "deploy:staging"
+              - "view:*"
+          - name: "viewer"
+            permissions:
+              - "view:*"
+    encryption:
+      enabled: true
+      algorithm: "AES-256-GCM"
+      key_rotation_days: 90
+    network:
+      tls_enabled: true
+      tls_version: "1.3"
+      mtls_enabled: true
+    secrets:
+      backend: "vault"
+      rotation_enabled: true
+      rotation_interval_days: 30
+  
+  # Self-Improvement Configuration
+  self_improvement:
+    enabled: true
+    learning:
+      enabled: true
+      pattern_learning:
+        enabled: true
+        min_samples: 100
+        confidence_threshold: 0.90
+        update_frequency: "daily"
+      feedback_loop:
+        enabled: true
+        sources:
+          - "deployment_outcomes"
+          - "validation_results"
+          - "user_feedback"
+          - "incident_reports"
+    model_updates:
+      enabled: true
+      strategy: "shadow_mode"
+      validation_period_days: 14
+      auto_promotion: false
+  
+  # Integration Configuration
+  integrations:
+    vcs:
+      provider: "github"
+      webhook_enabled: true
+    cicd:
+      provider: "github_actions"
+      auto_trigger: true
+    issue_tracking:
+      provider: "github_issues"
+      auto_create: true
+    communication:
+      channels:
+        - type: "slack"
+          enabled: true
+          webhook_url: "${SLACK_WEBHOOK_URL}"
+        - type: "email"
+          enabled: true
+          smtp_host: "${SMTP_HOST}"
+  
+  # Feature Flags
+  feature_flags:
+    ai_governance: true
+    multi_layer_validation: true
+    blue_green_deployment: true
+    canary_deployment: false
+    self_improvement: true
+    advanced_security: true
+    distributed_tracing: true
+    automated_rollback: true
+  
+  # Policy References
+  behavior_contracts: "governance/policies/workflow/behavior-contracts.yaml"
+  validation_rules: "governance/policies/workflow/validation-rules.yaml"

@@ -1,59 +1,66 @@
-config:
-  max_duration_minutes: 30
-  mode: autonomous
-description: Automated project refactoring and evolution using SynergyMesh engines
-inputs:
-  dry_run:
-    default: false
-    type: boolean
-  mode:
-    default: autonomous
-    type: string
-  targets:
-    default:
-    - core/
-    - automation/
-    - services/
-    type: array
+# Refactor & Evolution Pipeline Definition
+pipeline_id: "refactor_evolution_pipeline"
+name: "Refactor & Evolution Pipeline"
+description: "Automated project refactoring and evolution using SynergyMesh engines"
+version: "1.0.0"
+
 metadata:
-  category: automation
-  owner: machinenativeops-core
-  tags:
-  - refactor
-  - evolution
-  - optimization
-  - autonomous
-name: Refactor & Evolution Pipeline
-outputs:
-  metrics:
-    type: object
-  workflow_report:
-    format: yaml
-    type: file
-pipeline_id: refactor_evolution_pipeline
+  category: "automation"
+  tags: ["refactor", "evolution", "optimization", "autonomous"]
+  owner: "machinenativeops-core"
+
+config:
+  mode: "autonomous"
+  max_duration_minutes: 30
+  
 stages:
-- description: Analyze codebase structure
-  id: analysis
-  name: Analysis Stage
-  type: analysis
-- description: Create execution plan
-  id: planning
-  name: Planning Stage
-  type: planning
-- description: Execute refactoring
-  id: execution
-  name: Execution Stage
-  type: execution
-- description: Learn from results
-  id: learning
-  name: Learning Stage
-  type: learning
-- description: Apply improvements
-  id: evolution
-  name: Evolution Stage
-  type: evolution
-- description: Validate changes
-  id: validation
-  name: Validation Stage
-  type: validation
-version: 1.0.0
+  - id: "analysis"
+    name: "Analysis Stage"
+    description: "Analyze codebase structure"
+    type: "analysis"
+  
+  - id: "planning"
+    name: "Planning Stage"
+    description: "Create execution plan"
+    type: "planning"
+  
+  - id: "execution"
+    name: "Execution Stage"
+    description: "Execute refactoring"
+    type: "execution"
+  
+  - id: "learning"
+    name: "Learning Stage"
+    description: "Learn from results"
+    type: "learning"
+  
+  - id: "evolution"
+    name: "Evolution Stage"
+    description: "Apply improvements"
+    type: "evolution"
+  
+  - id: "validation"
+    name: "Validation Stage"
+    description: "Validate changes"
+    type: "validation"
+
+inputs:
+  mode:
+    type: "string"
+    default: "autonomous"
+  
+  targets:
+    type: "array"
+    default: ["core/", "automation/", "services/"]
+  
+  dry_run:
+    type: "boolean"
+    default: false
+
+outputs:
+  workflow_report:
+    type: "file"
+    format: "yaml"
+  
+  metrics:
+    type: "object"

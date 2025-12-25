@@ -1,69 +1,109 @@
-description: 完整的自動化重構週期：掃描 → 分析 → 規劃 → 執行 → 驗證
+# ═══════════════════════════════════════════════════════════════════════════════
+#                    Refactor Pipeline Configuration
+#                         重構管道配置
+# ═══════════════════════════════════════════════════════════════════════════════
+
+pipeline_id: refactor_full_cycle
+name: "全自動重構管道"
+description: "完整的自動化重構週期：掃描 → 分析 → 規劃 → 執行 → 驗證"
 enabled: true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 觸發器
+# ═══════════════════════════════════════════════════════════════════════════════
+triggers:
+  # 定時觸發
+  - type: cron
+    schedule: "0 */6 * * *"  # 每6小時
+
+  # 事件觸發
+  - type: event
+    event: "file.changed"
+    filter:
+      path: "docs/refactor_playbooks/**"
+
+  # 手動觸發
+  - type: manual
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 階段定義
+# ═══════════════════════════════════════════════════════════════════════════════
+stages:
+  # 階段 1: 掃描
+  - stage_id: scan
+    name: "掃描分析"
+    engine_type: execution
+    operation: scan
+    params:
+      target: "docs/refactor_playbooks"
+      deep: true
+    timeout: 60
+    on_failure: abort
+
+  # 階段 2: 生成計畫
+  - stage_id: plan
+    name: "生成計畫"
+    engine_type: execution
+    operation: plan
+    params:
+      priority_filter: all
+    depends_on:
+      - scan
+    timeout: 30
+
+  # 階段 3: 執行重構
+  - stage_id: execute
+    name: "執行重構"
+    engine_type: execution
+    operation: execute_plan
+    params:
+      dry_run: false
+    depends_on:
+      - plan
+    timeout: 300
+    on_failure: rollback
+
+  # 階段 4: 驗證
+  - stage_id: validate
+    name: "驗證結果"
+    engine_type: validation
+    operation: validate_all
+    depends_on:
+      - execute
+    timeout: 60
+
+  # 階段 5: 生成報告
+  - stage_id: report
+    name: "生成報告"
+    engine_type: generation
+    operation: generate_report
+    params:
+      report_type: summary
+    depends_on:
+      - validate
+    timeout: 30
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 錯誤處理
+# ═══════════════════════════════════════════════════════════════════════════════
 error_handling:
-  on_stage_failure: continue_to_next
+  # 失敗策略
+  on_stage_failure: continue_to_next  # abort | continue_to_next | retry
+
+  # 重試配置
   retry:
-    delay: 5
     max_attempts: 2
+    delay: 5
+
+  # 回滾
   rollback:
-    auto_rollback_on_validation_failure: true
     enabled: true
-name: 全自動重構管道
+    auto_rollback_on_validation_failure: true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 通知
+# ═══════════════════════════════════════════════════════════════════════════════
 notifications:
+  on_start: false
   on_complete: true
   on_failure: true
-  on_start: false
-pipeline_id: refactor_full_cycle
-stages:
-- engine_type: execution
-  name: 掃描分析
-  on_failure: abort
-  operation: scan
-  params:
-    deep: true
-    target: docs/refactor_playbooks
-  stage_id: scan
-  timeout: 60
-- depends_on:
-  - scan
-  engine_type: execution
-  name: 生成計畫
-  operation: plan
-  params:
-    priority_filter: all
-  stage_id: plan
-  timeout: 30
-- depends_on:
-  - plan
-  engine_type: execution
-  name: 執行重構
-  on_failure: rollback
-  operation: execute_plan
-  params:
-    dry_run: false
-  stage_id: execute
-  timeout: 300
-- depends_on:
-  - execute
-  engine_type: validation
-  name: 驗證結果
-  operation: validate_all
-  stage_id: validate
-  timeout: 60
-- depends_on:
-  - validate
-  engine_type: generation
-  name: 生成報告
-  operation: generate_report
-  params:
-    report_type: summary
-  stage_id: report
-  timeout: 30
-triggers:
-- schedule: 0 */6 * * *
-  type: cron
-- event: file.changed
-  filter:
-    path: docs/refactor_playbooks/**
-  type: event
-- type: manual

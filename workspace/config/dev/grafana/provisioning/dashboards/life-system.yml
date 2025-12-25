@@ -1,11 +1,12 @@
-apiVersion: machinenativeops.io/v2
+apiVersion: 1
+
 providers:
-- allowUiUpdates: true
-  disableDeletion: false
-  folder: ''
-  name: life-system
-  options:
-    path: /var/lib/grafana/dashboards
-  orgId: 1
-  type: file
-  updateIntervalSeconds: 10
+  - name: 'life-system'
+    orgId: 1
+    folder: ''
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards

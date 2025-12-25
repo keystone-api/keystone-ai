@@ -1,202 +1,381 @@
-apiVersion: machinenativeops.io/v2
+---
+apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: baseline-default-deny-all
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.level: L-A
-    machinenativeops.io/baseline.version: v1.0.0
-    machinenativeops.io/baseline.type: network-security
-    machinenativeops.io/baseline.dependency: namespace-governance,security-rbac,resource-management
+    baseline.level: L-A
+    baseline.version: v1.0.0
+    baseline.type: network-security
+    baseline.dependency: namespace-governance,security-rbac,resource-management
   annotations:
-    machinenativeops.io/description: 網路策略基線 / Network Policy Foundation
-    machinenativeops.io/purpose: 建立零信任網路架構與微分段 / Establish Zero Trust network architecture
-      and microsegmentation
-    machinenativeops.io/capability-scope: ingress-control,egress-control,service-mesh-integration
-    machinenativeops.io/conflict-priority: '850'
+    baseline.io/description: "網路策略基線 / Network Policy Foundation"
+    baseline.io/purpose: "建立零信任網路架構與微分段 / Establish Zero Trust network architecture and microsegmentation"
+    baseline.io/capability-scope: "ingress-control,egress-control,service-mesh-integration"
+    baseline.io/conflict-priority: "850"
 spec:
   podSelector: {}
   policyTypes:
-  - Ingress
-  - Egress
+    - Ingress
+    - Egress
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: baseline-allow-same-namespace
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.component: intra-namespace-communication
+    baseline.component: intra-namespace-communication
   annotations:
-    machinenativeops.io/description: 允許同命名空間內通訊 / Allow intra-namespace communication
+    baseline.io/description: "允許同命名空間內通訊 / Allow intra-namespace communication"
 spec:
   podSelector: {}
   policyTypes:
-  - Ingress
-  - Egress
+    - Ingress
+    - Egress
   ingress:
-  - from:
-    - podSelector: {}
+    - from:
+        - podSelector: {}
   egress:
-  - to:
-    - podSelector: {}
+    - to:
+        - podSelector: {}
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: baseline-allow-dns
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.component: dns-resolution
+    baseline.component: dns-resolution
   annotations:
-    machinenativeops.io/description: 允許 DNS 解析 / Allow DNS resolution
+    baseline.io/description: "允許 DNS 解析 / Allow DNS resolution"
 spec:
   podSelector: {}
   policyTypes:
-  - Egress
+    - Egress
   egress:
-  - to:
-    - namespaceSelector:
-        matchLabels:
-          name: kube-system
-    ports:
-    - protocol: UDP
-      port: 53
-    - protocol: TCP
-      port: 53
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: baseline-api-gateway-ingress
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.component: api-gateway
+    baseline.component: api-gateway
   annotations:
-    machinenativeops.io/description: API 閘道入口控制 / API gateway ingress control
+    baseline.io/description: "API 閘道入口控制 / API gateway ingress control"
 spec:
   podSelector:
     matchLabels:
       app.kubernetes.io/component: api-gateway
   policyTypes:
-  - Ingress
+    - Ingress
   ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: istio-system
-    - podSelector:
-        matchLabels:
-          app: istio-ingressgateway
-    ports:
-    - protocol: TCP
-      port: 8080
-    - protocol: TCP
-      port: 8443
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+        - podSelector:
+            matchLabels:
+              app: istio-ingressgateway
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8443
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: network-segmentation-policy
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.component: network-segmentation
+    baseline.component: network-segmentation
 data:
-  microsegmentation-rules.yaml: "version: v1.0.0\nsegmentation_zones:\n  dmz_zone:\n\
-    \    description: \"DMZ 區域，面向外部流量 / DMZ zone for external-facing traffic\"\n \
-    \   labels:\n      network.zone: \"dmz\"\n    allowed_ingress:\n      - source:\
-    \ \"internet\"\n        ports:\n          - 80\n          - 443\n      - source:\
-    \ \"cdn\"\n        ports:\n          - 443\n    allowed_egress:\n      - destination:\
-    \ \"application-zone\"\n        ports:\n          - 8080\n          - 9090\n \
-    \   monitoring:\n      deep_packet_inspection: true\n      threat_detection: true\n\
-    \  application_zone:\n    description: \"應用程式區域 / Application zone\"\n    labels:\n\
-    \      network.zone: \"application\"\n    allowed_ingress:\n      - source: \"\
-    dmz-zone\"\n        ports:\n          - 8080\n          - 9090\n      - source:\
-    \ \"internal-services\"\n        authentication_required: true\n    allowed_egress:\n\
-    \      - destination: \"data-zone\"\n        ports:\n          - 5432\n      \
-    \    - 3306\n          - 6379\n      - destination: \"external-apis\"\n      \
-    \  ports:\n          - 443\n        rate_limit: true\n  data_zone:\n    description:\
-    \ \"資料區域，最高安全等級 / Data zone, highest security level\"\n    labels:\n      network.zone:\
-    \ \"data\"\n    allowed_ingress:\n      - source: \"application-zone\"\n     \
-    \   authentication_required: true\n        encryption_required: true\n       \
-    \ audit_all_connections: true\n    allowed_egress:\n      - destination: \"backup-storage\"\
-    \n        ports:\n          - 443\n        encryption_required: true\n    protection:\n\
-    \      ddos_mitigation: true\n      waf_enabled: true\n      rate_limiting: true\n\
-    \  management_zone:\n    description: \"管理區域，運維存取 / Management zone for operations\
-    \ access\"\n    labels:\n      network.zone: \"management\"\n    allowed_ingress:\n\
-    \      - source: \"bastion-hosts\"\n        mfa_required: true\n        source_ip_allowlist:\
-    \ true\n    allowed_egress:\n      - destination: \"all-zones\"\n        ports:\n\
-    \          - 22\n          - 3389\n        session_recording: true\n"
-  service-mesh-policy.yaml: "version: v1.0.0\nservice_mesh:\n  provider: \"istio\"\
-    \n  mtls_mode: \"STRICT\"\n  traffic_management:\n    circuit_breaking:\n    \
-    \  enabled: true\n      max_connections: 1000\n      max_pending_requests: 1000\n\
-    \      max_requests_per_connection: 100\n      consecutive_errors: 5\n    retry_policy:\n\
-    \      attempts: 3\n      per_try_timeout: \"2s\"\n      retry_on: \"5xx,reset,connect-failure,refused-stream\"\
-    \n    timeout:\n      default: \"10s\"\n      idle: \"300s\"\n    load_balancing:\n\
-    \      algorithm: \"LEAST_REQUEST\"\n      locality_lb_setting:\n        enabled:\
-    \ true\n        failover:\n          - from: \"us-east-1a\"\n            to: \"\
-    us-east-1b\"\n  authorization_policies:\n    default_action: \"DENY\"\n    allow_rules:\n\
-    \      - name: \"allow-frontend-to-backend\"\n        source:\n          principals:\n\
-    \            - \"cluster.local/ns/default/sa/frontend\"\n        destination:\n\
-    \          methods:\n            - \"GET\"\n            - \"POST\"\n         \
-    \ paths:\n            - \"/api/v1/*\"\n      - name: \"allow-backend-to-database\"\
-    \n        source:\n          principals:\n            - \"cluster.local/ns/default/sa/backend\"\
-    \n        destination:\n          ports:\n            - \"5432\"\n        when:\n\
-    \          - key: \"request.auth.claims[iss]\"\n            values:\n        \
-    \      - \"https://idp.example.com\"\n  observability:\n    tracing:\n      enabled:\
-    \ true\n      sampling_rate: \"1.0\"\n      zipkin_address: \"zipkin.istio-system:9411\"\
-    \n    metrics:\n      enabled: true\n      prometheus_integration: true\n    access_logging:\n\
-    \      enabled: true\n      format: \"json\"\n      providers:\n        - \"stdout\"\
-    \n        - \"fluentd\"\n"
-  ingress-gateway-config.yaml: "version: v1.0.0\ningress_gateways:\n  public_gateway:\n\
-    \    hosts:\n      - \"*.example.com\"\n    tls:\n      mode: \"SIMPLE\"\n   \
-    \   credential_name: \"example-com-cert\"\n      min_protocol_version: \"TLSV1_3\"\
-    \n      cipher_suites:\n        - \"ECDHE-RSA-AES256-GCM-SHA384\"\n        - \"\
-    ECDHE-RSA-CHACHA20-POLY1305\"\n    rate_limiting:\n      enabled: true\n     \
-    \ requests_per_second: 1000\n      burst: 2000\n      key: \"remote_address\"\n\
-    \    waf:\n      enabled: true\n      ruleset: \"owasp-crs-3.3\"\n      paranoia_level:\
-    \ 2\n      blocking_mode: true\n    cors:\n      enabled: true\n      allowed_origins:\n\
-    \        - \"https://app.example.com\"\n      allowed_methods:\n        - \"GET\"\
-    \n        - \"POST\"\n        - \"PUT\"\n        - \"DELETE\"\n      allowed_headers:\n\
-    \        - \"content-type\"\n        - \"authorization\"\n      max_age: \"24h\"\
-    \n  private_gateway:\n    hosts:\n      - \"*.internal.example.com\"\n    tls:\n\
-    \      mode: \"MUTUAL\"\n      credential_name: \"internal-mtls-cert\"\n     \
-    \ ca_certificates: \"internal-ca-bundle\"\n    source_ip_allowlist:\n      - \"\
-    10.0.0.0/8\"\n      - \"172.16.0.0/12\"\n    authentication:\n      jwt:\n   \
-    \     issuer: \"https://internal-idp.example.com\"\n        audiences:\n     \
-    \     - \"internal-services\"\n        jwks_uri: \"https://internal-idp.example.com/.well-known/jwks.json\"\
-    \n"
-  egress-control-policy.yaml: "version: v1.0.0\negress_policies:\n  allow_external_apis:\n\
-    \    description: \"允許存取外部 API / Allow access to external APIs\"\n    destinations:\n\
-    \      - host: \"api.stripe.com\"\n        ports:\n          - 443\n        protocols:\n\
-    \          - \"TLS\"\n      - host: \"api.twilio.com\"\n        ports:\n     \
-    \     - 443\n      - host: \"*.googleapis.com\"\n        ports:\n          - 443\n\
-    \    monitoring:\n      log_all_connections: true\n      alert_on_new_destinations:\
-    \ true\n  block_suspicious_destinations:\n    description: \"封鎖可疑目的地 / Block suspicious\
-    \ destinations\"\n    blocked_cidrs:\n      - \"0.0.0.0/8\"\n      - \"10.0.0.0/8\"\
-    \n      - \"169.254.0.0/16\"\n      - \"192.168.0.0/16\"\n    blocked_ports:\n\
-    \      - 25\n      - 445\n      - 3389\n    action: \"reject\"\n    alert: \"\
-    critical\"\n  database_egress:\n    description: \"資料庫出口控制 / Database egress control\"\
-    \n    source_labels:\n      app.kubernetes.io/component: \"backend\"\n    destinations:\n\
-    \      - host: \"postgresql.data-zone.svc.cluster.local\"\n        ports:\n  \
-    \        - 5432\n      - host: \"redis.data-zone.svc.cluster.local\"\n       \
-    \ ports:\n          - 6379\n    connection_pooling:\n      enabled: true\n   \
-    \   max_connections: 100\n      idle_timeout: \"300s\"\n"
+  microsegmentation-rules.yaml: |
+    version: v1.0.0
+    segmentation_zones:
+      dmz_zone:
+        description: "DMZ 區域，面向外部流量 / DMZ zone for external-facing traffic"
+        labels:
+          network.zone: "dmz"
+        allowed_ingress:
+          - source: "internet"
+            ports:
+              - 80
+              - 443
+          - source: "cdn"
+            ports:
+              - 443
+        allowed_egress:
+          - destination: "application-zone"
+            ports:
+              - 8080
+              - 9090
+        monitoring:
+          deep_packet_inspection: true
+          threat_detection: true
+      application_zone:
+        description: "應用程式區域 / Application zone"
+        labels:
+          network.zone: "application"
+        allowed_ingress:
+          - source: "dmz-zone"
+            ports:
+              - 8080
+              - 9090
+          - source: "internal-services"
+            authentication_required: true
+        allowed_egress:
+          - destination: "data-zone"
+            ports:
+              - 5432
+              - 3306
+              - 6379
+          - destination: "external-apis"
+            ports:
+              - 443
+            rate_limit: true
+      data_zone:
+        description: "資料區域，最高安全等級 / Data zone, highest security level"
+        labels:
+          network.zone: "data"
+        allowed_ingress:
+          - source: "application-zone"
+            authentication_required: true
+            encryption_required: true
+            audit_all_connections: true
+        allowed_egress:
+          - destination: "backup-storage"
+            ports:
+              - 443
+            encryption_required: true
+        protection:
+          ddos_mitigation: true
+          waf_enabled: true
+          rate_limiting: true
+      management_zone:
+        description: "管理區域，運維存取 / Management zone for operations access"
+        labels:
+          network.zone: "management"
+        allowed_ingress:
+          - source: "bastion-hosts"
+            mfa_required: true
+            source_ip_allowlist: true
+        allowed_egress:
+          - destination: "all-zones"
+            ports:
+              - 22
+              - 3389
+            session_recording: true
+  service-mesh-policy.yaml: |
+    version: v1.0.0
+    service_mesh:
+      provider: "istio"
+      mtls_mode: "STRICT"
+      traffic_management:
+        circuit_breaking:
+          enabled: true
+          max_connections: 1000
+          max_pending_requests: 1000
+          max_requests_per_connection: 100
+          consecutive_errors: 5
+        retry_policy:
+          attempts: 3
+          per_try_timeout: "2s"
+          retry_on: "5xx,reset,connect-failure,refused-stream"
+        timeout:
+          default: "10s"
+          idle: "300s"
+        load_balancing:
+          algorithm: "LEAST_REQUEST"
+          locality_lb_setting:
+            enabled: true
+            failover:
+              - from: "us-east-1a"
+                to: "us-east-1b"
+      authorization_policies:
+        default_action: "DENY"
+        allow_rules:
+          - name: "allow-frontend-to-backend"
+            source:
+              principals:
+                - "cluster.local/ns/default/sa/frontend"
+            destination:
+              methods:
+                - "GET"
+                - "POST"
+              paths:
+                - "/api/v1/*"
+          - name: "allow-backend-to-database"
+            source:
+              principals:
+                - "cluster.local/ns/default/sa/backend"
+            destination:
+              ports:
+                - "5432"
+            when:
+              - key: "request.auth.claims[iss]"
+                values:
+                  - "https://idp.example.com"
+      observability:
+        tracing:
+          enabled: true
+          sampling_rate: "1.0"
+          zipkin_address: "zipkin.istio-system:9411"
+        metrics:
+          enabled: true
+          prometheus_integration: true
+        access_logging:
+          enabled: true
+          format: "json"
+          providers:
+            - "stdout"
+            - "fluentd"
+  ingress-gateway-config.yaml: |
+    version: v1.0.0
+    ingress_gateways:
+      public_gateway:
+        hosts:
+          - "*.example.com"
+        tls:
+          mode: "SIMPLE"
+          credential_name: "example-com-cert"
+          min_protocol_version: "TLSV1_3"
+          cipher_suites:
+            - "ECDHE-RSA-AES256-GCM-SHA384"
+            - "ECDHE-RSA-CHACHA20-POLY1305"
+        rate_limiting:
+          enabled: true
+          requests_per_second: 1000
+          burst: 2000
+          key: "remote_address"
+        waf:
+          enabled: true
+          ruleset: "owasp-crs-3.3"
+          paranoia_level: 2
+          blocking_mode: true
+        cors:
+          enabled: true
+          allowed_origins:
+            - "https://app.example.com"
+          allowed_methods:
+            - "GET"
+            - "POST"
+            - "PUT"
+            - "DELETE"
+          allowed_headers:
+            - "content-type"
+            - "authorization"
+          max_age: "24h"
+      private_gateway:
+        hosts:
+          - "*.internal.example.com"
+        tls:
+          mode: "MUTUAL"
+          credential_name: "internal-mtls-cert"
+          ca_certificates: "internal-ca-bundle"
+        source_ip_allowlist:
+          - "10.0.0.0/8"
+          - "172.16.0.0/12"
+        authentication:
+          jwt:
+            issuer: "https://internal-idp.example.com"
+            audiences:
+              - "internal-services"
+            jwks_uri: "https://internal-idp.example.com/.well-known/jwks.json"
+  egress-control-policy.yaml: |
+    version: v1.0.0
+    egress_policies:
+      allow_external_apis:
+        description: "允許存取外部 API / Allow access to external APIs"
+        destinations:
+          - host: "api.stripe.com"
+            ports:
+              - 443
+            protocols:
+              - "TLS"
+          - host: "api.twilio.com"
+            ports:
+              - 443
+          - host: "*.googleapis.com"
+            ports:
+              - 443
+        monitoring:
+          log_all_connections: true
+          alert_on_new_destinations: true
+      block_suspicious_destinations:
+        description: "封鎖可疑目的地 / Block suspicious destinations"
+        blocked_cidrs:
+          - "0.0.0.0/8"
+          - "10.0.0.0/8"
+          - "169.254.0.0/16"
+          - "192.168.0.0/16"
+        blocked_ports:
+          - 25
+          - 445
+          - 3389
+        action: "reject"
+        alert: "critical"
+      database_egress:
+        description: "資料庫出口控制 / Database egress control"
+        source_labels:
+          app.kubernetes.io/component: "backend"
+        destinations:
+          - host: "postgresql.data-zone.svc.cluster.local"
+            ports:
+              - 5432
+          - host: "redis.data-zone.svc.cluster.local"
+            ports:
+              - 6379
+        connection_pooling:
+          enabled: true
+          max_connections: 100
+          idle_timeout: "300s"
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: network-observability-config
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.component: network-observability
+    baseline.component: network-observability
 data:
-  flow-monitoring.yaml: "version: v1.0.0\nflow_monitoring:\n  collector: \"elastic-flow\"\
-    \n  sampling_rate: \"1:100\"\n  export_interval_seconds: 60\n  metrics:\n    -\
-    \ \"bytes_sent\"\n    - \"bytes_received\"\n    - \"packets_sent\"\n    - \"packets_received\"\
-    \n    - \"connection_duration\"\n    - \"retransmits\"\n  aggregation:\n    -\
-    \ \"source_ip\"\n    - \"destination_ip\"\n    - \"source_port\"\n    - \"destination_port\"\
-    \n    - \"protocol\"\nanomaly_detection:\n  enabled: true\n  baseline_learning_days:\
-    \ 7\n  sensitivity: \"medium\"\n  alert_thresholds:\n    sudden_traffic_spike:\
-    \ \"300\"\n    unusual_port_usage: true\n    connection_to_suspicious_ip: true\n\
-    \    data_exfiltration_pattern: true"
+  flow-monitoring.yaml: |
+    version: v1.0.0
+    flow_monitoring:
+      collector: "elastic-flow"
+      sampling_rate: "1:100"
+      export_interval_seconds: 60
+      metrics:
+        - "bytes_sent"
+        - "bytes_received"
+        - "packets_sent"
+        - "packets_received"
+        - "connection_duration"
+        - "retransmits"
+      aggregation:
+        - "source_ip"
+        - "destination_ip"
+        - "source_port"
+        - "destination_port"
+        - "protocol"
+    anomaly_detection:
+      enabled: true
+      baseline_learning_days: 7
+      sensitivity: "medium"
+      alert_thresholds:
+        sudden_traffic_spike: "300"
+        unusual_port_usage: true
+        connection_to_suspicious_ip: true
+        data_exfiltration_pattern: true

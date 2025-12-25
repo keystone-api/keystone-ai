@@ -155,19 +155,16 @@ concurrency:
 The workflow runs on:
 
 1. **Push Events**:
-
    - `main` branch
    - `develop` branch
 
 2. **Pull Request Events**:
-
    - `opened`
    - `synchronize`
    - `reopened`
    - Targeting `main` or `develop`
 
 3. **Manual Dispatch**:
-
    - Via GitHub Actions UI
 
 ## Artifacts
@@ -187,19 +184,16 @@ The workflow runs on:
 ### 1. Dependency Management
 
 ✅ **Use `npm ci` instead of `npm install`**
-
 - Ensures reproducible builds
 - Faster installation
 - Validates package-lock.json
 
 ✅ **Implement retry logic**
-
 - Handles transient network issues
 - 3 attempts with 5-second delays
 - Fails clearly after all attempts
 
 ✅ **Cache dependencies**
-
 - Uses Node.js cache action
 - Reduces installation time
 - Cache key based on lock file
@@ -207,18 +201,15 @@ The workflow runs on:
 ### 2. Error Handling
 
 ✅ **Non-blocking warnings**
-
 - Optional steps don't fail the build
 - Clear messaging for skipped steps
 
 ✅ **Detailed reporting**
-
 - Stage-specific reports
 - Aggregated summary
 - PR comments on failures
 
 ✅ **Proper failure detection**
-
 - Uses `contains(needs.*.result, 'failure')`
 - Checks for cancelled jobs
 - Accurate PR comment triggers
@@ -226,13 +217,11 @@ The workflow runs on:
 ### 3. Security
 
 ✅ **Security scanning**
-
 - npm audit at moderate level
 - SBOM generation
 - Audit reports in artifacts
 
 ✅ **CodeQL analysis**
-
 - Automated on all commits
 - No vulnerabilities detected
 

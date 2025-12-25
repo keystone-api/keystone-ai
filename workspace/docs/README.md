@@ -220,23 +220,19 @@ tools/docs/
 
 ```yaml
 # 核心能力
-
 capabilities:
   cognitive_processing: # 四層認知架構
-
     - perception # 感知層 - 遙測收集、異常偵測
     - reasoning # 推理層 - 因果圖構建、風險評分
     - execution # 執行層 - 多代理協作、同步屏障
     - proof # 證明層 - 審計鏈固化、SLSA 證據
 
   service_management: # 服務管理
-
     - discovery # 服務發現
     - health_monitoring # 健康監控
     - dependency_resolution # 依賴解析
 
   ai_engines: # AI 引擎
-
     - decision_engine # 決策引擎
     - hallucination_detector # 幻覺偵測
     - context_understanding # 上下文理解
@@ -255,20 +251,15 @@ SuperRoot 風格的 Schema 命名空間與自主治理基礎設施。
 
 ```yaml
 # Schema 命名空間
-
 $schema: 'https://schema.synergymesh.io/docs-index/v1'
 
 # 必要欄位
-
 required_fields:
-
   - id, path, title, domain, layer, type
   - tags, owner, status, description
 
 # 可選供應鏈欄位
-
 optional_fields:
-
   - platforms, languages, provenance
   - sbom, signature, links, meta
 ```
@@ -303,24 +294,20 @@ optional_fields:
 
 ```yaml
 # 知識循環四層次
-
 knowledge_cycle:
   perception:      # 感知層 - 偵測變化
-
     - Git 提交紀錄（檔案新增 / 修改 / 刪除）
     - GitHub Actions 工作流結果
     - 定期排程掃描
   
   modeling:        # 建模層 - 重建結構
     outputs:
-
       - docs/generated-mndoc.yaml      # 系統說明書
       - docs/knowledge-graph.yaml      # 結構關係圖
       - docs/superroot-entities.yaml   # SuperRoot ontology 編碼
   
   self_diagnosis:  # 自我診斷層 - 找出問題
     checks:
-
       - 孤兒元件（無關聯的 Component）
       - 死設定（未使用的 Config）
       - 重疊工作流
@@ -328,7 +315,6 @@ knowledge_cycle:
     output: docs/knowledge-health-report.yaml
   
   action:          # 行動層 - 回報狀態
-
     - 更新 docs/KNOWLEDGE_HEALTH.md 儀表板
     - 必要時自動開 GitHub Issue
 ```
@@ -453,13 +439,11 @@ unmanned-island/
 
 ```bash
 # 必要環境
-
 Node.js >= 18.0.0
 Python >= 3.10
 npm >= 8.0.0
 
 # 可選環境（自主系統）
-
 ROS 2 Humble
 Go >= 1.20
 C++ 17 (GCC 11+)
@@ -469,16 +453,13 @@ C++ 17 (GCC 11+)
 
 ```bash
 # 克隆倉庫
-
 git clone https://github.com/SynergyMesh-admin/Unmanned-Island.git
 cd unmanned-island
 
 # 安裝依賴
-
 npm install
 
 # 驗證安裝
-
 npm run lint
 npm run test
 ```
@@ -487,18 +468,15 @@ npm run test
 
 ```bash
 # 啟動合約管理服務 (L1)
-
 cd core/contract_service/contracts-L1/contracts
 npm install && npm run build
 npm start
 
 # 啟動 MCP 伺服器
-
 cd mcp-servers
 npm install && npm start
 
 # 驗證配置
-
 python tools/docs/validate_index.py --verbose
 ```
 
@@ -526,16 +504,13 @@ Admin Copilot CLI 將 AI 驅動的程式碼分析與操作能力帶入命令列�
 
 ```bash
 # 安裝 Admin Copilot CLI
-
 cd tools/cli
 npm install
 npm link
 
 # 啟動 CLI
-
 admin-copilot
 # 或使用簡短別名
-
 smcli
 ```
 
@@ -566,27 +541,21 @@ smcli
 
 ```bash
 # 開始 AI 對話
-
 admin-copilot chat
 
 # 分析程式碼
-
 admin-copilot analyze ./src
 
 # 自動修復問題
-
 admin-copilot fix --auto
 
 # 解釋概念
-
 smcli explain "What is SLSA provenance?"
 
 # 生成程式碼
-
 admin-copilot generate "Create a REST API endpoint" --language typescript
 
 # 審查程式碼
-
 admin-copilot review ./src/controllers
 ```
 
@@ -594,7 +563,6 @@ admin-copilot review ./src/controllers
 
 1. **裝置流程（推薦）**：執行 `/login` 並按照指示操作
 2. **個人存取令牌**：
-
    - 訪問 <https://github.com/settings/personal-access-tokens/new>
    - 新增「Copilot Requests」權限
    - 設定環境變數 `GH_TOKEN` 或 `GITHUB_TOKEN`
@@ -605,11 +573,9 @@ admin-copilot review ./src/controllers
 
 ```bash
 # 開發環境
-
 docker-compose -f docker-compose.dev.yml up -d
 
 # 生產環境
-
 docker-compose up -d
 ```
 
@@ -633,21 +599,16 @@ docker-compose up -d
 cd apps/web
 
 # 安裝 Node.js 依賴
-
 npm install
 
 # 開發模式（熱重載，使用 esbuild）
-
 npm run dev
 # 或直接執行
-
 node scripts/build.mjs
 
 # 生產構建
-
 npm run build
 # 或直接執行
-
 node scripts/build.mjs --production
 ```
 
@@ -657,19 +618,15 @@ node scripts/build.mjs --production
 cd apps/web
 
 # 創建虛擬環境（推薦）
-
 python3 -m venv venv
 source venv/bin/activate  # Linux/Mac
 # 或
-
 .\venv\Scripts\activate  # Windows
 
 # 安裝 Python 依賴
-
 pip install -r requirements.txt
 
 # 驗證安裝
-
 python -c "import services.code_analyzer; print('OK')"
 ```
 
@@ -679,23 +636,18 @@ python -c "import services.code_analyzer; print('OK')"
 cd apps/web
 
 # 運行所有測試
-
 pytest
 
 # 單元測試
-
 pytest -m unit
 
 # 集成測試
-
 pytest -m integration
 
 # 性能測試
-
 pytest -m performance
 
 # 查看覆蓋率報告
-
 pytest --cov=services --cov-report=html
 ```
 
@@ -707,15 +659,12 @@ pytest --cov=services --cov-report=html
 cd apps/web
 
 # 使用 Docker Compose 啟動完整環境
-
 docker-compose -f docker-compose.api.yml up -d
 
 # 查看日誌
-
 docker-compose -f docker-compose.api.yml logs -f code-analysis-api
 
 # 訪問 API 文檔
-
 open http://localhost:8000/api/docs
 ```
 
@@ -734,7 +683,6 @@ open http://localhost:8000/api/docs
 
 ```bash
 # 提交分析任務
-
 curl -X POST http://localhost:8000/api/v1/analyze \
   -H "Content-Type: application/json" \
   -d '{
@@ -744,11 +692,9 @@ curl -X POST http://localhost:8000/api/v1/analyze \
   }'
 
 # 獲取分析結果
-
 curl http://localhost:8000/api/v1/analyze/{analysis_id}
 
 # 查看系統指標
-
 curl http://localhost:8000/api/v1/metrics
 ```
 
@@ -804,11 +750,9 @@ curl http://localhost:8000/api/v1/metrics
 cd apps/web
 
 # 構建前端鏡像
-
 docker build -t synergymesh-web:latest .
 
 # 運行容器
-
 docker run -d -p 3002:3002 synergymesh-web:latest
 ```
 
@@ -818,11 +762,9 @@ docker run -d -p 3002:3002 synergymesh-web:latest
 cd apps/web
 
 # 構建 API 鏡像
-
 docker build -f Dockerfile.api -t code-analysis-api:2.0.0 .
 
 # 運行容器
-
 docker run -d -p 8000:8000 code-analysis-api:2.0.0
 ```
 
@@ -832,11 +774,9 @@ docker run -d -p 8000:8000 code-analysis-api:2.0.0
 cd apps/web
 
 # 啟動所有服務（API + PostgreSQL + Redis + Prometheus + Grafana）
-
 docker-compose -f docker-compose.api.yml up -d
 
 # 停止服務
-
 docker-compose -f docker-compose.api.yml down
 ```
 
@@ -846,21 +786,17 @@ docker-compose -f docker-compose.api.yml down
 cd apps/web
 
 # 應用 Kubernetes 配置
-
 kubectl apply -f k8s/deployment-api.yaml
 kubectl apply -f deploy/
 
 # 查看部署狀態
-
 kubectl get pods -n code-analysis
 kubectl get svc -n code-analysis
 
 # 查看日誌
-
 kubectl logs -f deployment/code-analysis-api -n code-analysis
 
 # 擴展副本
-
 kubectl scale deployment code-analysis-api --replicas=5 -n code-analysis
 ```
 
@@ -913,13 +849,11 @@ kubectl scale deployment code-analysis-api --replicas=5 -n code-analysis
 
 ```bash
 # 特定 CI 分析
-
 @copilot analyze Core Services CI     # 深度分析
 @copilot fix Core Services CI         # 自動修復建議
 @copilot help Integration CI          # 查看文檔
 
 # 全局命令
-
 @copilot 幫我分析                      # 分析所有 CI
 @copilot 環境檢查                      # 環境診斷
 ```
@@ -928,19 +862,15 @@ kubectl scale deployment code-analysis-api --replicas=5 -n code-analysis
 
 ```bash
 # 驗證文檔索引
-
 python tools/docs/validate_index.py --verbose
 
 # 掃描倉庫生成索引
-
 python tools/docs/scan_repo_generate_index.py --dry-run
 
 # 生成 SLSA 溯源
-
 python tools/docs/provenance_injector.py --generate-provenance
 
 # 生成 SBOM
-
 python tools/docs/provenance_injector.py --generate-sbom
 ```
 

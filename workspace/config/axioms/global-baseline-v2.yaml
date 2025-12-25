@@ -1,33 +1,33 @@
 apiVersion: machinenativeops.io/v2
 kind: MachineNativeOpsGlobalBaseline
 metadata:
-  labels:
-    machinenativeops.io/component: global-configuration
-    machinenativeops.io/tier: baseline
-    machinenativeops.io/version: v2
   name: quantum-ai-baseline-v2
-  namespace: machinenativenops
+  namespace: machinenativeops-system
+  labels:
+    machinenativeops.io/tier: "baseline"
+    machinenativeops.io/version: "v2"
+    machinenativeops.io/component: "global-configuration"
 spec:
   foundation:
-    aiCore:
-      enabled: true
-      modelType: quantum-enhanced-neural
-      version: 3.2.1
     quantumCore:
       enabled: true
+      version: "2.0.0"
       quantumBits: 1024
-      version: 2.0.0
+    aiCore:
+      enabled: true
+      modelType: "quantum-enhanced-neural"
+      version: "3.2.1"
   network:
     meshTopology:
       enabled: true
-      latencyTarget: <1ms
-      type: quantum-entangled-mesh
+      type: "quantum-entangled-mesh"
+      latencyTarget: "<1ms"
   storage:
     quantumStorage:
-      accessTime: <100ns
-      capacity: 1EB
       enabled: true
+      capacity: "1EB"
+      accessTime: "<100ns"
 status:
-  deploymentStatus: active
+  phase: "transcendence-ready"
+  deploymentStatus: "active"
   healthScore: 1.0
-  phase: transcendence-ready

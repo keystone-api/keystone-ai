@@ -1,192 +1,405 @@
-apiVersion: machinenativeops.io/v2
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: compliance-framework-baseline
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.level: L-A
-    machinenativeops.io/baseline.version: v1.0.0
-    machinenativeops.io/baseline.type: compliance-attestation
-    machinenativeops.io/baseline.dependency: namespace-governance,security-rbac,resource-management,network-security
+    baseline.level: L-A
+    baseline.version: v1.0.0
+    baseline.type: compliance-attestation
+    baseline.dependency: namespace-governance,security-rbac,resource-management,network-security
   annotations:
-    machinenativeops.io/description: 合規與證明基線 / Compliance and Attestation Foundation
-    machinenativeops.io/purpose: 建立自動化合規驗證與不可變證明鏈 / Establish automated compliance
-      validation and immutable attestation chain
-    machinenativeops.io/capability-scope: policy-validation,drift-detection,attestation-generation,audit-trail
-    machinenativeops.io/conflict-priority: '800'
-    machinenativeops.io/state-machine: REGISTERED->COORDINATED->ACTIVE
+    baseline.io/description: "合規與證明基線 / Compliance and Attestation Foundation"
+    baseline.io/purpose: "建立自動化合規驗證與不可變證明鏈 / Establish automated compliance validation and immutable attestation chain"
+    baseline.io/capability-scope: "policy-validation,drift-detection,attestation-generation,audit-trail"
+    baseline.io/conflict-priority: "800"
+    baseline.io/state-machine: "REGISTERED->COORDINATED->ACTIVE"
 data:
-  compliance-standards.yaml: "version: v1.0.0\nsupported_frameworks:\n  soc2_type2:\n\
-    \    enabled: true\n    controls:\n      cc6_1:\n        name: \"邏輯與實體存取控制 / Logical\
-    \ and Physical Access Controls\"\n        requirements:\n          - \"Multi-factor\
-    \ authentication for all privileged access\"\n          - \"Access review performed\
-    \ quarterly\"\n          - \"Automated deprovisioning within 24 hours\"\n    \
-    \    validation_frequency: \"daily\"\n        evidence_collection:\n         \
-    \ - \"iam-audit-logs\"\n          - \"access-review-reports\"\n      cc7_2:\n\
-    \        name: \"系統監控 / System Monitoring\"\n        requirements:\n         \
-    \ - \"Continuous monitoring of security events\"\n          - \"Automated alerting\
-    \ for anomalies\"\n          - \"Incident response plan documented\"\n       \
-    \ validation_frequency: \"real-time\"\n        evidence_collection:\n        \
-    \  - \"security-event-logs\"\n          - \"alert-history\"\n          - \"incident-reports\"\
-    \n    audit_requirements:\n      retention_years: 7\n      annual_assessment:\
-    \ true\n      penetration_testing: \"quarterly\"\n  gdpr:\n    enabled: true\n\
-    \    principles:\n      data_minimization:\n        description: \"僅收集必要資料 / Collect\
-    \ only necessary data\"\n        controls:\n          - \"PII identification and\
-    \ classification\"\n          - \"Data retention policies enforced\"\n       \
-    \   - \"Automated data purging\"\n      purpose_limitation:\n        description:\
-    \ \"資料使用限於宣告目的 / Data used only for stated purposes\"\n        controls:\n   \
-    \       - \"Consent management system\"\n          - \"Purpose tags on all data\
-    \ stores\"\n      data_subject_rights:\n        description: \"資料主體權利 / Data subject\
-    \ rights\"\n        controls:\n          - \"Right to access automated process\"\
-    \n          - \"Right to erasure implemented\"\n          - \"Data portability\
-    \ enabled\"\n    breach_notification:\n      authority_notification_hours: 72\n\
-    \      data_subject_notification_required: true\n      documentation_required:\
-    \ true\n  hipaa:\n    enabled: false\n    reason: \"Healthcare data not processed\"\
-    \n  pci_dss:\n    enabled: true\n    version: \"4.0\"\n    requirements:\n   \
-    \   requirement_1:\n        name: \"安裝與維護網路安全控制 / Install and Maintain Network\
-    \ Security Controls\"\n        sub_requirements:\n          - \"1.2.1: Network\
-    \ segmentation implemented\"\n          - \"1.3.1: Ingress/egress traffic restrictions\"\
-    \n      requirement_3:\n        name: \"保護儲存的帳戶資料 / Protect Stored Account Data\"\
-    \n        sub_requirements:\n          - \"3.5.1: Encryption of cardholder data\
-    \ at rest\"\n          - \"3.6.1: Cryptographic key management\"\n    quarterly_scan:\
-    \ true\n    annual_assessment: true\n"
-  policy-as-code-engine.yaml: "version: v1.0.0\npolicy_engines:\n  opa_gatekeeper:\n\
-    \    enabled: true\n    version: \"v3.14.0\"\n    enforcement_action: \"deny\"\
-    \n    audit_interval_seconds: 60\n    constraint_templates:\n      - name: \"\
-    k8srequiredlabels\"\n        description: \"強制必要標籤 / Enforce required labels\"\
-    \n        parameters:\n          labels:\n            - \"app.kubernetes.io/name\"\
-    \n            - \"baseline.level\"\n            - \"owner\"\n      - name: \"\
-    k8scontainerlimits\"\n        description: \"強制容器資源限制 / Enforce container resource\
-    \ limits\"\n        parameters:\n          cpu: \"required\"\n          memory:\
-    \ \"required\"\n      - name: \"k8sallowedrepos\"\n        description: \"限制容器映像倉庫\
-    \ / Restrict container image repositories\"\n        parameters:\n          repos:\n\
-    \            - \"gcr.io/company-registry/*\"\n            - \"docker.io/library/*\"\
-    \n      - name: \"k8sblocknodeport\"\n        description: \"禁止 NodePort 服務 /\
-    \ Block NodePort services\"\n        parameters:\n          allowed_namespaces:\n\
-    \            - \"istio-system\"\n  kyverno:\n    enabled: true\n    version: \"\
-    v1.11.0\"\n    validation_failure_action: \"Enforce\"\n    policies:\n      -\
-    \ name: \"require-pod-security-standards\"\n        spec:\n          background:\
-    \ true\n          rules:\n            - name: \"restricted-pod-security\"\n  \
-    \            match:\n                any:\n                  - resources:\n  \
-    \                    kinds:\n                        - \"Pod\"\n             \
-    \ validate:\n                message: \"Pod must comply with restricted security\
-    \ standards\"\n                podSecurity:\n                  level: \"restricted\"\
-    \n                  version: \"latest\"\n      - name: \"add-default-network-policy\"\
-    \n        spec:\n          background: false\n          rules:\n            -\
-    \ name: \"generate-default-deny\"\n              match:\n                any:\n\
-    \                  - resources:\n                      kinds:\n              \
-    \          - \"Namespace\"\n              generate:\n                kind: \"\
-    NetworkPolicy\"\n                name: \"default-deny\"\n                namespace:\
-    \ \"{{request.object.metadata.name}}\"\n                data:\n              \
-    \    spec:\n                    podSelector: {}\n                    policyTypes:\n\
-    \                      - \"Ingress\"\n                      - \"Egress\"\n  conftest:\n\
-    \    enabled: true\n    version: \"v0.47.0\"\n    namespaces:\n      - \"kubernetes\"\
-    \n      - \"main\"\n    policies:\n      - name: \"deployment-best-practices\"\
-    \n        tests:\n          - \"replica_count >= 2\"\n          - \"has_liveness_probe\
-    \ == true\"\n          - \"has_readiness_probe == true\"\n          - \"resource_requests_defined\
-    \ == true\"\n"
-  attestation-generation.yaml: "version: v1.0.0\nattestation_providers:\n  cosign:\n\
-    \    enabled: true\n    key_provider: \"kms\"\n    kms_key_id: \"projects/PROJECT_ID/locations/LOCATION/keyRings/RING/cryptoKeys/KEY\"\
-    \n    signature_algorithm: \"ECDSA_P256_SHA256\"\n    timestamp_authority: \"\
-    https://freetsa.org/tsr\"\n    transparency_log: \"rekor.sigstore.dev\"\n  in_toto:\n\
-    \    enabled: true\n    layout_version: \"1.0\"\n    steps:\n      - name: \"\
-    build\"\n        expected_materials:\n          - \"MATCH Dockerfile IN .\"\n\
-    \          - \"MATCH src/* IN .\"\n        expected_products:\n          - \"\
-    CREATE image.tar\"\n      - name: \"test\"\n        expected_materials:\n    \
-    \      - \"MATCH image.tar\"\n        expected_products:\n          - \"CREATE\
-    \ test-results.xml\"\n      - name: \"deploy\"\n        expected_materials:\n\
-    \          - \"MATCH image.tar\"\n          - \"MATCH deployment.yaml\"\n    \
-    \    expected_products:\n          - \"CREATE deployment-receipt.json\"\n    functionaries:\n\
-    \      - name: \"build-bot\"\n        pubkey: \"build-bot-public-key.pem\"\n \
-    \     - name: \"test-bot\"\n        pubkey: \"test-bot-public-key.pem\"\n  slsa_provenance:\n\
-    \    enabled: true\n    builder_id: \"https://github.com/slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@refs/tags/v1.9.0\"\
-    \n    build_type: \"https://slsa-framework.github.io/github-actions-buildtypes/workflow/v1\"\
-    \n    invocation:\n      config_source:\n        uri: \"git+https://github.com/org/repo@refs/heads/main\"\
-    \n        digest:\n          sha256: \"example-commit-sha\"\n      parameters:\n\
-    \        workflow: \".github/workflows/build.yml\"\n    materials:\n      - uri:\
-    \ \"git+https://github.com/org/repo@refs/heads/main\"\n        digest:\n     \
-    \     sha1: \"example-git-commit-sha\"\n"
-  drift-detection-engine.yaml: "version: v1.0.0\ndrift_detection:\n  scan_interval_minutes:\
-    \ 15\n  detection_methods:\n    configuration_drift:\n      enabled: true\n  \
-    \    baseline_source: \"gitops-repository\"\n      comparison_method: \"hash-based\"\
-    \n      ignore_annotations:\n        - \"kubectl.kubernetes.io/last-applied-configuration\"\
-    \n      alert_on_drift: true\n    state_drift:\n      enabled: true\n      expected_state_source:\
-    \ \"desired-state-store\"\n      actual_state_source: \"kubernetes-api\"\n   \
-    \   reconciliation_threshold_minutes: 5\n      auto_remediation: true\n    policy_drift:\n\
-    \      enabled: true\n      policy_repository: \"opa-policy-bundle\"\n      validation_mode:\
-    \ \"continuous\"\n      enforcement_action: \"warn-and-log\"\n  remediation_strategies:\n\
-    \    auto_remediation:\n      enabled: true\n      allowed_actions:\n        -\
-    \ \"update-resource\"\n        - \"recreate-resource\"\n      forbidden_actions:\n\
-    \        - \"delete-resource\"\n      dry_run_mode: false\n      rollback_on_failure:\
-    \ true\n    manual_approval:\n      enabled: false\n      approval_required_for:\n\
-    \        - \"production-namespace\"\n        - \"critical-services\"\n      approval_timeout_minutes:\
-    \ 60\n    notification:\n      channels:\n        - type: \"slack\"\n        \
-    \  webhook: \"https://hooks.slack.com/services/WORKSPACE/CHANNEL/TOKEN\"\n   \
-    \     - type: \"pagerduty\"\n          integration_key: \"PAGERDUTY_INTEGRATION_KEY\"\
-    \n      severity_mapping:\n        critical: \"immediate\"\n        high: \"within-1-hour\"\
-    \n        medium: \"within-4-hours\"\n        low: \"daily-summary\"\n"
-  evidence-collection.yaml: "version: v1.0.0\nevidence_types:\n  audit_logs:\n   \
-    \ sources:\n      - \"kubernetes-audit-log\"\n      - \"application-audit-log\"\
-    \n      - \"security-audit-log\"\n    retention_days: 2555\n    format: \"json\"\
-    \n    encryption: \"aes-256-gcm\"\n    integrity_check: \"sha256-hash\"\n    storage_location:\
-    \ \"s3://compliance-evidence-bucket/audit-logs/\"\n  configuration_snapshots:\n\
-    \    frequency: \"hourly\"\n    include_resources:\n      - \"deployments\"\n\
-    \      - \"services\"\n      - \"configmaps\"\n      - \"secrets-metadata\"\n\
-    \      - \"networkpolicies\"\n    format: \"yaml\"\n    compression: \"gzip\"\n\
-    \    versioning: true\n    storage_location: \"s3://compliance-evidence-bucket/config-snapshots/\"\
-    \n  security_scans:\n    vulnerability_scans:\n      frequency: \"daily\"\n  \
-    \    scanner: \"trivy\"\n      severity_threshold: \"MEDIUM\"\n      fail_on_critical:\
-    \ true\n    compliance_scans:\n      frequency: \"daily\"\n      scanner: \"kube-bench\"\
-    \n      benchmark: \"cis-1.7\"\n    sbom_generation:\n      frequency: \"on-build\"\
-    \n      format: \"spdx\"\n      include_dependencies: true\n    storage_location:\
-    \ \"s3://compliance-evidence-bucket/security-scans/\"\n  access_reviews:\n   \
-    \ frequency: \"quarterly\"\n    scope:\n      - \"cluster-admin-role-bindings\"\
-    \n      - \"namespace-admin-role-bindings\"\n      - \"service-account-permissions\"\
-    \n    workflow:\n      - \"generate-review-report\"\n      - \"send-to-approvers\"\
-    \n      - \"collect-approvals\"\n      - \"apply-changes\"\n    storage_location:\
-    \ \"s3://compliance-evidence-bucket/access-reviews/\"\n  incident_records:\n \
-    \   auto_capture: true\n    include_context:\n      - \"related-logs\"\n     \
-    \ - \"affected-resources\"\n      - \"timeline\"\n      - \"remediation-actions\"\
-    \n    post_incident_review: true\n    lessons_learned_required: true\n    storage_location:\
-    \ \"s3://compliance-evidence-bucket/incidents/\"\n"
+  compliance-standards.yaml: |
+    version: v1.0.0
+    supported_frameworks:
+      soc2_type2:
+        enabled: true
+        controls:
+          cc6_1:
+            name: "邏輯與實體存取控制 / Logical and Physical Access Controls"
+            requirements:
+              - "Multi-factor authentication for all privileged access"
+              - "Access review performed quarterly"
+              - "Automated deprovisioning within 24 hours"
+            validation_frequency: "daily"
+            evidence_collection:
+              - "iam-audit-logs"
+              - "access-review-reports"
+          cc7_2:
+            name: "系統監控 / System Monitoring"
+            requirements:
+              - "Continuous monitoring of security events"
+              - "Automated alerting for anomalies"
+              - "Incident response plan documented"
+            validation_frequency: "real-time"
+            evidence_collection:
+              - "security-event-logs"
+              - "alert-history"
+              - "incident-reports"
+        audit_requirements:
+          retention_years: 7
+          annual_assessment: true
+          penetration_testing: "quarterly"
+      gdpr:
+        enabled: true
+        principles:
+          data_minimization:
+            description: "僅收集必要資料 / Collect only necessary data"
+            controls:
+              - "PII identification and classification"
+              - "Data retention policies enforced"
+              - "Automated data purging"
+          purpose_limitation:
+            description: "資料使用限於宣告目的 / Data used only for stated purposes"
+            controls:
+              - "Consent management system"
+              - "Purpose tags on all data stores"
+          data_subject_rights:
+            description: "資料主體權利 / Data subject rights"
+            controls:
+              - "Right to access automated process"
+              - "Right to erasure implemented"
+              - "Data portability enabled"
+        breach_notification:
+          authority_notification_hours: 72
+          data_subject_notification_required: true
+          documentation_required: true
+      hipaa:
+        enabled: false
+        reason: "Healthcare data not processed"
+      pci_dss:
+        enabled: true
+        version: "4.0"
+        requirements:
+          requirement_1:
+            name: "安裝與維護網路安全控制 / Install and Maintain Network Security Controls"
+            sub_requirements:
+              - "1.2.1: Network segmentation implemented"
+              - "1.3.1: Ingress/egress traffic restrictions"
+          requirement_3:
+            name: "保護儲存的帳戶資料 / Protect Stored Account Data"
+            sub_requirements:
+              - "3.5.1: Encryption of cardholder data at rest"
+              - "3.6.1: Cryptographic key management"
+        quarterly_scan: true
+        annual_assessment: true
+  policy-as-code-engine.yaml: |
+    version: v1.0.0
+    policy_engines:
+      opa_gatekeeper:
+        enabled: true
+        version: "v3.14.0"
+        enforcement_action: "deny"
+        audit_interval_seconds: 60
+        constraint_templates:
+          - name: "k8srequiredlabels"
+            description: "強制必要標籤 / Enforce required labels"
+            parameters:
+              labels:
+                - "app.kubernetes.io/name"
+                - "baseline.level"
+                - "owner"
+          - name: "k8scontainerlimits"
+            description: "強制容器資源限制 / Enforce container resource limits"
+            parameters:
+              cpu: "required"
+              memory: "required"
+          - name: "k8sallowedrepos"
+            description: "限制容器映像倉庫 / Restrict container image repositories"
+            parameters:
+              repos:
+                - "gcr.io/company-registry/*"
+                - "docker.io/library/*"
+          - name: "k8sblocknodeport"
+            description: "禁止 NodePort 服務 / Block NodePort services"
+            parameters:
+              allowed_namespaces:
+                - "istio-system"
+      kyverno:
+        enabled: true
+        version: "v1.11.0"
+        validation_failure_action: "Enforce"
+        policies:
+          - name: "require-pod-security-standards"
+            spec:
+              background: true
+              rules:
+                - name: "restricted-pod-security"
+                  match:
+                    any:
+                      - resources:
+                          kinds:
+                            - "Pod"
+                  validate:
+                    message: "Pod must comply with restricted security standards"
+                    podSecurity:
+                      level: "restricted"
+                      version: "latest"
+          - name: "add-default-network-policy"
+            spec:
+              background: false
+              rules:
+                - name: "generate-default-deny"
+                  match:
+                    any:
+                      - resources:
+                          kinds:
+                            - "Namespace"
+                  generate:
+                    kind: "NetworkPolicy"
+                    name: "default-deny"
+                    namespace: "{{request.object.metadata.name}}"
+                    data:
+                      spec:
+                        podSelector: {}
+                        policyTypes:
+                          - "Ingress"
+                          - "Egress"
+      conftest:
+        enabled: true
+        version: "v0.47.0"
+        namespaces:
+          - "kubernetes"
+          - "main"
+        policies:
+          - name: "deployment-best-practices"
+            tests:
+              - "replica_count >= 2"
+              - "has_liveness_probe == true"
+              - "has_readiness_probe == true"
+              - "resource_requests_defined == true"
+  attestation-generation.yaml: |
+    version: v1.0.0
+    attestation_providers:
+      cosign:
+        enabled: true
+        key_provider: "kms"
+        kms_key_id: "projects/PROJECT_ID/locations/LOCATION/keyRings/RING/cryptoKeys/KEY"
+        signature_algorithm: "ECDSA_P256_SHA256"
+        timestamp_authority: "https://freetsa.org/tsr"
+        transparency_log: "rekor.sigstore.dev"
+      in_toto:
+        enabled: true
+        layout_version: "1.0"
+        steps:
+          - name: "build"
+            expected_materials:
+              - "MATCH Dockerfile IN ."
+              - "MATCH src/* IN ."
+            expected_products:
+              - "CREATE image.tar"
+          - name: "test"
+            expected_materials:
+              - "MATCH image.tar"
+            expected_products:
+              - "CREATE test-results.xml"
+          - name: "deploy"
+            expected_materials:
+              - "MATCH image.tar"
+              - "MATCH deployment.yaml"
+            expected_products:
+              - "CREATE deployment-receipt.json"
+        functionaries:
+          - name: "build-bot"
+            pubkey: "build-bot-public-key.pem"
+          - name: "test-bot"
+            pubkey: "test-bot-public-key.pem"
+      slsa_provenance:
+        enabled: true
+        builder_id: "https://github.com/slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@refs/tags/v1.9.0"
+        build_type: "https://slsa-framework.github.io/github-actions-buildtypes/workflow/v1"
+        invocation:
+          config_source:
+            uri: "git+https://github.com/org/repo@refs/heads/main"
+            digest:
+              sha256: "example-commit-sha"
+          parameters:
+            workflow: ".github/workflows/build.yml"
+        materials:
+          - uri: "git+https://github.com/org/repo@refs/heads/main"
+            digest:
+              sha1: "example-git-commit-sha"
+  drift-detection-engine.yaml: |
+    version: v1.0.0
+    drift_detection:
+      scan_interval_minutes: 15
+      detection_methods:
+        configuration_drift:
+          enabled: true
+          baseline_source: "gitops-repository"
+          comparison_method: "hash-based"
+          ignore_annotations:
+            - "kubectl.kubernetes.io/last-applied-configuration"
+          alert_on_drift: true
+        state_drift:
+          enabled: true
+          expected_state_source: "desired-state-store"
+          actual_state_source: "kubernetes-api"
+          reconciliation_threshold_minutes: 5
+          auto_remediation: true
+        policy_drift:
+          enabled: true
+          policy_repository: "opa-policy-bundle"
+          validation_mode: "continuous"
+          enforcement_action: "warn-and-log"
+      remediation_strategies:
+        auto_remediation:
+          enabled: true
+          allowed_actions:
+            - "update-resource"
+            - "recreate-resource"
+          forbidden_actions:
+            - "delete-resource"
+          dry_run_mode: false
+          rollback_on_failure: true
+        manual_approval:
+          enabled: false
+          approval_required_for:
+            - "production-namespace"
+            - "critical-services"
+          approval_timeout_minutes: 60
+        notification:
+          channels:
+            - type: "slack"
+              webhook: "https://hooks.slack.com/services/WORKSPACE/CHANNEL/TOKEN"
+            - type: "pagerduty"
+              integration_key: "PAGERDUTY_INTEGRATION_KEY"
+          severity_mapping:
+            critical: "immediate"
+            high: "within-1-hour"
+            medium: "within-4-hours"
+            low: "daily-summary"
+  evidence-collection.yaml: |
+    version: v1.0.0
+    evidence_types:
+      audit_logs:
+        sources:
+          - "kubernetes-audit-log"
+          - "application-audit-log"
+          - "security-audit-log"
+        retention_days: 2555
+        format: "json"
+        encryption: "aes-256-gcm"
+        integrity_check: "sha256-hash"
+        storage_location: "s3://compliance-evidence-bucket/audit-logs/"
+      configuration_snapshots:
+        frequency: "hourly"
+        include_resources:
+          - "deployments"
+          - "services"
+          - "configmaps"
+          - "secrets-metadata"
+          - "networkpolicies"
+        format: "yaml"
+        compression: "gzip"
+        versioning: true
+        storage_location: "s3://compliance-evidence-bucket/config-snapshots/"
+      security_scans:
+        vulnerability_scans:
+          frequency: "daily"
+          scanner: "trivy"
+          severity_threshold: "MEDIUM"
+          fail_on_critical: true
+        compliance_scans:
+          frequency: "daily"
+          scanner: "kube-bench"
+          benchmark: "cis-1.7"
+        sbom_generation:
+          frequency: "on-build"
+          format: "spdx"
+          include_dependencies: true
+        storage_location: "s3://compliance-evidence-bucket/security-scans/"
+      access_reviews:
+        frequency: "quarterly"
+        scope:
+          - "cluster-admin-role-bindings"
+          - "namespace-admin-role-bindings"
+          - "service-account-permissions"
+        workflow:
+          - "generate-review-report"
+          - "send-to-approvers"
+          - "collect-approvals"
+          - "apply-changes"
+        storage_location: "s3://compliance-evidence-bucket/access-reviews/"
+      incident_records:
+        auto_capture: true
+        include_context:
+          - "related-logs"
+          - "affected-resources"
+          - "timeline"
+          - "remediation-actions"
+        post_incident_review: true
+        lessons_learned_required: true
+        storage_location: "s3://compliance-evidence-bucket/incidents/"
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: merkle-tree-attestation-config
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.component: merkle-attestation
+    baseline.component: merkle-attestation
 data:
-  merkle-tree-structure.yaml: "version: v1.0.0\nmerkle_tree_attestation:\n  configuration_tree:\n\
-    \    description: \"配置檔案 Merkle 樹 / Configuration files Merkle tree\"\n    root_hash_storage:\
-    \ \"etcd://compliance/merkle-roots/configuration\"\n    leaf_nodes:\n      - \"\
-    namespace-definitions\"\n      - \"resource-quotas\"\n      - \"network-policies\"\
-    \n      - \"rbac-policies\"\n      - \"pod-security-policies\"\n    update_trigger:\
-    \ \"on-change\"\n    verification_interval_minutes: 15\n  deployment_tree:\n \
-    \   description: \"部署狀態 Merkle 樹 / Deployment state Merkle tree\"\n    root_hash_storage:\
-    \ \"etcd://compliance/merkle-roots/deployment\"\n    leaf_nodes:\n      - \"deployment-specs\"\
-    \n      - \"replica-counts\"\n      - \"container-images\"\n      - \"environment-variables\"\
-    \n    update_trigger: \"on-deployment\"\n    verification_interval_minutes: 5\n\
-    \  audit_tree:\n    description: \"稽核日誌 Merkle 樹 / Audit log Merkle tree\"\n \
-    \   root_hash_storage: \"etcd://compliance/merkle-roots/audit\"\n    leaf_nodes:\n\
-    \      - \"api-server-audit-logs\"\n      - \"admission-controller-logs\"\n  \
-    \    - \"policy-enforcement-logs\"\n    update_trigger: \"hourly\"\n    verification_interval_minutes:\
-    \ 60\n  hash_algorithm: \"sha3-256\"\n  proof_generation:\n    enabled: true\n\
-    \    proof_format: \"json\"\n    include_witnesses: true\n  integrity_verification:\n\
-    \    continuous_mode: true\n    alert_on_mismatch: true\n    auto_remediation:\
-    \ false\n"
+  merkle-tree-structure.yaml: |
+    version: v1.0.0
+    merkle_tree_attestation:
+      configuration_tree:
+        description: "配置檔案 Merkle 樹 / Configuration files Merkle tree"
+        root_hash_storage: "etcd://compliance/merkle-roots/configuration"
+        leaf_nodes:
+          - "namespace-definitions"
+          - "resource-quotas"
+          - "network-policies"
+          - "rbac-policies"
+          - "pod-security-policies"
+        update_trigger: "on-change"
+        verification_interval_minutes: 15
+      deployment_tree:
+        description: "部署狀態 Merkle 樹 / Deployment state Merkle tree"
+        root_hash_storage: "etcd://compliance/merkle-roots/deployment"
+        leaf_nodes:
+          - "deployment-specs"
+          - "replica-counts"
+          - "container-images"
+          - "environment-variables"
+        update_trigger: "on-deployment"
+        verification_interval_minutes: 5
+      audit_tree:
+        description: "稽核日誌 Merkle 樹 / Audit log Merkle tree"
+        root_hash_storage: "etcd://compliance/merkle-roots/audit"
+        leaf_nodes:
+          - "api-server-audit-logs"
+          - "admission-controller-logs"
+          - "policy-enforcement-logs"
+        update_trigger: "hourly"
+        verification_interval_minutes: 60
+      hash_algorithm: "sha3-256"
+      proof_generation:
+        enabled: true
+        proof_format: "json"
+        include_witnesses: true
+      integrity_verification:
+        continuous_mode: true
+        alert_on_mismatch: true
+        auto_remediation: false
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: compliance-attestation-job
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.component: compliance-automation
+    baseline.component: compliance-automation
 spec:
-  schedule: 0 */6 * * *
-  concurrencyPolicy: Forbid
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: "Forbid"
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
   jobTemplate:
@@ -196,87 +409,87 @@ spec:
           labels:
             app: compliance-attestation
         spec:
-          restartPolicy: OnFailure
+          restartPolicy: "OnFailure"
           serviceAccountName: compliance-attestation-sa
           containers:
-          - name: attestation-generator
-            image: gcr.io/company/compliance-attestation:v1.0.0
-            imagePullPolicy: IfNotPresent
-            env:
-            - name: ATTESTATION_MODE
-              value: full-scan
-            - name: EVIDENCE_BUCKET
-              value: s3://compliance-evidence-bucket
-            - name: MERKLE_ROOT_STORE
-              value: etcd://compliance/merkle-roots
-            volumeMounts:
-            - name: evidence-volume
-              mountPath: /evidence
-            - name: signing-keys
-              mountPath: /keys
-              readOnly: true
-            resources:
-              requests:
-                cpu: 500m
-                memory: 1Gi
-              limits:
-                cpu: 2000m
-                memory: 4Gi
+            - name: attestation-generator
+              image: "gcr.io/company/compliance-attestation:v1.0.0"
+              imagePullPolicy: "IfNotPresent"
+              env:
+                - name: ATTESTATION_MODE
+                  value: "full-scan"
+                - name: EVIDENCE_BUCKET
+                  value: "s3://compliance-evidence-bucket"
+                - name: MERKLE_ROOT_STORE
+                  value: "etcd://compliance/merkle-roots"
+              volumeMounts:
+                - name: evidence-volume
+                  mountPath: "/evidence"
+                - name: signing-keys
+                  mountPath: "/keys"
+                  readOnly: true
+              resources:
+                requests:
+                  cpu: "500m"
+                  memory: "1Gi"
+                limits:
+                  cpu: "2000m"
+                  memory: "4Gi"
           volumes:
-          - name: evidence-volume
-            emptyDir: {}
-          - name: signing-keys
-            secret:
-              secretName: attestation-signing-keys
+            - name: evidence-volume
+              emptyDir: {}
+            - name: signing-keys
+              secret:
+                secretName: attestation-signing-keys
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: compliance-attestation-sa
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.component: compliance-automation
+    baseline.component: compliance-automation
 automountServiceAccountToken: true
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: compliance-attestation-reader
   labels:
-    machinenativeops.io/baseline.component: compliance-automation
+    baseline.component: compliance-automation
 rules:
-- apiGroups:
-  - ''
-  - apps
-  - batch
-  - networking.k8s.io
-  - rbac.authorization.k8s.io
-  - policy
-  resources:
-  - '*'
-  verbs:
-  - get
-  - list
-- apiGroups:
-  - templates.gatekeeper.sh
-  - constraints.gatekeeper.sh
-  resources:
-  - '*'
-  verbs:
-  - get
-  - list
+  - apiGroups:
+      - ""
+      - "apps"
+      - "batch"
+      - "networking.k8s.io"
+      - "rbac.authorization.k8s.io"
+      - "policy"
+    resources:
+      - "*"
+    verbs:
+      - "get"
+      - "list"
+  - apiGroups:
+      - "templates.gatekeeper.sh"
+      - "constraints.gatekeeper.sh"
+    resources:
+      - "*"
+    verbs:
+      - "get"
+      - "list"
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: compliance-attestation-reader
   labels:
-    machinenativeops.io/baseline.component: compliance-automation
+    baseline.component: compliance-automation
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: compliance-attestation-reader
 subjects:
-- kind: ServiceAccount
-  name: compliance-attestation-sa
-  namespace: intelligent-hyperautomation-baseline
+  - kind: ServiceAccount
+    name: compliance-attestation-sa
+    namespace: intelligent-hyperautomation-baseline

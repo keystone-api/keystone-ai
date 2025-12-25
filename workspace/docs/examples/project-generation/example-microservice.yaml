@@ -1,65 +1,56 @@
+# Example: Python FastAPI Microservice with Full Stack
 metadata:
-  description: User management microservice with authentication
   name: user-service
   version: 1.0.0
+  description: User management microservice with authentication
+
 spec:
+  type: microservice
+  language: python
+  framework: fastapi
+
   architecture:
-    layers:
-    - presentation
-    - application
-    - domain
-    - infrastructure
     pattern: clean-architecture
-  deliverables:
-    ci_cd:
-      platform: github-actions
-      stages:
-      - lint
-      - test
-      - build
-      - security-scan
-      - deploy
-    docker:
-      healthcheck: true
-      multi_stage: true
-    kubernetes:
-      deployment: true
-      hpa: true
-      service: true
-    tests:
-      coverage_threshold: 85
-      integration: true
-      unit: true
+    layers: [presentation, application, domain, infrastructure]
+
   features:
     api:
-      openapi_version: 3.1.0
       rest: true
+      openapi_version: "3.1.0"
+    database:
+      type: postgresql
+      orm: sqlalchemy
+      migrations: alembic
     cache:
       type: redis
-    database:
-      migrations: alembic
-      orm: sqlalchemy
-      type: postgresql
     messaging:
-      topics:
-      - user.created
-      - user.updated
-      - user.deleted
       type: kafka
+      topics: [user.created, user.updated, user.deleted]
     observability:
-      health_checks: true
       logging: structured
       metrics: prometheus
       tracing: opentelemetry
-  framework: fastapi
+      health_checks: true
+
+  deliverables:
+    tests:
+      unit: true
+      integration: true
+      coverage_threshold: 85
+    docker:
+      multi_stage: true
+      healthcheck: true
+    kubernetes:
+      deployment: true
+      service: true
+      hpa: true
+    ci_cd:
+      platform: github-actions
+      stages: [lint, test, build, security-scan, deploy]
+
   governance:
-    compliance:
-    - ISO-42001
-    - SOC2
-    - GDPR
-    license: MIT
-    provenance: slsa-level-3
-    sbom: true
+    compliance: [ISO-42001, SOC2, GDPR]
     security_level: high
-  language: python
-  type: microservice
+    sbom: true
+    provenance: slsa-level-3
+    license: MIT

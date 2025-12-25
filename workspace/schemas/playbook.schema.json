@@ -1,0 +1,181 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://machinenativeops.com/schemas/playbook.schema.json",
+  "title": "Playbook Configuration Schema",
+  "description": "Schema for defining team playbook workflows",
+  "type": "object",
+  "required": ["version", "name", "steps"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "enum": ["v1"],
+      "description": "Schema version"
+    },
+    "name": {
+      "type": "string",
+      "description": "Playbook name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Playbook description"
+    },
+    "triggers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "on_startup": {
+            "type": "boolean"
+          },
+          "event": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/PlaybookInput"
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/PlaybookStep"
+      },
+      "minItems": 1
+    },
+    "audit": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "PLAYBOOK_STARTED",
+              "STEP_COMPLETED",
+              "AGENT_DISPATCHED",
+              "ARTIFACT_WRITTEN",
+              "PLAYBOOK_COMPLETED",
+              "ERROR",
+              "MESSAGE_RECEIVED",
+              "INTENT_PARSED",
+              "MODEL_SELECTED",
+              "RESPONSE_GENERATED",
+              "MESSAGE_SENT"
+            ]
+          }
+        }
+      }
+    },
+    "error_handling": {
+      "type": "object",
+      "properties": {
+        "on_step_failure": {
+          "type": "string",
+          "enum": ["fail", "continue", "retry"]
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "fallback_agent": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "PlaybookInput": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["string", "number", "boolean", "object", "array"]
+        },
+        "required": {
+          "type": "boolean",
+          "default": false
+        },
+        "default": {}
+      }
+    },
+    "PlaybookStep": {
+      "type": "object",
+      "required": ["id", "action"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique step identifier"
+        },
+        "action": {
+          "type": "string",
+          "description": "Action to execute"
+        },
+        "description": {
+          "type": "string"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Agent to invoke for this step"
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "condition": {
+          "type": "string",
+          "description": "Condition expression for step execution"
+        },
+        "inputs": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["markdown", "json", "code", "yaml", "text"]
+              }
+            }
+          }
+        },
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fail_fast": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    }
+  }
+}

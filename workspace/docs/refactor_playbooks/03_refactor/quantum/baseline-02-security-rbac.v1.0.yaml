@@ -1,310 +1,454 @@
-apiVersion: machinenativeops.io/v2
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: security-baseline-policy
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.level: L-A
-    machinenativeops.io/baseline.version: v1.0.0
-    machinenativeops.io/baseline.type: security-rbac
-    machinenativeops.io/baseline.dependency: namespace-governance
+    baseline.level: L-A
+    baseline.version: v1.0.0
+    baseline.type: security-rbac
+    baseline.dependency: namespace-governance
   annotations:
-    machinenativeops.io/description: 安全與存取控制基線 / Security and RBAC Foundation
-    machinenativeops.io/purpose: 建立零信任架構與最小權限原則 / Establish Zero Trust architecture
-      and least privilege principles
-    machinenativeops.io/capability-scope: authentication,authorization,encryption,audit
-    machinenativeops.io/conflict-priority: '950'
-    machinenativeops.io/state-machine: REGISTERED->COORDINATED->ACTIVE
+    baseline.io/description: "安全與存取控制基線 / Security and RBAC Foundation"
+    baseline.io/purpose: "建立零信任架構與最小權限原則 / Establish Zero Trust architecture and least privilege principles"
+    baseline.io/capability-scope: "authentication,authorization,encryption,audit"
+    baseline.io/conflict-priority: "950"
+    baseline.io/state-machine: "REGISTERED->COORDINATED->ACTIVE"
 data:
-  zero-trust-principles.yaml: "version: v1.0.0\nprinciples:\n  verify_explicitly:\n\
-    \    description: \"明確驗證所有存取請求 / Verify all access requests explicitly\"\n   \
-    \ implementation:\n      - \"OIDC authentication required\"\n      - \"mTLS for\
-    \ all service-to-service communication\"\n      - \"API Gateway with JWT validation\"\
-    \n    validation_points:\n      - \"ingress-gateway\"\n      - \"service-mesh\"\
-    \n      - \"api-endpoints\"\n  least_privilege:\n    description: \"最小權限授予 / Grant\
-    \ least privilege access\"\n    implementation:\n      - \"Role-based access control\
-    \ (RBAC)\"\n      - \"Just-in-time access provisioning\"\n      - \"Time-bound\
-    \ permissions\"\n    enforcement:\n      deny_by_default: true\n      explicit_allow_only:\
-    \ true\n  assume_breach:\n    description: \"假設已被入侵態勢 / Assume breach posture\"\
-    \n    implementation:\n      - \"Network segmentation\"\n      - \"Encrypted data\
-    \ at rest and in transit\"\n      - \"Continuous monitoring and anomaly detection\"\
-    \n    monitoring:\n      - \"audit-logs\"\n      - \"security-events\"\n     \
-    \ - \"behavior-analytics\"\n"
-  rbac-role-matrix.yaml: "version: v1.0.0\nroles:\n  cluster-admin:\n    level: L0-CONSTITUTIONAL\n\
-    \    description: \"叢集管理員（僅限 L1 層）/ Cluster administrator (L1 only)\"\n    permissions:\n\
-    \      - \"all:all:all\"\n    assignment_process: \"manual-approval-required\"\
-    \n    max_users: 3\n    audit_retention_days: 2555\n  platform-operator:\n   \
-    \ level: L1-GOVERNANCE\n    description: \"平台操作員 / Platform operator\"\n    permissions:\n\
-    \      - \"namespaces:read,update\"\n      - \"deployments:read,update,rollback\"\
-    \n      - \"services:read,update\"\n      - \"configmaps:read,update\"\n     \
-    \ - \"secrets:read\"\n    namespaces:\n      - \"all-except-kube-system\"\n  \
-    \  mfa_required: true\n  developer:\n    level: L2-APPLICATION\n    description:\
-    \ \"應用程式開發者 / Application developer\"\n    permissions:\n      - \"deployments:read\"\
-    \n      - \"pods:read,logs\"\n      - \"services:read\"\n      - \"configmaps:read\"\
-    \n    namespaces:\n      - \"assigned-only\"\n    approval_required: false\n \
-    \ viewer:\n    level: L3-READONLY\n    description: \"唯讀檢視者 / Read-only viewer\"\
-    \n    permissions:\n      - \"all:read\"\n    namespaces:\n      - \"assigned-only\"\
-    \n    default_role: true\n  ci-cd-automation:\n    level: L2-AUTOMATION\n    description:\
-    \ \"CI/CD 自動化服務帳戶 / CI/CD automation service account\"\n    permissions:\n   \
-    \   - \"deployments:create,update,delete\"\n      - \"configmaps:create,update,delete\"\
-    \n      - \"secrets:create,update\"\n      - \"pods:read,delete\"\n    namespaces:\n\
-    \      - \"assigned-workload-namespaces\"\n    token_rotation_days: 30\n    audit_all_actions:\
-    \ true\n"
-  encryption-standards.yaml: "version: v1.0.0\ndata_at_rest:\n  kubernetes_secrets:\n\
-    \    encryption_provider: \"aes-gcm\"\n    key_length_bits: 256\n    rotation_days:\
-    \ 90\n    backend: \"vault\"\n  persistent_volumes:\n    encryption_required:\
-    \ true\n    algorithm: \"AES-256-XTS\"\n    key_management: \"external-kms\"\n\
-    data_in_transit:\n  service_mesh:\n    mtls_mode: \"STRICT\"\n    tls_version_min:\
-    \ \"1.3\"\n    cipher_suites:\n      - \"TLS_AES_256_GCM_SHA384\"\n      - \"\
-    TLS_CHACHA20_POLY1305_SHA256\"\n  ingress:\n    tls_termination: \"edge\"\n  \
-    \  tls_version_min: \"1.3\"\n    hsts_enabled: true\n    hsts_max_age_seconds:\
-    \ 31536000\npost_quantum_cryptography:\n  enabled: true\n  algorithms:\n    -\
-    \ \"CRYSTALS-Kyber\"\n    - \"CRYSTALS-Dilithium\"\n  hybrid_mode: true\n  classical_fallback:\
-    \ \"RSA-4096\"\n"
-  authentication-config.yaml: "version: v1.0.0\nproviders:\n  oidc:\n    enabled:\
-    \ true\n    issuer_url: \"https://idp.example.com\"\n    client_id: \"kubernetes-cluster\"\
-    \n    username_claim: \"email\"\n    groups_claim: \"groups\"\n    required_claims:\n\
-    \      - \"email_verified:true\"\n  service_account:\n    enabled: true\n    token_ttl_seconds:\
-    \ 3600\n    projected_volume_enabled: true\n    audience: \"kubernetes.default.svc\"\
-    \n  certificate:\n    enabled: true\n    ca_bundle: \"base64-encoded-ca-cert\"\
-    \n    client_cert_validation: \"require-and-verify\"\nsession_management:\n  idle_timeout_minutes:\
-    \ 30\n  absolute_timeout_hours: 8\n  concurrent_sessions_max: 3\n"
-  audit-policy.yaml: "version: v1.0.0\naudit_levels:\n  metadata:\n    description:\
-    \ \"記錄請求元數據 / Log request metadata\"\n    resources:\n      - \"configmaps\"\n\
-    \      - \"endpoints\"\n  request:\n    description: \"記錄請求主體 / Log request body\"\
-    \n    resources:\n      - \"secrets\"\n      - \"deployments\"\n      - \"statefulsets\"\
-    \n  request_response:\n    description: \"記錄請求與回應 / Log request and response\"\
-    \n    resources:\n      - \"rbac.authorization.k8s.io/*\"\n      - \"certificates.k8s.io/*\"\
-    \nretention:\n  log_rotation_days: 90\n  archive_storage: \"s3-compliant\"\n \
-    \ encryption_at_rest: true\nalerting:\n  unauthorized_access:\n    severity: \"\
-    critical\"\n    notification: \"pagerduty\"\n  privileged_escalation:\n    severity:\
-    \ \"high\"\n    notification: \"slack\"\n  anomalous_behavior:\n    severity:\
-    \ \"medium\"\n    notification: \"email\"\n"
+  zero-trust-principles.yaml: |
+    version: v1.0.0
+    principles:
+      verify_explicitly:
+        description: "明確驗證所有存取請求 / Verify all access requests explicitly"
+        implementation:
+          - "OIDC authentication required"
+          - "mTLS for all service-to-service communication"
+          - "API Gateway with JWT validation"
+        validation_points:
+          - "ingress-gateway"
+          - "service-mesh"
+          - "api-endpoints"
+      least_privilege:
+        description: "最小權限授予 / Grant least privilege access"
+        implementation:
+          - "Role-based access control (RBAC)"
+          - "Just-in-time access provisioning"
+          - "Time-bound permissions"
+        enforcement:
+          deny_by_default: true
+          explicit_allow_only: true
+      assume_breach:
+        description: "假設已被入侵態勢 / Assume breach posture"
+        implementation:
+          - "Network segmentation"
+          - "Encrypted data at rest and in transit"
+          - "Continuous monitoring and anomaly detection"
+        monitoring:
+          - "audit-logs"
+          - "security-events"
+          - "behavior-analytics"
+  rbac-role-matrix.yaml: |
+    version: v1.0.0
+    roles:
+      cluster-admin:
+        level: L0-CONSTITUTIONAL
+        description: "叢集管理員（僅限 L1 層）/ Cluster administrator (L1 only)"
+        permissions:
+          - "all:all:all"
+        assignment_process: "manual-approval-required"
+        max_users: 3
+        audit_retention_days: 2555
+      platform-operator:
+        level: L1-GOVERNANCE
+        description: "平台操作員 / Platform operator"
+        permissions:
+          - "namespaces:read,update"
+          - "deployments:read,update,rollback"
+          - "services:read,update"
+          - "configmaps:read,update"
+          - "secrets:read"
+        namespaces:
+          - "all-except-kube-system"
+        mfa_required: true
+      developer:
+        level: L2-APPLICATION
+        description: "應用程式開發者 / Application developer"
+        permissions:
+          - "deployments:read"
+          - "pods:read,logs"
+          - "services:read"
+          - "configmaps:read"
+        namespaces:
+          - "assigned-only"
+        approval_required: false
+      viewer:
+        level: L3-READONLY
+        description: "唯讀檢視者 / Read-only viewer"
+        permissions:
+          - "all:read"
+        namespaces:
+          - "assigned-only"
+        default_role: true
+      ci-cd-automation:
+        level: L2-AUTOMATION
+        description: "CI/CD 自動化服務帳戶 / CI/CD automation service account"
+        permissions:
+          - "deployments:create,update,delete"
+          - "configmaps:create,update,delete"
+          - "secrets:create,update"
+          - "pods:read,delete"
+        namespaces:
+          - "assigned-workload-namespaces"
+        token_rotation_days: 30
+        audit_all_actions: true
+  encryption-standards.yaml: |
+    version: v1.0.0
+    data_at_rest:
+      kubernetes_secrets:
+        encryption_provider: "aes-gcm"
+        key_length_bits: 256
+        rotation_days: 90
+        backend: "vault"
+      persistent_volumes:
+        encryption_required: true
+        algorithm: "AES-256-XTS"
+        key_management: "external-kms"
+    data_in_transit:
+      service_mesh:
+        mtls_mode: "STRICT"
+        tls_version_min: "1.3"
+        cipher_suites:
+          - "TLS_AES_256_GCM_SHA384"
+          - "TLS_CHACHA20_POLY1305_SHA256"
+      ingress:
+        tls_termination: "edge"
+        tls_version_min: "1.3"
+        hsts_enabled: true
+        hsts_max_age_seconds: 31536000
+    post_quantum_cryptography:
+      enabled: true
+      algorithms:
+        - "CRYSTALS-Kyber"
+        - "CRYSTALS-Dilithium"
+      hybrid_mode: true
+      classical_fallback: "RSA-4096"
+  authentication-config.yaml: |
+    version: v1.0.0
+    providers:
+      oidc:
+        enabled: true
+        issuer_url: "https://idp.example.com"
+        client_id: "kubernetes-cluster"
+        username_claim: "email"
+        groups_claim: "groups"
+        required_claims:
+          - "email_verified:true"
+      service_account:
+        enabled: true
+        token_ttl_seconds: 3600
+        projected_volume_enabled: true
+        audience: "kubernetes.default.svc"
+      certificate:
+        enabled: true
+        ca_bundle: "base64-encoded-ca-cert"
+        client_cert_validation: "require-and-verify"
+    session_management:
+      idle_timeout_minutes: 30
+      absolute_timeout_hours: 8
+      concurrent_sessions_max: 3
+  audit-policy.yaml: |
+    version: v1.0.0
+    audit_levels:
+      metadata:
+        description: "記錄請求元數據 / Log request metadata"
+        resources:
+          - "configmaps"
+          - "endpoints"
+      request:
+        description: "記錄請求主體 / Log request body"
+        resources:
+          - "secrets"
+          - "deployments"
+          - "statefulsets"
+      request_response:
+        description: "記錄請求與回應 / Log request and response"
+        resources:
+          - "rbac.authorization.k8s.io/*"
+          - "certificates.k8s.io/*"
+    retention:
+      log_rotation_days: 90
+      archive_storage: "s3-compliant"
+      encryption_at_rest: true
+    alerting:
+      unauthorized_access:
+        severity: "critical"
+        notification: "pagerduty"
+      privileged_escalation:
+        severity: "high"
+        notification: "slack"
+      anomalous_behavior:
+        severity: "medium"
+        notification: "email"
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: security-policy-enforcer
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.component: security-enforcer
+    baseline.component: security-enforcer
 automountServiceAccountToken: true
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: security-baseline-enforcer
   labels:
-    machinenativeops.io/baseline.component: security-enforcer
+    baseline.component: security-enforcer
 rules:
-- apiGroups:
-  - ''
-  resources:
-  - serviceaccounts
-  - secrets
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
-  - roles
-  - rolebindings
-  - clusterroles
-  - clusterrolebindings
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-- apiGroups:
-  - networking.k8s.io
-  resources:
-  - networkpolicies
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-- apiGroups:
-  - policy
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
-- apiGroups:
-  - cert-manager.io
-  resources:
-  - certificates
-  - issuers
-  verbs:
-  - get
-  - list
-  - watch
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "rbac.authorization.k8s.io"
+    resources:
+      - roles
+      - rolebindings
+      - clusterroles
+      - clusterrolebindings
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+  - apiGroups:
+      - "networking.k8s.io"
+    resources:
+      - networkpolicies
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+  - apiGroups:
+      - "policy"
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+  - apiGroups:
+      - "cert-manager.io"
+    resources:
+      - certificates
+      - issuers
+    verbs:
+      - get
+      - list
+      - watch
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: security-baseline-enforcer
   labels:
-    machinenativeops.io/baseline.component: security-enforcer
+    baseline.component: security-enforcer
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: security-baseline-enforcer
 subjects:
-- kind: ServiceAccount
-  name: security-policy-enforcer
-  namespace: intelligent-hyperautomation-baseline
+  - kind: ServiceAccount
+    name: security-policy-enforcer
+    namespace: intelligent-hyperautomation-baseline
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: developer-restricted
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.rbac: developer-template
+    baseline.rbac: developer-template
   annotations:
-    machinenativeops.io/description: 受限開發者角色模板 / Restricted developer role template
+    rbac.io/description: "受限開發者角色模板 / Restricted developer role template"
 rules:
-- apiGroups:
-  - ''
-  resources:
-  - pods
-  - pods/log
-  - pods/status
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - deployments
-  - replicasets
-  - statefulsets
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ''
-  resources:
-  - services
-  - endpoints
-  verbs:
-  - get
-  - list
-- apiGroups:
-  - ''
-  resources:
-  - configmaps
-  verbs:
-  - get
-  - list
-  resourceNames:
-  - app-config-*
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - pods/log
+      - pods/status
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "apps"
+    resources:
+      - deployments
+      - replicasets
+      - statefulsets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - endpoints
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+    resourceNames:
+      - "app-config-*"
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: ci-cd-deployer
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.rbac: ci-cd-template
+    baseline.rbac: ci-cd-template
   annotations:
-    machinenativeops.io/description: CI/CD 部署者角色模板 / CI/CD deployer role template
+    rbac.io/description: "CI/CD 部署者角色模板 / CI/CD deployer role template"
 rules:
-- apiGroups:
-  - apps
-  resources:
-  - deployments
-  - replicasets
-  - statefulsets
-  - daemonsets
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-- apiGroups:
-  - ''
-  resources:
-  - pods
-  verbs:
-  - get
-  - list
-  - delete
-- apiGroups:
-  - ''
-  resources:
-  - services
-  - endpoints
-  verbs:
-  - get
-  - list
-  - create
-  - update
-  - patch
-- apiGroups:
-  - ''
-  resources:
-  - configmaps
-  - secrets
-  verbs:
-  - get
-  - list
-  - create
-  - update
-  - patch
-- apiGroups:
-  - batch
-  resources:
-  - jobs
-  - cronjobs
-  verbs:
-  - get
-  - list
-  - create
-  - update
-  - delete
+  - apiGroups:
+      - "apps"
+    resources:
+      - deployments
+      - replicasets
+      - statefulsets
+      - daemonsets
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - endpoints
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - secrets
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - patch
+  - apiGroups:
+      - "batch"
+    resources:
+      - jobs
+      - cronjobs
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - delete
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: v1
 kind: Secret
 metadata:
   name: encryption-key-rotation-schedule
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.component: encryption-management
+    baseline.component: encryption-management
 type: Opaque
 stringData:
-  rotation-schedule.yaml: "version: v1.0.0\nrotation_policies:\n  kubernetes_secrets:\n\
-    \    interval_days: 90\n    grace_period_days: 7\n    notification_days_before:\
-    \ 14\n  service_account_tokens:\n    interval_days: 30\n    auto_rotate: true\n\
-    \  tls_certificates:\n    interval_days: 365\n    renewal_threshold_days: 30\n\
-    \  api_keys:\n    interval_days: 180\n    rotation_window_hours: 4\nenforcement:\n\
-    \  block_expired: true\n  warn_expiring: true\n  auto_remediation: true\n"
+  rotation-schedule.yaml: |
+    version: v1.0.0
+    rotation_policies:
+      kubernetes_secrets:
+        interval_days: 90
+        grace_period_days: 7
+        notification_days_before: 14
+      service_account_tokens:
+        interval_days: 30
+        auto_rotate: true
+      tls_certificates:
+        interval_days: 365
+        renewal_threshold_days: 30
+      api_keys:
+        interval_days: 180
+        rotation_window_hours: 4
+    enforcement:
+      block_expired: true
+      warn_expiring: true
+      auto_remediation: true
 ---
-apiVersion: machinenativeops.io/v2
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: pod-security-standards
-  namespace: machinenativenops
+  namespace: intelligent-hyperautomation-baseline
   labels:
-    machinenativeops.io/baseline.component: pod-security
+    baseline.component: pod-security
 data:
-  baseline-pod-security.yaml: "version: v1.0.0\nsecurity_context_defaults:\n  run_as_non_root:\
-    \ true\n  run_as_user: 1000\n  run_as_group: 3000\n  fs_group: 2000\n  allow_privilege_escalation:\
-    \ false\n  read_only_root_filesystem: true\n  seccomp_profile:\n    type: \"RuntimeDefault\"\
-    \n  capabilities:\n    drop:\n      - \"ALL\"\n    add: []\nrestricted_policies:\n\
-    \  host_network: false\n  host_pid: false\n  host_ipc: false\n  privileged: false\n\
-    \  host_path_volumes: false\n  proc_mount: \"Default\"\nrequired_labels:\n  -\
-    \ \"app.kubernetes.io/name\"\n  - \"security.baseline/level\"\nadmission_control:\n\
-    \  enforce_mode: \"enforce\"\n  audit_annotations: true"
+  baseline-pod-security.yaml: |
+    version: v1.0.0
+    security_context_defaults:
+      run_as_non_root: true
+      run_as_user: 1000
+      run_as_group: 3000
+      fs_group: 2000
+      allow_privilege_escalation: false
+      read_only_root_filesystem: true
+      seccomp_profile:
+        type: "RuntimeDefault"
+      capabilities:
+        drop:
+          - "ALL"
+        add: []
+    restricted_policies:
+      host_network: false
+      host_pid: false
+      host_ipc: false
+      privileged: false
+      host_path_volumes: false
+      proc_mount: "Default"
+    required_labels:
+      - "app.kubernetes.io/name"
+      - "security.baseline/level"
+    admission_control:
+      enforce_mode: "enforce"
+      audit_annotations: true

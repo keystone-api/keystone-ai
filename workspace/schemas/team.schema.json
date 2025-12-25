@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://machinenativeops.com/schemas/team.schema.json",
+  "title": "Team Configuration Schema",
+  "description": "Schema for defining AI agent team configurations",
+  "type": "object",
+  "required": ["version", "team_id", "members"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "enum": ["v1"],
+      "description": "Schema version"
+    },
+    "team_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Unique team identifier"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Human-readable team name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Team description and purpose"
+    },
+    "auto_activate": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to auto-activate on startup"
+    },
+    "activation": {
+      "type": "object",
+      "properties": {
+        "on_startup": {
+          "type": "boolean",
+          "default": false
+        },
+        "on_events": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "members": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TeamMember"
+      },
+      "minItems": 1
+    },
+    "playbooks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "collaboration": {
+      "type": "object",
+      "properties": {
+        "arbitration": {
+          "type": "string",
+          "description": "Role responsible for final decisions"
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["contract-driven", "consensus", "hierarchical"]
+        },
+        "evidence_required": {
+          "type": "boolean",
+          "default": true
+        },
+        "artifact_store": {
+          "type": "string"
+        },
+        "audit_log": {
+          "type": "string"
+        }
+      }
+    },
+    "personas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "profile": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "TeamMember": {
+      "type": "object",
+      "required": ["role", "agent_id"],
+      "properties": {
+        "role": {
+          "type": "string",
+          "description": "Role name in the team"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Unique agent identifier"
+        },
+        "source": {
+          "type": "string",
+          "description": "Source path to agent implementation"
+        },
+        "language": {
+          "type": "string",
+          "enum": ["python", "typescript", "javascript"]
+        }
+      }
+    }
+  }
+}
