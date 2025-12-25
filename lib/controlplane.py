@@ -133,12 +133,23 @@ class ControlplaneConfig:
         
         # 根據類型獲取規則
         if name_type == "file":
-            pattern = r'^[a-z][a-z0-9-]*(\.[a-z0-9-]+)*$'
+            import json
+            naming_policy = self.get_naming_rules().get("naming", {}).get("file", {})
+            pattern = naming_policy.get("kebab_regex", r'^[a-z][a-z0-9-]*(\.[a-z0-9-]+)*$')
             if not re.match(pattern, name):
                 return False, f"File name must be kebab-case (dots allowed as segments): {name}"
             
             if re.search(r'\.(yaml|yml|json|toml|sh)\.txt$', name):
                 return False, f"Forbidden double-extension wrapper (use a single real extension): {name}"
+
+            dot_count = name.count('.')
+            if dot_count > 1:
+                allowlist = naming_policy.get("multi_dot_allow_regexes", [])
+                if not isinstance(allowlist, list):
+                    allowlist = []
+                allowed = any(re.match(p, name) for p in allowlist if isinstance(p, str) and p)
+                if not allowed and not re.match(r'^root\.[a-z][a-z0-9-]*\.(yaml|yml|map|sh)$', name):
+                    return False, f"File has double extension (forbidden): {name}"
         
         elif name_type == "directory":
             pattern = r'^[a-z][a-z0-9-]*$'
