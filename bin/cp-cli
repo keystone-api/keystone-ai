@@ -1,0 +1,290 @@
+#!/usr/bin/env python3
+"""
+Controlplane CLI - 實用命令行工具
+讓 controlplane 配置真正可用
+"""
+
+import sys
+import os
+import yaml
+import json
+import argparse
+from pathlib import Path
+from typing import Dict, Any, List, Optional
+
+class ControlplaneCLI:
+    """Controlplane 命令行接口"""
+    
+    def __init__(self):
+        self.repo_root = self._find_repo_root()
+        self.baseline_path = self.repo_root / "controlplane" / "baseline"
+        self.overlay_path = self.repo_root / "controlplane" / "overlay"
+        self.active_path = self.repo_root / "controlplane" / "active"
+        
+    def _find_repo_root(self) -> Path:
+        """找到儲存庫根目錄"""
+        current = Path.cwd()
+        while current != current.parent:
+            if (current / ".git").exists():
+                return current
+            current = current.parent
+        return Path.cwd()
+    
+    def _load_yaml(self, file_path: Path) -> Dict[str, Any]:
+        """載入 YAML 文件"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return yaml.safe_load(f) or {}
+        except Exception as e:
+            print(f"❌ 無法載入 {file_path}: {e}", file=sys.stderr)
+            return {}
+    
+    def _save_yaml(self, file_path: Path, data: Dict[str, Any]):
+        """保存 YAML 文件"""
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(file_path, 'w', encoding='utf-8') as f:
+            yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
+    
+    def get_config(self, key: str) -> Any:
+        """獲取配置值"""
+        # 從 baseline 讀取
+        config_file = self.baseline_path / "config" / "root.config.yaml"
+        config = self._load_yaml(config_file)
+        
+        # 支持點號路徑 (例如: metadata.version)
+        keys = key.split('.')
+        value = config
+        for k in keys:
+            if isinstance(value, dict):
+                value = value.get(k)
+            else:
+                return None
+        
+        return value
+    
+    def list_modules(self) -> List[Dict[str, Any]]:
+        """列出所有模組"""
+        modules_file = self.baseline_path / "registries" / "root.registry.modules.yaml"
+        data = self._load_yaml(modules_file)
+        return data.get('modules', [])
+    
+    def list_namespaces(self) -> List[Dict[str, Any]]:
+        """列出所有命名空間"""
+        ns_file = self.baseline_path / "registries" / "root.registry.namespaces.yaml"
+        data = self._load_yaml(ns_file)
+        return data.get('namespaces', [])
+    
+    def validate(self, verbose: bool = False) -> bool:
+        """運行驗證"""
+        validator_script = self.baseline_path / "validation" / "validate-root-specs.py"
+        
+        if not validator_script.exists():
+            print("❌ 驗證腳本不存在", file=sys.stderr)
+            return False
+        
+        import subprocess
+        cmd = [sys.executable, str(validator_script)]
+        if verbose:
+            cmd.append("--verbose")
+        
+        result = subprocess.run(cmd, cwd=self.repo_root)
+        return result.returncode == 0
+    
+    def show_status(self):
+        """顯示 controlplane 狀態"""
+        print("🎛️  Controlplane 狀態")
+        print("=" * 60)
+        print(f"📁 儲存庫根目錄: {self.repo_root}")
+        print(f"📋 Baseline 路徑: {self.baseline_path}")
+        print(f"📝 Overlay 路徑: {self.overlay_path}")
+        print(f"⚡ Active 路徑: {self.active_path}")
+        print()
+        
+        # 檢查目錄存在性
+        print("目錄狀態:")
+        print(f"  Baseline: {'✅ 存在' if self.baseline_path.exists() else '❌ 不存在'}")
+        print(f"  Overlay:  {'✅ 存在' if self.overlay_path.exists() else '❌ 不存在'}")
+        print(f"  Active:   {'✅ 存在' if self.active_path.exists() else '❌ 不存在'}")
+        print()
+        
+        # 統計文件數量
+        if self.baseline_path.exists():
+            config_count = len(list((self.baseline_path / "config").glob("*.yaml")))
+            spec_count = len(list((self.baseline_path / "specifications").glob("*.yaml")))
+            reg_count = len(list((self.baseline_path / "registries").glob("*.yaml")))
+            
+            print("Baseline 內容:")
+            print(f"  配置文件: {config_count}")
+            print(f"  規範文件: {spec_count}")
+            print(f"  註冊表文件: {reg_count}")
+    
+    def get_naming_rules(self) -> Dict[str, Any]:
+        """獲取命名規則"""
+        naming_file = self.baseline_path / "config" / "root.naming-policy.yaml"
+        return self._load_yaml(naming_file)
+    
+    def check_name(self, name: str, type: str = "file") -> bool:
+        """檢查名稱是否符合規範"""
+        rules = self.get_naming_rules()
+        
+        # 簡化的檢查邏輯
+        if type == "file":
+            # 檢查是否為 kebab-case
+            import re
+            pattern = r'^[a-z][a-z0-9-]*(\.[a-z0-9]+)*$'
+            return bool(re.match(pattern, name))
+        
+        return True
+    
+    def create_overlay_extension(self, name: str, extends: str, config: Dict[str, Any]):
+        """創建 overlay 擴展"""
+        overlay_config_dir = self.overlay_path / "config"
+        overlay_config_dir.mkdir(parents=True, exist_ok=True)
+        
+        extension_data = {
+            'metadata': {
+                'name': name,
+                'type': 'overlay',
+                'extends': extends
+            },
+            'configuration': config
+        }
+        
+        output_file = overlay_config_dir / f"{name}.yaml"
+        self._save_yaml(output_file, extension_data)
+        print(f"✅ 創建 overlay 擴展: {output_file}")
+        
+        return output_file
+    
+    def synthesize_active(self):
+        """合成 active 視圖"""
+        print("🔄 合成 active 視圖...")
+        
+        # 創建 active 目錄
+        self.active_path.mkdir(parents=True, exist_ok=True)
+        
+        # 合併 baseline 和 overlay 配置
+        baseline_configs = list((self.baseline_path / "config").glob("*.yaml"))
+        
+        for baseline_file in baseline_configs:
+            baseline_data = self._load_yaml(baseline_file)
+            
+            # 檢查是否有對應的 overlay
+            overlay_file = self.overlay_path / "config" / baseline_file.name
+            if overlay_file.exists():
+                overlay_data = self._load_yaml(overlay_file)
+                # 簡單合併 (深度合併需要更複雜的邏輯)
+                merged_data = {**baseline_data, **overlay_data}
+            else:
+                merged_data = baseline_data
+            
+            # 保存到 active
+            active_file = self.active_path / baseline_file.name
+            self._save_yaml(active_file, merged_data)
+        
+        print(f"✅ Active 視圖已合成到: {self.active_path}")
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Controlplane CLI - 讓配置真正可用",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+示例:
+  cp-cli status                    # 顯示狀態
+  cp-cli get metadata.version      # 獲取配置值
+  cp-cli list modules              # 列出模組
+  cp-cli validate                  # 運行驗證
+  cp-cli check-name my-file.yaml   # 檢查名稱
+  cp-cli synthesize                # 合成 active 視圖
+        """
+    )
+    
+    subparsers = parser.add_subparsers(dest='command', help='可用命令')
+    
+    # status 命令
+    subparsers.add_parser('status', help='顯示 controlplane 狀態')
+    
+    # get 命令
+    get_parser = subparsers.add_parser('get', help='獲取配置值')
+    get_parser.add_argument('key', help='配置鍵 (支持點號路徑)')
+    get_parser.add_argument('--json', action='store_true', help='JSON 格式輸出')
+    
+    # list 命令
+    list_parser = subparsers.add_parser('list', help='列出資源')
+    list_parser.add_argument('resource', choices=['modules', 'namespaces'], help='資源類型')
+    list_parser.add_argument('--json', action='store_true', help='JSON 格式輸出')
+    
+    # validate 命令
+    validate_parser = subparsers.add_parser('validate', help='運行驗證')
+    validate_parser.add_argument('--verbose', action='store_true', help='詳細輸出')
+    
+    # check-name 命令
+    check_parser = subparsers.add_parser('check-name', help='檢查名稱規範')
+    check_parser.add_argument('name', help='要檢查的名稱')
+    check_parser.add_argument('--type', default='file', choices=['file', 'directory', 'module'], help='名稱類型')
+    
+    # synthesize 命令
+    subparsers.add_parser('synthesize', help='合成 active 視圖')
+    
+    args = parser.parse_args()
+    
+    if not args.command:
+        parser.print_help()
+        return 1
+    
+    cli = ControlplaneCLI()
+    
+    try:
+        if args.command == 'status':
+            cli.show_status()
+            
+        elif args.command == 'get':
+            value = cli.get_config(args.key)
+            if value is None:
+                print(f"❌ 配置鍵不存在: {args.key}", file=sys.stderr)
+                return 1
+            
+            if args.json:
+                print(json.dumps(value, indent=2, ensure_ascii=False))
+            else:
+                print(value)
+                
+        elif args.command == 'list':
+            if args.resource == 'modules':
+                items = cli.list_modules()
+            else:
+                items = cli.list_namespaces()
+            
+            if args.json:
+                print(json.dumps(items, indent=2, ensure_ascii=False))
+            else:
+                for item in items:
+                    name = item.get('name', item.get('namespace', 'unknown'))
+                    print(f"  • {name}")
+                    
+        elif args.command == 'validate':
+            success = cli.validate(verbose=args.verbose)
+            return 0 if success else 1
+            
+        elif args.command == 'check-name':
+            is_valid = cli.check_name(args.name, args.type)
+            if is_valid:
+                print(f"✅ 名稱符合規範: {args.name}")
+                return 0
+            else:
+                print(f"❌ 名稱不符合規範: {args.name}", file=sys.stderr)
+                return 1
+                
+        elif args.command == 'synthesize':
+            cli.synthesize_active()
+            
+    except Exception as e:
+        print(f"❌ 錯誤: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        return 1
+    
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main())

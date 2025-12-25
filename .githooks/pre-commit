@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# Pre-commit hook - 使用 controlplane 驗證文件命名
+# 這是 controlplane 實際應用的示例
+
+set -e
+
+# 載入 controlplane 庫
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+source "$REPO_ROOT/lib/controlplane.sh"
+
+echo "🔍 Running pre-commit validation with controlplane..."
+echo ""
+
+# 檢查 controlplane 是否存在
+if ! cp_check_exists; then
+    cp_log_warning "Controlplane not found, skipping validation"
+    exit 0
+fi
+
+# 獲取暫存的文件
+staged_files=$(git diff --cached --name-only --diff-filter=ACM)
+
+if [[ -z "$staged_files" ]]; then
+    cp_log_info "No files staged for commit"
+    exit 0
+fi
+
+# 驗證計數器
+total_files=0
+invalid_files=0
+validated_files=()
+invalid_file_list=()
+
+# 驗證每個文件的命名
+while IFS= read -r file; do
+    # 跳過特殊文件和目錄
+    if [[ "$file" == .git* ]] || [[ "$file" == .github* ]] || [[ -d "$file" ]]; then
+        continue
+    fi
+    
+    # 獲取文件名
+    filename=$(basename "$file")
+    
+    # 跳過某些特殊文件
+    case "$filename" in
+        LICENSE|README.md|CHANGELOG.md|.gitignore|.gitattributes)
+            continue
+            ;;
+    esac
+    
+    total_files=$((total_files + 1))
+    
+    # 驗證文件名
+    if cp_validate_name "$filename" "file" 2>/dev/null; then
+        validated_files+=("$file")
+    else
+        invalid_files=$((invalid_files + 1))
+        invalid_file_list+=("$file")
+    fi
+done <<< "$staged_files"
+
+# 顯示結果
+echo ""
+echo "Validation Results:"
+echo "  Total files checked: $total_files"
+echo "  Valid files: $((total_files - invalid_files))"
+echo "  Invalid files: $invalid_files"
+
+if [[ $invalid_files -gt 0 ]]; then
+    echo ""
+    cp_log_error "The following files have invalid names:"
+    for file in "${invalid_file_list[@]}"; do
+        echo "  ❌ $file"
+    done
+    echo ""
+    cp_log_error "Please rename files to follow kebab-case naming convention"
+    cp_log_info "Example: MyFile.yaml → my-file.yaml"
+    echo ""
+    cp_log_info "To bypass this check (not recommended): git commit --no-verify"
+    exit 1
+fi
+
+cp_log_success "All file names are valid!"
+echo ""
+
+# 可選：運行完整驗證（如果修改了 controlplane 文件）
+if echo "$staged_files" | grep -q "^controlplane/"; then
+    cp_log_info "Controlplane files modified, running full validation..."
+    if ! cp_run_validation; then
+        cp_log_error "Controlplane validation failed"
+        exit 1
+    fi
+fi
+
+exit 0

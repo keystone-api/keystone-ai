@@ -1,0 +1,330 @@
+name: 🎛️ Controlplane Integration Demo
+
+on:
+  pull_request:
+    paths:
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '**/*.py'
+      - '**/*.sh'
+      - 'controlplane/**'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # Job 1: 使用 controlplane 驗證文件命名
+  validate-naming:
+    name: Validate File Naming (using controlplane)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Load controlplane library
+        run: |
+          source lib/controlplane.sh
+          cp_show_status
+
+      - name: Validate file naming conventions
+        run: |
+          source lib/controlplane.sh
+          
+          echo "🔍 Validating file naming conventions..."
+          
+          # 獲取所有 YAML 文件
+          files=$(find . -name "*.yaml" -o -name "*.yml" | grep -v ".git" | grep -v "node_modules" || true)
+          
+          total=0
+          invalid=0
+          
+          while IFS= read -r file; do
+            if [[ -z "$file" ]]; then continue; fi
+            
+            filename=$(basename "$file")
+            total=$((total + 1))
+            
+            if ! cp_validate_name "$filename" "file" 2>/dev/null; then
+              invalid=$((invalid + 1))
+              echo "❌ Invalid: $file"
+            fi
+          done <<< "$files"
+          
+          echo ""
+          echo "Results: $((total - invalid))/$total files valid"
+          
+          if [[ $invalid -gt 0 ]]; then
+            echo "::warning::Found $invalid files with invalid names"
+          fi
+
+  # Job 2: 使用 controlplane CLI 工具
+  use-cli-tools:
+    name: Use Controlplane CLI Tools
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Test cp-cli tool
+        run: |
+          chmod +x bin/cp-cli
+          
+          echo "📊 Controlplane Status:"
+          ./bin/cp-cli status
+          
+          echo ""
+          echo "📋 List Modules:"
+          ./bin/cp-cli list modules || echo "No modules found"
+          
+          echo ""
+          echo "📋 List Namespaces:"
+          ./bin/cp-cli list namespaces || echo "No namespaces found"
+          
+          echo ""
+          echo "🔍 Check Name Examples:"
+          ./bin/cp-cli check-name "my-file.yaml" --type file && echo "✅ Valid" || echo "❌ Invalid"
+          ./bin/cp-cli check-name "MyFile.yaml" --type file && echo "✅ Valid" || echo "❌ Invalid"
+
+      - name: Synthesize active view
+        run: |
+          ./bin/cp-cli synthesize
+          ls -la controlplane/active/
+
+  # Job 3: 使用 Python 配置庫
+  use-python-library:
+    name: Use Python Configuration Library
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Test Python library
+        run: |
+          python3 << 'EOF'
+          import sys
+          sys.path.insert(0, 'lib')
+          
+          from controlplane import ControlplaneConfig
+          
+          print("🐍 Testing Python Controlplane Library")
+          print("=" * 60)
+          
+          config = ControlplaneConfig()
+          
+          # 測試獲取配置
+          print("\n1. Get root config:")
+          root_config = config.get_baseline_config("root.config.yaml")
+          print(f"   Name: {root_config.get('metadata', {}).get('name')}")
+          
+          # 測試命名驗證
+          print("\n2. Validate names:")
+          test_cases = [
+              ("my-file.yaml", "file"),
+              ("MyFile.yaml", "file"),
+              ("my-namespace", "namespace"),
+              ("my.namespace", "namespace")
+          ]
+          
+          for name, name_type in test_cases:
+              is_valid, error = config.validate_name(name, name_type)
+              status = "✅" if is_valid else "❌"
+              print(f"   {status} {name} ({name_type})")
+          
+          # 測試獲取命名規則
+          print("\n3. Get naming rules:")
+          naming_rules = config.get_naming_rules()
+          print(f"   Rules loaded: {len(naming_rules)} keys")
+          
+          print("\n✅ Python library test completed")
+          EOF
+
+  # Job 4: 完整的 controlplane 驗證
+  full-validation:
+    name: Full Controlplane Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Run controlplane validation
+        run: |
+          python3 controlplane/baseline/validation/validate-root-specs.py
+
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: controlplane-validation-report
+          path: |
+            controlplane/overlay/evidence/validation/validation.report.md
+            controlplane/overlay/evidence/validation/validation.report.json
+
+      - name: Comment validation result
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const reportPath = 'controlplane/overlay/evidence/validation/validation.report.md';
+            
+            let summary = '⚠️ Validation report not found';
+            if (fs.existsSync(reportPath)) {
+              summary = fs.readFileSync(reportPath, 'utf8');
+              if (summary.length > 12000) {
+                summary = summary.slice(0, 12000) + '\n\n...(truncated, see artifact for full report)';
+              }
+            }
+            
+            const body = `## 🎛️ Controlplane Validation Results
+            
+This PR has been validated using the controlplane configuration system.
+
+### Validation Report
+
+\`\`\`markdown
+${summary}
+\`\`\`
+
+### What is Controlplane?
+
+Controlplane is our configuration governance system that ensures:
+- ✅ File naming conventions are followed
+- ✅ Configuration consistency across the repository
+- ✅ Namespace and module registry compliance
+- ✅ Integration rules are respected
+
+### Tools Used
+
+- **cp-cli**: Command-line interface for controlplane
+- **controlplane.py**: Python configuration library
+- **controlplane.sh**: Shell configuration library
+- **validate-root-specs.py**: Full validation system
+
+---
+*This validation was performed automatically using controlplane integration.*
+`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
+
+  # Job 5: 展示實際應用案例
+  practical-usage:
+    name: Practical Usage Examples
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Example 1 - Validate new file before creation
+        run: |
+          source lib/controlplane.sh
+          
+          echo "📝 Example 1: Validate file name before creation"
+          
+          new_file="my-new-config.yaml"
+          if cp_validate_name "$new_file" "file"; then
+            echo "✅ File name is valid, safe to create: $new_file"
+          else
+            echo "❌ File name is invalid, please rename"
+            exit 1
+          fi
+
+      - name: Example 2 - Read configuration in script
+        run: |
+          python3 << 'EOF'
+          import sys
+          sys.path.insert(0, 'lib')
+          from controlplane import get_config
+          
+          print("📖 Example 2: Read configuration in script")
+          
+          config = get_config()
+          
+          # 獲取治理策略
+          governance = config.get_governance_policy()
+          print(f"✅ Governance policy loaded")
+          
+          # 獲取命名規則
+          naming = config.get_naming_rules()
+          print(f"✅ Naming rules loaded")
+          
+          # 檢查是否不可變
+          is_immutable = config.is_baseline_immutable()
+          print(f"✅ Baseline immutable: {is_immutable}")
+          EOF
+
+      - name: Example 3 - Use in automation script
+        run: |
+          source lib/controlplane.sh
+          
+          echo "🤖 Example 3: Use in automation script"
+          
+          # 導出環境變量
+          cp_export_env
+          
+          # 使用環境變量
+          echo "✅ Config path: $CP_BASELINE_CONFIG"
+          echo "✅ Specs path: $CP_BASELINE_SPECS"
+          echo "✅ Registries path: $CP_BASELINE_REGISTRIES"
+          
+          # 列出配置文件
+          echo ""
+          echo "Available configs:"
+          ls -1 "$CP_BASELINE_CONFIG"/*.yaml | head -5
