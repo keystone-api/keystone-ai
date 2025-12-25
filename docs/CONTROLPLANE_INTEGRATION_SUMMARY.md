@@ -245,6 +245,7 @@ git commit -m "Add file"
 - **之後**: 3 種便捷方式（CLI、Python、Shell）
 
 ### 自動化程度
+
 - **之前**: 手動驗證，容易遺漏
 - **之後**: Pre-commit + CI/CD 自動驗證
 
