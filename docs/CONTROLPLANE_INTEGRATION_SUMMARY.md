@@ -277,6 +277,7 @@ git commit -m "Add file"
 
 #### 整合層
 
+
 4. `.githooks/pre-commit` - Pre-commit hook
 5. `.github/workflows/controlplane-integration.yml` - GitHub Actions 整合
 
