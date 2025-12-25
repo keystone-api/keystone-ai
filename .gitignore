@@ -142,3 +142,7 @@ outputs/
 outputs/
 __pycache__/
 *.pyc
+
+# Controlplane generated directories
+controlplane/active/
+controlplane/overlay/evidence/
