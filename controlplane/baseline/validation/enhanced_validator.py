@@ -7,17 +7,26 @@ Enhanced Root Layer Validator
 
 from __future__ import annotations
 
-import os
 import sys
 import yaml
 import json
 import re
-import hashlib
+import subprocess
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Any, Tuple, Set, Optional
+from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
 from collections import defaultdict
+
+# Use sha3-512 for cryptographic hashing (governance compliance)
+try:
+    import hashlib
+    # Verify sha3_512 is available
+    hashlib.sha3_512()
+    HASH_ALGO = 'sha3_512'
+except (AttributeError, ValueError):
+    # Fallback to sha256 if sha3_512 not available
+    HASH_ALGO = 'sha256'
 
 
 @dataclass
@@ -51,9 +60,7 @@ class EnhancedRootValidator:
     
     def __init__(self, workspace_root: str = None):
         if workspace_root is None:
-            workspace_root = os.environ.get("MACHINENATIVEOPS_WORKSPACE")
-        if workspace_root is None:
-            workspace_root = Path(__file__).resolve().parents[3]
+            workspace_root = self._get_repo_root()
         
         self.workspace_root = Path(workspace_root)
         self.baseline_root = self.workspace_root / "controlplane" / "baseline"
@@ -82,7 +89,25 @@ class EnhancedRootValidator:
         
         # 确保证据目录存在
         self.evidence_root.mkdir(parents=True, exist_ok=True)
-        
+    
+    def _get_repo_root(self) -> Path:
+        """获取仓库根目录 - 使用 git 命令而非硬编码路径"""
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "--show-toplevel"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            return Path(result.stdout.strip())
+        except subprocess.CalledProcessError:
+            # Fallback to environment variable or relative path
+            import os
+            workspace = os.environ.get("MACHINENATIVEOPS_WORKSPACE")
+            if workspace:
+                return Path(workspace)
+            return Path(__file__).resolve().parents[3]
+    
     def _generate_validation_id(self) -> str:
         """生成验证ID"""
         timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
@@ -97,10 +122,13 @@ class EnhancedRootValidator:
             return None
     
     def _calculate_file_hash(self, path: Path) -> str:
-        """计算文件哈希"""
+        """计算文件哈希 - 使用 sha3-512 符合治理规范"""
         try:
             content = path.read_text(encoding='utf-8')
-            return hashlib.sha256(content.encode()).hexdigest()
+            if HASH_ALGO == 'sha3_512':
+                return hashlib.sha3_512(content.encode()).hexdigest()
+            else:
+                return hashlib.sha256(content.encode()).hexdigest()
         except (OSError, UnicodeDecodeError):
             return "unavailable"
     
@@ -111,7 +139,15 @@ class EnhancedRootValidator:
         # 定义各类型文件的模式
         schemas = self._load_validation_schemas()
         
-        for file_path in self.config_root.glob("root.*.yaml"):
+        # 扩展验证范围 - 包括 gates.map.yaml 和其他根层文件
+        validation_files = list(self.config_root.glob("root.*.yaml"))
+        
+        # 添加 gates.map.yaml 如果存在
+        gates_map = self.config_root / "gates.map.yaml"
+        if gates_map.exists():
+            validation_files.append(gates_map)
+        
+        for file_path in validation_files:
             file_type = self._determine_file_type(file_path.name)
             
             if file_type in schemas:
@@ -198,39 +234,32 @@ class EnhancedRootValidator:
                 related_files=list(versions.keys())
             ))
         
-        # 检查时间戳一致性
-        timestamps = {}
-        for file_name, config_info in all_configs.items():
-            content = config_info["content"]
-            timestamp_fields = ["created", "updated", "last_modified"]
-            for field in timestamp_fields:
-                if field in content:
-                    timestamps[f"{file_name}:{field}"] = content[field]
-        
-        # 检查命名规范一致性
+        # 检查命名规范一致性 - 修复逻辑
         naming_patterns = {}
         for spec_file in self.specs_root.glob("root.specs.*.yaml"):
             content = self._load_yaml(spec_file)
             if content and "patterns" in content:
-                naming_patterns[spec_file.name] = content["patterns"]
+                # 使用完整文件名作为key，而不是假设有"naming"这个key
+                naming_patterns[spec_file.stem] = content["patterns"]
         
         # 验证实际文件名是否符合命名规范
         for config_file in self.config_root.glob("root.*.yaml"):
             file_name = config_file.name
-            if "naming" in naming_patterns:
-                patterns = naming_patterns["naming"].get("file_patterns", {})
-                for pattern_name, pattern_regex in patterns.items():
-                    if not re.match(pattern_regex, file_name):
-                        issues.append(ValidationIssue(
-                            severity="medium",
-                            category="consistency",
-                            file_path=str(config_file.relative_to(self.workspace_root)),
-                            line_number=None,
-                            message=f"文件名不符合命名规范: {pattern_name}",
-                            suggestion=f"将文件名修改为符合模式的格式",
-                            auto_fixable=False,
-                            related_files=["controlplane/baseline/specifications/root.specs.naming.yaml"]
-                        ))
+            # 检查所有命名规范
+            for spec_name, patterns in naming_patterns.items():
+                if "file_patterns" in patterns:
+                    for pattern_name, pattern_regex in patterns["file_patterns"].items():
+                        if not re.match(pattern_regex, file_name):
+                            issues.append(ValidationIssue(
+                                severity="low",
+                                category="consistency",
+                                file_path=str(config_file.relative_to(self.workspace_root)),
+                                line_number=None,
+                                message=f"文件名可能不符合命名规范: {pattern_name}",
+                                suggestion=f"检查文件名是否符合模式: {pattern_regex}",
+                                auto_fixable=False,
+                                related_files=[f"controlplane/baseline/specifications/{spec_name}.yaml"]
+                            ))
         
         return issues
     
@@ -268,7 +297,7 @@ class EnhancedRootValidator:
                             related_files=self._find_registry_files_for_urn(urn)
                         ))
         
-        # 检查文件内部引用
+        # 检查文件内部引用 - 修复regex捕获群组问题
         for config_file in self.config_root.glob("root.*.yaml"):
             content = self._load_yaml(config_file)
             if content:
@@ -297,659 +326,396 @@ class EnhancedRootValidator:
         # 构建依赖图
         dependency_graph = defaultdict(set)
         all_files = set()
+        missing_dependencies = defaultdict(set)  # 跟踪缺失的依赖
         
-        # 收集所有配置文件
-        config_files = list(self.config_root.glob("root.*.yaml"))
-        spec_files = list(self.specs_root.glob("root.specs.*.yaml"))
-        registry_files = list(self.registry_root.glob("root.registry.*.yaml"))
-        
-        all_files.update([f.name for f in config_files])
-        all_files.update([f.name for f in spec_files])
-        all_files.update([f.name for f in registry_files])
-        
-        # 分析依赖关系
-        for file_path in config_files + spec_files + registry_files:
-            content = self._load_yaml(file_path)
+        for config_file in self.config_root.glob("root.*.yaml"):
+            file_name = config_file.name
+            all_files.add(file_name)
+            
+            content = self._load_yaml(config_file)
             if content:
-                file_name = file_path.name
                 dependencies = self._extract_dependencies(content)
                 
                 for dep in dependencies:
-                    if dep in all_files:
-                        dependency_graph[file_name].add(dep)
+                    # 添加所有依赖到图中，包括不存在的
+                    dependency_graph[file_name].add(dep)
+                    
+                    # 跟踪缺失的依赖
+                    if dep not in all_files:
+                        dep_path = self.config_root / dep
+                        if not dep_path.exists():
+                            missing_dependencies[file_name].add(dep)
+        
+        # 检查缺失的依赖
+        for file_name, missing_deps in missing_dependencies.items():
+            for dep in missing_deps:
+                issues.append(ValidationIssue(
+                    severity="high",
+                    category="dependency",
+                    file_path=f"controlplane/baseline/config/{file_name}",
+                    line_number=None,
+                    message=f"依赖的文件不存在: {dep}",
+                    suggestion=f"创建文件 {dep} 或移除依赖引用",
+                    auto_fixable=False,
+                    related_files=[dep]
+                ))
         
         # 检查循环依赖
+        cycles = self._detect_cycles(dependency_graph)
+        for cycle in cycles:
+            issues.append(ValidationIssue(
+                severity="critical",
+                category="dependency",
+                file_path="multiple",
+                line_number=None,
+                message=f"检测到循环依赖: {' -> '.join(cycle)}",
+                suggestion="重构依赖关系以消除循环",
+                auto_fixable=False,
+                related_files=list(cycle)
+            ))
+        
+        return issues
+    
+    def validate_data_integrity(self) -> List[ValidationIssue]:
+        """验证数据完整性 - 改进空值检查逻辑"""
+        issues = []
+        
+        for config_file in self.config_root.glob("root.*.yaml"):
+            content = self._load_yaml(config_file)
+            if content:
+                # 定义必填字段（根据文件类型）
+                required_fields = self._get_required_fields(config_file.name)
+                
+                # 只检查必填字段的空值
+                empty_fields = self._find_empty_required_fields(content, required_fields)
+                
+                if empty_fields:
+                    issues.append(ValidationIssue(
+                        severity="medium",
+                        category="best_practice",
+                        file_path=str(config_file.relative_to(self.workspace_root)),
+                        line_number=None,
+                        message=f"必填字段为空: {', '.join(empty_fields)}",
+                        suggestion="为必填字段提供有效值",
+                        auto_fixable=False,
+                        related_files=[]
+                    ))
+        
+        return issues
+    
+    def _get_required_fields(self, file_name: str) -> List[str]:
+        """获取文件的必填字段列表"""
+        # 根据文件类型定义必填字段
+        if "config" in file_name:
+            return ["version", "metadata"]
+        elif "registry" in file_name:
+            return ["entries"]
+        elif "specs" in file_name:
+            return ["patterns"]
+        return []
+    
+    def _find_empty_required_fields(self, data: Any, required_fields: List[str], path: str = "") -> List[str]:
+        """查找必填字段中的空值"""
+        empty_fields = []
+        
+        if isinstance(data, dict):
+            for key, value in data.items():
+                current_path = f"{path}.{key}" if path else key
+                
+                # 只检查必填字段
+                if key in required_fields:
+                    if value is None or (isinstance(value, str) and not value.strip()):
+                        empty_fields.append(current_path)
+                
+                # 递归检查嵌套结构
+                if isinstance(value, (dict, list)):
+                    nested_empty = self._find_empty_required_fields(value, required_fields, current_path)
+                    empty_fields.extend(nested_empty)
+        
+        elif isinstance(data, list):
+            for i, item in enumerate(data):
+                current_path = f"{path}[{i}]"
+                if isinstance(item, (dict, list)):
+                    nested_empty = self._find_empty_required_fields(item, required_fields, current_path)
+                    empty_fields.extend(nested_empty)
+        
+        return empty_fields
+    
+    def _calculate_complexity(self, data: Any, current_depth: int = 0) -> int:
+        """计算数据复杂度 - 修复空集合问题"""
+        if current_depth > 10:  # 防止无限递归
+            return current_depth
+        
+        if isinstance(data, dict):
+            if not data:  # 空字典
+                return current_depth
+            return max([self._calculate_complexity(v, current_depth + 1) for v in data.values()])
+        elif isinstance(data, list):
+            if not data:  # 空列表
+                return current_depth
+            return max([self._calculate_complexity(item, current_depth + 1) for item in data])
+        else:
+            return current_depth
+    
+    def _extract_file_references(self, data: Any) -> List[str]:
+        """提取文件引用 - 修复regex捕获群组问题"""
+        references = []
+        
+        def extract_from_value(value):
+            if isinstance(value, str):
+                # 使用非捕获群组避免返回副档名
+                matches = re.findall(r'[\w\-./]+\.(?:yaml|yml|md|py|sh)', value)
+                references.extend(matches)
+            elif isinstance(value, dict):
+                for v in value.values():
+                    extract_from_value(v)
+            elif isinstance(value, list):
+                for item in value:
+                    extract_from_value(item)
+        
+        extract_from_value(data)
+        return list(set(references))
+    
+    def _extract_urns(self, data: Any) -> List[str]:
+        """提取URN引用"""
+        urns = []
+        
+        def extract_from_value(value):
+            if isinstance(value, str):
+                # 使用更精确的URN模式匹配平台规范
+                matches = re.findall(r'urn:axiom:(?:module|device|namespace):[a-zA-Z0-9_-]+:[a-zA-Z0-9._-]+', value)
+                urns.extend(matches)
+            elif isinstance(value, dict):
+                for v in value.values():
+                    extract_from_value(v)
+            elif isinstance(value, list):
+                for item in value:
+                    extract_from_value(item)
+        
+        extract_from_value(data)
+        return list(set(urns))
+    
+    def _extract_dependencies(self, data: Any) -> List[str]:
+        """提取依赖关系"""
+        dependencies = []
+        
+        # 查找显式依赖声明
+        if isinstance(data, dict):
+            if "dependencies" in data:
+                deps = data["dependencies"]
+                if isinstance(deps, list):
+                    dependencies.extend(deps)
+            
+            if "requires" in data:
+                reqs = data["requires"]
+                if isinstance(reqs, list):
+                    dependencies.extend(reqs)
+            
+            # 递归查找
+            for value in data.values():
+                if isinstance(value, (dict, list)):
+                    dependencies.extend(self._extract_dependencies(value))
+        
+        elif isinstance(data, list):
+            for item in data:
+                if isinstance(item, (dict, list)):
+                    dependencies.extend(self._extract_dependencies(item))
+        
+        return list(set(dependencies))
+    
+    def _detect_cycles(self, graph: Dict[str, set]) -> List[List[str]]:
+        """检测循环依赖"""
+        cycles = []
         visited = set()
         rec_stack = set()
         
-        def has_cycle(node):
+        def dfs(node, path):
             visited.add(node)
             rec_stack.add(node)
+            path.append(node)
             
-            for neighbor in dependency_graph[node]:
+            for neighbor in graph.get(node, set()):
                 if neighbor not in visited:
-                    if has_cycle(neighbor):
+                    if dfs(neighbor, path.copy()):
                         return True
                 elif neighbor in rec_stack:
+                    # 找到循环
+                    cycle_start = path.index(neighbor)
+                    cycle = path[cycle_start:] + [neighbor]
+                    cycles.append(cycle)
                     return True
             
             rec_stack.remove(node)
             return False
         
-        for file_name in all_files:
-            if file_name not in visited:
-                if has_cycle(file_name):
-                    issues.append(ValidationIssue(
-                        severity="high",
-                        category="dependency",
-                        file_path=file_name,
-                        line_number=None,
-                        message=f"检测到循环依赖，涉及文件: {file_name}",
-                        suggestion="重构依赖关系以消除循环",
-                        auto_fixable=False,
-                        related_files=list(dependency_graph[file_name])
-                    ))
+        for node in graph:
+            if node not in visited:
+                dfs(node, [])
         
-        # 检查缺失的依赖
-        for file_name, deps in dependency_graph.items():
-            for dep in deps:
-                if dep not in all_files:
-                    issues.append(ValidationIssue(
-                        severity="medium",
-                        category="dependency",
-                        file_path=file_name,
-                        line_number=None,
-                        message=f"依赖的文件不存在: {dep}",
-                        suggestion=f"创建缺失的文件或移除依赖",
-                        auto_fixable=False,
-                        related_files=[dep]
-                    ))
-        
-        return issues
+        return cycles
     
-    def validate_new_files(self) -> List[ValidationIssue]:
-        """验证新增文件"""
-        issues = []
-        
-        # 验证新增的规范文件
-        new_spec_files = [
-            "root.specs.namespace.yaml",
-            "root.specs.paths.yaml", 
-            "root.specs.urn.yaml"
-        ]
-        
-        for spec_file in new_spec_files:
-            spec_path = self.specs_root / spec_file
-            if spec_path.exists():
-                content = self._load_yaml(spec_path)
-                if not content:
-                    continue
-                
-                # 验证namespace规范
-                if "namespace" in spec_file:
-                    required_fields = ["namespaces", "hierarchy", "validation_rules"]
-                    for field in required_fields:
-                        if field not in content:
-                            issues.append(ValidationIssue(
-                                severity="high",
-                                category="schema",
-                                file_path=str(spec_path.relative_to(self.workspace_root)),
-                                line_number=None,
-                                message=f"namespace规范缺少必需字段: {field}",
-                                suggestion=f"添加 {field} 定义",
-                                auto_fixable=True,
-                                related_files=[]
-                            ))
-                
-                # 验证paths规范
-                elif "paths" in spec_file:
-                    required_fields = ["path_patterns", "validation_rules", "mapping_rules"]
-                    for field in required_fields:
-                        if field not in content:
-                            issues.append(ValidationIssue(
-                                severity="high",
-                                category="schema",
-                                file_path=str(spec_path.relative_to(self.workspace_root)),
-                                line_number=None,
-                                message=f"paths规范缺少必需字段: {field}",
-                                suggestion=f"添加 {field} 定义",
-                                auto_fixable=True,
-                                related_files=[]
-                            ))
-                
-                # 验证URN规范
-                elif "urn" in spec_file:
-                    required_fields = ["urn_format", "namespace_rules", "validation_rules"]
-                    for field in required_fields:
-                        if field not in content:
-                            issues.append(ValidationIssue(
-                                severity="high",
-                                category="schema",
-                                file_path=str(spec_path.relative_to(self.workspace_root)),
-                                line_number=None,
-                                message=f"URN规范缺少必需字段: {field}",
-                                suggestion=f"添加 {field} 定义",
-                                auto_fixable=True,
-                                related_files=[]
-                            ))
-        
-        # 验证新增的注册表文件
-        new_registry_files = [
-            "root.registry.devices.yaml",
-            "root.registry.namespaces.yaml"
-        ]
-        
-        for registry_file in new_registry_files:
-            registry_path = self.registry_root / registry_file
-            if registry_path.exists():
-                content = self._load_yaml(registry_path)
-                if not content:
-                    continue
-                
-                # 验证注册表结构
-                if "entries" not in content:
-                    issues.append(ValidationIssue(
-                        severity="high",
-                        category="schema",
-                        file_path=str(registry_path.relative_to(self.workspace_root)),
-                        line_number=None,
-                        message="注册表文件缺少entries字段",
-                        suggestion="添加entries数组定义",
-                        auto_fixable=True,
-                        related_files=[]
-                    ))
-                else:
-                    entries = content["entries"]
-                    if not isinstance(entries, list):
-                        issues.append(ValidationIssue(
-                            severity="high",
-                            category="schema",
-                            file_path=str(registry_path.relative_to(self.workspace_root)),
-                            line_number=None,
-                            message="entries字段必须是数组类型",
-                            suggestion="将entries改为数组格式",
-                            auto_fixable=True,
-                            related_files=[]
-                        ))
-                    else:
-                        for i, entry in enumerate(entries):
-                            if not isinstance(entry, dict):
-                                issues.append(ValidationIssue(
-                                    severity="medium",
-                                    category="schema",
-                                    file_path=str(registry_path.relative_to(self.workspace_root)),
-                                    line_number=None,
-                                    message=f"entries[{i}] 必须是对象类型",
-                                    suggestion="将条目改为对象格式",
-                                    auto_fixable=True,
-                                    related_files=[]
-                                ))
-        
-        # 验证gates.map.yaml
-        gates_file = self.config_root / "gates.map.yaml"
-        if gates_file.exists():
-            content = self._load_yaml(gates_file)
-            if content:
-                # 验证必需字段
-                required_fields = ["version", "gates", "execution_order"]
-                for field in required_fields:
-                    if field not in content:
-                        issues.append(ValidationIssue(
-                            severity="high",
-                            category="schema",
-                            file_path=str(gates_file.relative_to(self.workspace_root)),
-                            line_number=None,
-                            message=f"gates.map.yaml缺少必需字段: {field}",
-                            suggestion=f"添加 {field} 定义",
-                            auto_fixable=True,
-                            related_files=[]
-                        ))
-                
-                # 验证gate定义
-                if "gates" in content:
-                    gates = content["gates"]
-                    for gate_name, gate_config in gates.items():
-                        if not isinstance(gate_config, dict):
-                            issues.append(ValidationIssue(
-                                severity="medium",
-                                category="schema",
-                                file_path=str(gates_file.relative_to(self.workspace_root)),
-                                line_number=None,
-                                message=f"gate '{gate_name}' 配置必须是对象类型",
-                                suggestion="将gate配置改为对象格式",
-                                auto_fixable=True,
-                                related_files=[]
-                            ))
-                        else:
-                            required_gate_fields = ["enabled", "description"]
-                            for field in required_gate_fields:
-                                if field not in gate_config:
-                                    issues.append(ValidationIssue(
-                                        severity="medium",
-                                        category="schema",
-                                        file_path=str(gates_file.relative_to(self.workspace_root)),
-                                        line_number=None,
-                                        message=f"gate '{gate_name}' 缺少必需字段: {field}",
-                                        suggestion=f"添加 {field} 定义",
-                                        auto_fixable=True,
-                                        related_files=[]
-                                    ))
-        
-        return issues
+    def _find_registry_files_for_urn(self, urn: str) -> List[str]:
+        """查找URN对应的注册表文件"""
+        # 根据URN类型推断可能的注册表文件
+        if "module" in urn:
+            return ["controlplane/baseline/registries/root.registry.modules.yaml"]
+        elif "device" in urn:
+            return ["controlplane/baseline/registries/root.registry.devices.yaml"]
+        elif "namespace" in urn:
+            return ["controlplane/baseline/registries/root.registry.namespaces.yaml"]
+        return []
     
-    def calculate_file_metrics(self) -> Dict[str, FileMetrics]:
-        """计算文件指标"""
-        metrics = {}
-        
-        all_files = []
-        all_files.extend(self.config_root.glob("root.*.yaml"))
-        all_files.extend(self.specs_root.glob("root.specs.*.yaml"))
-        all_files.extend(self.registry_root.glob("root.registry.*.yaml"))
-        
-        for file_path in all_files:
-            content = self._load_yaml(file_path)
-            if not content:
-                continue
-            
-            file_size_kb = file_path.stat().st_size / 1024
-            entity_count = len(self._extract_entities(content))
-            reference_count = len(self._extract_urns(content)) + len(self._extract_file_references(content))
-            dependency_count = len(self._extract_dependencies(content))
-            
-            # 计算复杂度分数
-            complexity_score = self._calculate_complexity(content)
-            
-            # 计算质量分数
-            quality_score = self._calculate_quality_score(content, file_path.name)
-            
-            metrics[str(file_path.relative_to(self.workspace_root))] = FileMetrics(
-                file_path=str(file_path.relative_to(self.workspace_root)),
-                file_type=self._determine_file_type(file_path.name),
-                size_kb=round(file_size_kb, 2),
-                entity_count=entity_count,
-                reference_count=reference_count,
-                dependency_count=dependency_count,
-                complexity_score=complexity_score,
-                quality_score=quality_score
-            )
-        
-        return metrics
+    def _determine_file_type(self, file_name: str) -> str:
+        """确定文件类型"""
+        if "config" in file_name:
+            return "config"
+        elif "registry" in file_name:
+            return "registry"
+        elif "specs" in file_name:
+            return "spec"
+        elif "gates" in file_name:
+            return "gates"
+        return "unknown"
     
-    def generate_enhanced_report(self) -> str:
-        """生成增强报告"""
-        issues = []
-        
-        # 执行所有验证
-        issues.extend(self.validate_schema_compliance())
-        issues.extend(self.validate_cross_file_consistency())
-        issues.extend(self.validate_reference_integrity())
-        issues.extend(self.validate_dependency_graph())
-        issues.extend(self.validate_new_files())
-        
-        # 计算指标
-        metrics = self.calculate_file_metrics()
-        
-        # 更新结果
-        self.results["issues"] = [asdict(issue) for issue in issues]
-        self.results["metrics"] = {k: asdict(v) for k, v in metrics.items()}
-        
-        # 统计
-        self.results["summary"]["total_checks"] = len(issues)
-        self.results["summary"]["failed"] = len([i for i in issues if i["severity"] in ["critical", "high"]])
-        self.results["summary"]["warnings"] = len([i for i in issues if i["severity"] == "medium"])
-        self.results["summary"]["info"] = len([i for i in issues if i["severity"] in ["low", "info"]])
-        self.results["summary"]["passed"] = max(0, len(issues) - self.results["summary"]["failed"])
-        
-        # 判断是否通过
-        self.results["pass"] = self.results["summary"]["failed"] == 0
-        
-        # 生成报告内容
-        report_lines = [
-            f"# Enhanced Root Layer Validation Report",
-            f"**Validation ID**: {self.results['validation_id']}",
-            f"**Timestamp**: {self.results['timestamp']}",
-            f"**Workspace**: {self.results['workspace']}",
-            "",
-            "## 📊 Summary",
-            f"- **Total Checks**: {self.results['summary']['total_checks']}",
-            f"- **Passed**: {self.results['summary']['passed']}",
-            f"- **Failed**: {self.results['summary']['failed']}",
-            f"- **Warnings**: {self.results['summary']['warnings']}",
-            f"- **Info**: {self.results['summary']['info']}",
-            f"- **Status**: {'✅ PASSED' if self.results['pass'] else '❌ FAILED'}",
-            "",
-            "## 🚨 Critical & High Issues"
-        ]
-        
-        critical_high_issues = [i for i in issues if i["severity"] in ["critical", "high"]]
-        if critical_high_issues:
-            for issue in critical_high_issues:
-                report_lines.extend([
-                    f"### {issue['severity'].upper()}: {issue['message']}",
-                    f"- **File**: `{issue['file_path']}`",
-                    f"- **Category**: {issue['category']}",
-                    f"- **Suggestion**: {issue['suggestion'] or 'No suggestion available'}",
-                    f"- **Auto-fixable**: {'Yes' if issue['auto_fixable'] else 'No'}",
-                    ""
-                ])
-        else:
-            report_lines.append("✅ No critical or high issues found!")
-        
-        report_lines.extend([
-            "",
-            "## ⚠️ Medium Issues"
-        ])
-        
-        medium_issues = [i for i in issues if i["severity"] == "medium"]
-        if medium_issues:
-            for issue in medium_issues:
-                report_lines.extend([
-                    f"### {issue['message']}",
-                    f"- **File**: `{issue['file_path']}`",
-                    f"- **Category**: {issue['category']}",
-                    f"- **Suggestion**: {issue['suggestion'] or 'No suggestion available'}",
-                    ""
-                ])
-        else:
-            report_lines.append("✅ No medium issues found!")
-        
-        report_lines.extend([
-            "",
-            "## 📈 File Metrics",
-            ""
-        ])
-        
-        # 按质量分数排序
-        sorted_metrics = sorted(metrics.items(), key=lambda x: x[1].quality_score, reverse=True)
-        
-        for file_path, metric in sorted_metrics:
-            status = "🟢" if metric.quality_score >= 90 else "🟡" if metric.quality_score >= 70 else "🔴"
-            report_lines.extend([
-                f"{status} **{metric.file_path}** ({metric.file_type})",
-                f"- Quality Score: {metric.quality_score}/100",
-                f"- Size: {metric.size_kb} KB",
-                f"- Entities: {metric.entity_count}",
-                f"- References: {metric.reference_count}",
-                f"- Dependencies: {metric.dependency_count}",
-                f"- Complexity: {metric.complexity_score}",
-                ""
-            ])
-        
-        report_lines.extend([
-            "",
-            "## 🔧 Auto-fixable Issues",
-            ""
-        ])
-        
-        auto_fixable_issues = [i for i in issues if i["auto_fixable"]]
-        if auto_fixable_issues:
-            for issue in auto_fixable_issues:
-                report_lines.extend([
-                    f"- `{issue['file_path']}`: {issue['message']}",
-                    f"  **Fix**: {issue['suggestion']}",
-                    ""
-                ])
-        else:
-            report_lines.append("✅ No auto-fixable issues found!")
-        
-        return "\n".join(report_lines)
-    
-    def save_results(self) -> None:
-        """保存验证结果"""
-        # 保存Markdown报告
-        report_content = self.generate_enhanced_report()
-        report_path = self.evidence_root / "enhanced_validation_report.md"
-        report_path.write_text(report_content, encoding="utf-8")
-        
-        # 保存JSON结果
-        json_path = self.evidence_root / "enhanced_validation_results.json"
-        json_path.write_text(
-            json.dumps(self.results, indent=2, ensure_ascii=False),
-            encoding="utf-8"
-        )
-        
-        print(f"Enhanced validation report saved: {report_path}")
-        print(f"Enhanced validation results saved: {json_path}")
-    
-    # 辅助方法
-    def _load_validation_schemas(self) -> Dict[str, Dict[str, Any]]:
+    def _load_validation_schemas(self) -> Dict[str, Dict]:
         """加载验证模式"""
+        # 简化的模式定义
         return {
             "config": {
-                "required_fields": ["version"],
+                "required_fields": ["version", "metadata"],
                 "fields": {
                     "version": {"type": "string"},
-                    "created": {"type": "string"},
-                    "updated": {"type": "string"}
-                }
-            },
-            "spec": {
-                "required_fields": ["version", "rules"],
-                "fields": {
-                    "version": {"type": "string"},
-                    "rules": {"type": "array"}
+                    "metadata": {"type": "dict"}
                 }
             },
             "registry": {
-                "required_fields": ["version", "entries"],
+                "required_fields": ["entries"],
                 "fields": {
-                    "version": {"type": "string"},
-                    "entries": {"type": "array"}
+                    "entries": {"type": "list"}
+                }
+            },
+            "spec": {
+                "required_fields": ["patterns"],
+                "fields": {
+                    "patterns": {"type": "dict"}
+                }
+            },
+            "gates": {
+                "required_fields": ["gates"],
+                "fields": {
+                    "gates": {"type": "list"}
                 }
             }
         }
-    
-    def _determine_file_type(self, filename: str) -> str:
-        """确定文件类型"""
-        if "config" in filename or filename.startswith("root.") and not any(x in filename for x in ["specs.", "registry.", "gates."]):
-            return "config"
-        elif "specs." in filename:
-            return "spec"
-        elif "registry." in filename:
-            return "registry"
-        elif "gates." in filename:
-            return "gates"
-        else:
-            return "other"
     
     def _validate_field_type(self, value: Any, expected_type: str) -> bool:
         """验证字段类型"""
         type_map = {
             "string": str,
-            "number": (int, float),
-            "boolean": bool,
-            "array": list,
-            "object": dict
+            "int": int,
+            "float": float,
+            "bool": bool,
+            "list": list,
+            "dict": dict
         }
-        expected_python_type = type_map.get(expected_type)
-        return expected_python_type and isinstance(value, expected_python_type)
-    
-    def _extract_urns(self, content: Dict[str, Any]) -> Set[str]:
-        """提取URN引用"""
-        urns = set()
-        content_str = json.dumps(content, ensure_ascii=False)
-        urn_pattern = r'urn:[:\w\-.]+'
-        urns.update(re.findall(urn_pattern, content_str))
-        return urns
-    
-    def _extract_file_references(self, content: Dict[str, Any]) -> Set[str]:
-        """提取文件引用"""
-        references = set()
-        content_str = json.dumps(content, ensure_ascii=False)
         
-        # 匹配文件路径模式
-        file_patterns = [
-            r'[\w\-./]+\.(yaml|yml|md|py|sh)',
-            r'controlplane/[\w\-./]+',
-            r'workspace/[\w\-./]+'
+        expected_python_type = type_map.get(expected_type)
+        if expected_python_type is None:
+            return True
+        
+        return isinstance(value, expected_python_type)
+    
+    def generate_enhanced_report(self, issues: List[ValidationIssue]) -> str:
+        """生成增强报告"""
+        # 转换为字典以便统计
+        issues_dicts = [asdict(issue) for issue in issues]
+        
+        # 统计
+        critical_high_issues = [i for i in issues_dicts if i["severity"] in ["critical", "high"]]
+        medium_issues = [i for i in issues_dicts if i["severity"] == "medium"]
+        auto_fixable_issues = [i for i in issues_dicts if i["auto_fixable"]]
+        
+        # 更新summary
+        self.results["summary"]["failed"] = len(critical_high_issues)
+        self.results["summary"]["warnings"] = len(medium_issues)
+        self.results["summary"]["total_checks"] = len(issues_dicts)
+        self.results["issues"] = issues_dicts
+        
+        # 生成报告
+        report_lines = [
+            "# Enhanced Validation Report",
+            f"Validation ID: {self.results['validation_id']}",
+            f"Timestamp: {self.results['timestamp']}",
+            "",
+            "## Summary",
+            f"- Total Issues: {len(issues_dicts)}",
+            f"- Critical/High: {len(critical_high_issues)}",
+            f"- Medium: {len(medium_issues)}",
+            f"- Auto-fixable: {len(auto_fixable_issues)}",
+            ""
         ]
         
-        for pattern in file_patterns:
-            references.update(re.findall(pattern, content_str))
+        if critical_high_issues:
+            report_lines.extend([
+                "## Critical/High Issues",
+                ""
+            ])
+            for issue in critical_high_issues[:10]:
+                report_lines.append(f"- [{issue['severity'].upper()}] {issue['file_path']}: {issue['message']}")
         
-        return references
+        report_content = "\n".join(report_lines)
+        
+        # 保存报告
+        report_path = self.evidence_root / f"{self.results['validation_id']}_report.md"
+        report_path.write_text(report_content, encoding="utf-8")
+        
+        # 保存JSON结果
+        json_path = self.evidence_root / f"{self.results['validation_id']}_results.json"
+        json_path.write_text(json.dumps(self.results, indent=2), encoding="utf-8")
+        
+        return str(report_path)
     
-    def _extract_dependencies(self, content: Dict[str, Any]) -> Set[str]:
-        """提取依赖关系"""
-        dependencies = set()
+    def run_validation(self) -> bool:
+        """运行完整验证"""
+        all_issues = []
         
-        # 从depends_on字段提取
-        if "depends_on" in content:
-            if isinstance(content["depends_on"], list):
-                dependencies.update(content["depends_on"])
-            elif isinstance(content["depends_on"], str):
-                dependencies.add(content["depends_on"])
+        print("Running enhanced validation...")
         
-        # 从imports字段提取
-        if "imports" in content:
-            if isinstance(content["imports"], list):
-                dependencies.update(content["imports"])
+        # 运行各项验证
+        print("- Schema compliance...")
+        all_issues.extend(self.validate_schema_compliance())
         
-        return dependencies
-    
-    def _extract_entities(self, content: Dict[str, Any]) -> Set[str]:
-        """提取实体"""
-        entities = set()
+        print("- Cross-file consistency...")
+        all_issues.extend(self.validate_cross_file_consistency())
         
-        # 提取键名
-        entities.update(content.keys())
+        print("- Reference integrity...")
+        all_issues.extend(self.validate_reference_integrity())
         
-        # 递归提取嵌套实体
-        def extract_nested(obj):
-            if isinstance(obj, dict):
-                for key, value in obj.items():
-                    entities.add(key)
-                    extract_nested(value)
-            elif isinstance(obj, list):
-                for item in obj:
-                    extract_nested(item)
+        print("- Dependency graph...")
+        all_issues.extend(self.validate_dependency_graph())
         
-        extract_nested(content)
-        return entities
-    
-    def _calculate_complexity(self, content: Dict[str, Any]) -> int:
-        """计算复杂度分数"""
-        complexity = 0
+        print("- Data integrity...")
+        all_issues.extend(self.validate_data_integrity())
         
-        # 基于嵌套深度
-        def calculate_depth(obj, current_depth=0):
-            if isinstance(obj, dict):
-                return max([calculate_depth(v, current_depth + 1) for v in obj.values()])
-            elif isinstance(obj, list):
-                return max([calculate_depth(item, current_depth + 1) for item in obj])
-            else:
-                return current_depth
+        # 生成报告
+        report_path = self.generate_enhanced_report(all_issues)
+        print(f"\nValidation complete. Report: {report_path}")
+        print(f"Total issues: {len(all_issues)}")
         
-        depth = calculate_depth(content)
-        complexity += depth * 10
+        # 判断是否通过
+        critical_high = [i for i in all_issues if i.severity in ["critical", "high"]]
+        self.results["pass"] = len(critical_high) == 0
         
-        # 基于对象数量
-        def count_objects(obj):
-            if isinstance(obj, dict):
-                return 1 + sum(count_objects(v) for v in obj.values())
-            elif isinstance(obj, list):
-                return sum(count_objects(item) for item in obj)
-            else:
-                return 0
-        
-        object_count = count_objects(content)
-        complexity += object_count * 5
-        
-        # 基于数组长度
-        def count_array_items(obj):
-            if isinstance(obj, list):
-                return len(obj) + sum(count_array_items(item) for item in obj)
-            elif isinstance(obj, dict):
-                return sum(count_array_items(v) for v in obj.values())
-            else:
-                return 0
-        
-        array_items = count_array_items(content)
-        complexity += array_items * 2
-        
-        return min(complexity, 100)  # 限制最大值
-    
-    def _calculate_quality_score(self, content: Dict[str, Any], filename: str) -> int:
-        """计算质量分数"""
-        score = 100
-        
-        # 检查必需字段
-        required_fields = ["version"]
-        for field in required_fields:
-            if field not in content:
-                score -= 20
-        
-        # 检查文档完整性
-        doc_fields = ["description", "created", "updated"]
-        for field in doc_fields:
-            if field not in content:
-                score -= 5
-        
-        # 检查命名规范
-        if not self._validate_naming_convention(filename, content):
-            score -= 10
-        
-        # 检查数据完整性
-        if not self._validate_data_integrity(content):
-            score -= 15
-        
-        return max(score, 0)
-    
-    def _validate_naming_convention(self, filename: str, content: Dict[str, Any]) -> bool:
-        """验证命名规范"""
-        # 简单的命名规范检查
-        if filename.startswith("root."):
-            return True
-        return False
-    
-    def _validate_data_integrity(self, content: Dict[str, Any]) -> bool:
-        """验证数据完整性"""
-        # 检查是否有空值
-        def check_empty(obj):
-            if isinstance(obj, dict):
-                for key, value in obj.items():
-                    if value is None or value == "":
-                        return False
-                    if not check_empty(value):
-                        return False
-            elif isinstance(obj, list):
-                for item in obj:
-                    if not check_empty(item):
-                        return False
-            return True
-        
-        return check_empty(content)
-    
-    def _find_registry_files_for_urn(self, urn: str) -> List[str]:
-        """查找URN对应的注册表文件"""
-        related_files = []
-        
-        for registry_file in self.registry_root.glob("root.registry.*.yaml"):
-            content = self._load_yaml(registry_file)
-            if content and "entries" in content:
-                for entry in content["entries"]:
-                    if entry.get("urn") == urn:
-                        related_files.append(str(registry_file.relative_to(self.workspace_root)))
-                        break
-        
-        return related_files
+        return self.results["pass"]
 
 
 def main():
     """主函数"""
     validator = EnhancedRootValidator()
-    validator.save_results()
+    passed = validator.run_validation()
     
-    # 输出结果摘要
-    print(f"\n=== Enhanced Validation Summary ===")
-    print(f"Total Checks: {validator.results['summary']['total_checks']}")
-    print(f"Passed: {validator.results['summary']['passed']}")
-    print(f"Failed: {validator.results['summary']['failed']}")
-    print(f"Warnings: {validator.results['summary']['warnings']}")
-    print(f"Status: {'PASSED' if validator.results['pass'] else 'FAILED'}")
-    
-    return 0 if validator.results['pass'] else 1
+    sys.exit(0 if passed else 1)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

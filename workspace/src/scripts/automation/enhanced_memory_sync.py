@@ -10,12 +10,21 @@ from __future__ import annotations
 import json
 import re
 import subprocess
-import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Set, Tuple, Optional, Any
 from dataclasses import dataclass, asdict
 from collections import defaultdict
+
+# Use sha3-512 for cryptographic hashing (governance compliance)
+try:
+    import hashlib
+    # Verify sha3_512 is available
+    hashlib.sha3_512()
+    HASH_ALGO = 'sha3_512'
+except (AttributeError, ValueError):
+    # Fallback to sha256 if sha3_512 not available
+    HASH_ALGO = 'sha256'
 
 
 @dataclass
@@ -58,7 +67,7 @@ class EnhancedMemorySync:
     def _run(self, cmd: List[str]) -> subprocess.CompletedProcess[str]:
         """执行命令"""
         try:
-            return subprocess.run(cmd, capture_output=True, text=True, check=True)
+            return subprocess.run(cmd, capture_output=True, text=True, check=True, cwd=self.repo_root)
         except subprocess.CalledProcessError as exc:
             message = exc.stderr.strip() or exc.stdout.strip() or "no output"
             raise RuntimeError(f"Command '{' '.join(cmd)}' failed ({exc.returncode}): {message}") from exc
@@ -68,12 +77,36 @@ class EnhancedMemorySync:
         return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def _get_file_hash(self, path: Path) -> str:
-        """获取文件内容哈希"""
+        """获取文件内容哈希 - 使用 sha3-512 符合治理规范"""
         try:
             content = path.read_text(encoding="utf-8")
-            return hashlib.sha256(content.encode()).hexdigest()[:16]
+            if HASH_ALGO == 'sha3_512':
+                return hashlib.sha3_512(content.encode()).hexdigest()
+            else:
+                return hashlib.sha256(content.encode()).hexdigest()
         except (OSError, UnicodeDecodeError):
             return "unavailable"
+
+    def _extract_dependencies(self, content: str, file_path: str) -> List[str]:
+        """提取文件依赖关系"""
+        dependencies = []
+        
+        # Extract YAML imports/includes
+        yaml_imports = re.findall(r'(?:import|include|extends):\s*["\']?([^\s"\']+)["\']?', content)
+        dependencies.extend(yaml_imports)
+        
+        # Extract Python imports (relative to repo)
+        py_imports = re.findall(r'from\s+([a-zA-Z0-9_.]+)\s+import', content)
+        dependencies.extend(py_imports)
+        
+        # Extract file references with proper path patterns
+        file_refs = re.findall(r'[\w\-./]+\.(?:yaml|yml|md|py|sh)', content)
+        dependencies.extend(file_refs)
+        
+        # Remove duplicates and self-references
+        dependencies = list(set(dep for dep in dependencies if dep != file_path))
+        
+        return dependencies
 
     def _analyze_file(self, file_path: str) -> FileAnalysis:
         """分析文件类型和内容"""
@@ -122,17 +155,22 @@ class EnhancedMemorySync:
         # 提取实体和关系
         entities = []
         relationships = []
+        dependencies = []
         
         try:
             content = full_path.read_text(encoding="utf-8")
             
-            # 提取URN引用
-            urns = re.findall(r'urn:[:\w\-.]+', content)
+            # 提取URN引用 - 使用更精确的模式匹配平台规范
+            # Pattern: urn:axiom:module:<name>:<version>
+            urns = re.findall(r'urn:axiom:(?:module|device|namespace):[a-zA-Z0-9_-]+:[a-zA-Z0-9._-]+', content)
             entities.extend(urns)
             
             # 提取模块名
             modules = re.findall(r'\b[A-Za-z][A-Za-z0-9_-]+\.(?:yaml|yml|py|md)\b', content)
             entities.extend(modules)
+            
+            # 提取依赖关系
+            dependencies = self._extract_dependencies(content, file_path)
             
             # 分析依赖关系
             if file_type in ['config', 'spec']:
@@ -162,7 +200,7 @@ class EnhancedMemorySync:
             type=file_type,
             category=category,
             priority=priority,
-            dependencies=[],
+            dependencies=dependencies,  # Now properly populated
             impact_level=impact_level,
             content_hash=self._get_file_hash(full_path),
             entities=list(set(entities)),
@@ -186,13 +224,15 @@ class EnhancedMemorySync:
         files_info = []
         
         for line in lines[3:]:
+            # Fixed: Use proper tab separator
             parts = line.split("\t")
             if len(parts) >= 2:
                 status, file_path = parts[0], parts[1]
                 files_info.append((status, file_path))
         
+        # Fixed: Return actual subject instead of hardcoded "subject"
         return {
-            "sha": sha, "author": author, "subject": "subject",
+            "sha": sha, "author": author, "subject": subject,
             "files": files_info, "added": 0, "modified": 0, "deleted": 0
         }
 
@@ -242,6 +282,17 @@ class EnhancedMemorySync:
             total_impact=total_impact
         )
 
+    def _deduplicate_relationships(self, relationships: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """去重关系 - 保留最新的关系记录"""
+        # Use (source, target, type) as key, keep latest by timestamp
+        rel_dict = {}
+        for rel in relationships:
+            key = (rel["source"], rel["target"], rel["type"])
+            if key not in rel_dict or rel["timestamp"] > rel_dict[key]["timestamp"]:
+                rel_dict[key] = rel
+        
+        return list(rel_dict.values())
+
     def _update_knowledge_graph(self, analysis: ChangeAnalysis) -> None:
         """更新知识图谱"""
         # 加载现有图谱
@@ -263,7 +314,8 @@ class EnhancedMemorySync:
                 "impact_level": file_analysis.impact_level,
                 "last_modified": analysis.timestamp,
                 "content_hash": file_analysis.content_hash,
-                "entities": file_analysis.entities
+                "entities": file_analysis.entities,
+                "dependencies": file_analysis.dependencies
             }
         
         # 更新关系
@@ -277,6 +329,9 @@ class EnhancedMemorySync:
                     "timestamp": analysis.timestamp
                 }
                 graph["relationships"].append(rel)
+        
+        # 去重关系
+        graph["relationships"] = self._deduplicate_relationships(graph["relationships"])
         
         # 清理删除的实体
         for deleted_file in analysis.deleted:
@@ -410,16 +465,24 @@ class EnhancedMemorySync:
         return "\n".join(sections)
 
     def _update_section(self, path: Path, start: str, end: str, body: str) -> bool:
-        """更新文档片段"""
+        """更新文档片段 - 改进的正则替换逻辑"""
         try:
+            # Ensure path exists
+            if not path.exists():
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("", encoding="utf-8")
+            
             content = path.read_text(encoding="utf-8")
             block = f"{start}\n{body}\n{end}"
             
             if start in content and end in content:
+                # Use non-greedy match with anchored markers
+                pattern = rf"{re.escape(start)}.*?{re.escape(end)}"
                 new_content = re.sub(
-                    rf"{re.escape(start)}.*?{re.escape(end)}",
+                    pattern,
                     block,
                     content,
+                    count=1,  # Only replace first occurrence
                     flags=re.DOTALL,
                 )
             else:
@@ -428,8 +491,8 @@ class EnhancedMemorySync:
             if new_content != content:
                 path.write_text(new_content, encoding="utf-8")
                 return True
-        except (OSError, UnicodeDecodeError):
-            pass
+        except (OSError, UnicodeDecodeError) as e:
+            print(f"Warning: Failed to update {path}: {e}")
         
         return False
 
@@ -443,7 +506,6 @@ class EnhancedMemorySync:
         # 更新记忆文件
         project_memory = self.repo_root / "controlplane/governance/docs/PROJECT_MEMORY.md"
         conversation_log = self.repo_root / "workspace/projects/CONVERSATION_LOG.md"
-        architecture_doc = self.repo_root / "controlplane/governance/docs/ARCHITECTURE.md"
         
         updated = False
         
@@ -481,9 +543,24 @@ class EnhancedMemorySync:
         return updated
 
 
+def get_repo_root() -> Path:
+    """获取仓库根目录 - 使用 git 命令而非硬编码路径"""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return Path(result.stdout.strip())
+    except subprocess.CalledProcessError:
+        # Fallback to relative path if git command fails
+        return Path(__file__).resolve().parents[4]
+
+
 def main():
     """主函数"""
-    repo_root = Path(__file__).resolve().parents[4]  # 从 scripts/automation/ 到 repo root
+    repo_root = get_repo_root()
     
     sync = EnhancedMemorySync(repo_root)
     sync.sync_memory()
