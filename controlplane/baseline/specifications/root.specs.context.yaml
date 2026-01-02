@@ -47,7 +47,7 @@ spec:
   applicationContext:
     name: "MachineNativeOps"
     version: "v1.0.0"
-    namespace: "machinenativenops"
+    namespace: "machinenativeops"
     
     components:
       - controlplane
