@@ -14,6 +14,7 @@ from flask import Flask, render_template, jsonify, send_file
 from werkzeug.utils import secure_filename
 from pathlib import Path
 import json
+import os
 from datetime import datetime
 from typing import Dict
 
@@ -23,8 +24,11 @@ app = Flask(__name__)
 REPORTS_DIR = Path(".github/code-scanning/reports")
 TEMPLATE_DIR = Path(".github/code-scanning/templates")
 
-# 允許的主機地址
+# 允許的主機地址 / Allowed host addresses
 ALLOWED_HOSTS = ('127.0.0.1', 'localhost', '0.0.0.0')
+# 本機地址 / Localhost addresses (subset of ALLOWED_HOSTS for security checks)
+LOCALHOST_ADDRESSES = ('127.0.0.1', 'localhost')
+# 預設配置 / Default configuration
 DEFAULT_HOST = '127.0.0.1'
 DEFAULT_PORT = 5000
 
@@ -215,7 +219,7 @@ def main() -> None:
         port = DEFAULT_PORT
     
     # 安全警告（在啟動服務器之前顯示）
-    if host not in ('127.0.0.1', 'localhost'):
+    if host not in LOCALHOST_ADDRESSES:
         print("⚠️  警告：服務器將監聽外部網絡接口，請確保在安全環境中運行")
     
     # 啟動服務器
