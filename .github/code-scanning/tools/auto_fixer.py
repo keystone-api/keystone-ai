@@ -245,6 +245,48 @@ class LongLineFixer(VulnerabilityFixer):
         vuln_type = vulnerability.get('type', '').lower()
         return vuln_type == 'long line'
     
+    def _detect_indentation(self, lines: List[str]) -> str:
+        """
+        檢測文件的縮進風格
+        
+        Args:
+            lines: 文件內容行列表
+            
+        Returns:
+            縮進字符串（'    ' 表示4空格，'  ' 表示2空格，'\t' 表示tab）
+        """
+        indent_counts = {2: 0, 4: 0, 8: 0, 'tab': 0}
+        
+        for line in lines:
+            if not line.strip():
+                continue
+            
+            # 計算前導空格
+            stripped = line.lstrip(' ')
+            if stripped == line:
+                # 檢查是否為 tab
+                if line.startswith('\t'):
+                    indent_counts['tab'] += 1
+                continue
+            
+            spaces = len(line) - len(stripped)
+            if spaces % 8 == 0 and spaces > 0:
+                indent_counts[8] += 1
+            elif spaces % 4 == 0 and spaces > 0:
+                indent_counts[4] += 1
+            elif spaces % 2 == 0 and spaces > 0:
+                indent_counts[2] += 1
+        
+        # 返回最常用的縮進風格
+        if indent_counts['tab'] > max(indent_counts[2], indent_counts[4], indent_counts[8]):
+            return '\t'
+        elif indent_counts[8] > max(indent_counts[2], indent_counts[4]):
+            return ' ' * 8
+        elif indent_counts[4] > indent_counts[2]:
+            return ' ' * 4
+        else:
+            return '  '  # 默認2空格
+    
     def fix(self, file_path: str, vulnerability: Dict) -> Tuple[bool, str, str]:
         """
         修復過長代碼行
@@ -271,6 +313,9 @@ class LongLineFixer(VulnerabilityFixer):
             indent = len(original_line) - len(stripped)
             indent_str = original_line[:indent]
             
+            # 檢測文件的縮進風格
+            file_indent = self._detect_indentation(lines)
+            
             # 簡單的拆分策略：在逗號或操作符處拆分
             fixed_lines = []
             remaining = original_line.rstrip('\n')
@@ -280,7 +325,7 @@ class LongLineFixer(VulnerabilityFixer):
                 split_pos = remaining[:120].rfind(',')
                 if split_pos != -1:
                     fixed_lines.append(remaining[:split_pos + 1] + '\n')
-                    remaining = indent_str + '    ' + remaining[split_pos + 1:].lstrip()
+                    remaining = indent_str + file_indent + remaining[split_pos + 1:].lstrip()
                 else:
                     # 無法安全拆分
                     return False, original_line, "無法找到安全的拆分點，建議人工檢查或使用專業格式化工具"
