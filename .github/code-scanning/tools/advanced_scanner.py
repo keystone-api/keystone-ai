@@ -123,7 +123,7 @@ class AdvancedCodeScanner:
             with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as tmp_file:
                 bandit_output_path = tmp_file.name
             
-            result = subprocess.run(
+            subprocess.run(
                 ["bandit", "-r", str(self.repo_path), "-f", "json", "-o", bandit_output_path],
                 capture_output=True,
                 text=True,
@@ -200,6 +200,15 @@ class AdvancedCodeScanner:
                     if line_stripped.startswith("#"):
                         continue
                     
+                    # Skip comments
+                    stripped = line.strip()
+                    if stripped.startswith("#"):
+                        continue
+                    
+                    # Skip test files
+                    if any(test_marker in str(file_path).lower() for test_marker in ['test_', '_test.', 'tests/']):
+                        continue
+                    
                     # 檢查硬編碼憑證
                     for key_type, keywords in patterns.items():
                         for keyword in keywords:
@@ -257,6 +266,15 @@ class AdvancedCodeScanner:
                                     })
                             if f"{keyword} = " in line_lower or f'"{keyword}": ' in line_lower:
                                 if '=' in line and any(c in line for c in ['"', "'"]):
+                                    # Extract the value to check for placeholders
+                                    value_match = re.search(r'["\']([^"\']+)["\']', line)
+                                    if value_match:
+                                        value = value_match.group(1)
+                                        # Skip placeholders and environment variables
+                                        if value in ['', 'your_password_here', 'your_api_key_here', 'changeme', 'TODO', 'FIXME']:
+                                            continue
+                                        if value.startswith(('$', 'os.environ', 'os.getenv', 'env.')):
+                                            continue
                                     if not line.strip().startswith("#"):
                                         findings.append({
                                             "severity": "high",
@@ -340,6 +358,8 @@ class AdvancedCodeScanner:
                             "confidence": 0.9
                         })
             
+            except (IOError, OSError, UnicodeDecodeError) as e:
+                print(f"  ⚠️ 讀取 {req_file} 時發生錯誤: {e}")
             except FileNotFoundError as e:
                 print(f"  ⚠️ 找不到依賴文件 {req_file}: {e}")
                 continue
@@ -406,7 +426,8 @@ class AdvancedCodeScanner:
                             "confidence": 1.0
                         })
             
-            except Exception:
+            except (IOError, OSError, UnicodeDecodeError) as e:
+                print(f"  ⚠️ 讀取 {file_path} 時發生錯誤: {e}")
                 continue
         
         return findings
@@ -547,10 +568,6 @@ def main() -> None:
     從命令行參數讀取儲存庫路徑並執行掃描。
     如果發現嚴重或高嚴重性問題，將以非零狀態碼退出。
     """
-    if len(sys.argv) > 1:
-        repo_path = sys.argv[1]
-    else:
-        repo_path = "."
     import argparse
     
     parser = argparse.ArgumentParser(description='高階深度代碼掃描工具')
@@ -570,7 +587,7 @@ def main() -> None:
     repo_path = args.repo_path if args.repo_path is not None else args.repo
     output_dir = args.output_dir
     
-    scanner = AdvancedCodeScanner(repo_path)
+    scanner = AdvancedCodeScanner(repo_path, output_dir)
     results = scanner.deep_scan()
     
     # 返回適當的退出代碼
