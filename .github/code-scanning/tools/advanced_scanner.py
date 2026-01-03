@@ -180,6 +180,10 @@ class AdvancedCodeScanner:
         python_files = list(self.repo_path.rglob("*.py"))
         
         for file_path in python_files:
+            # 跳過測試/示例代碼文件
+            if any(marker in str(file_path).lower() for marker in ['test', 'example', 'demo', 'sample']):
+                continue
+            
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     lines = f.readlines()
@@ -188,10 +192,8 @@ class AdvancedCodeScanner:
                     line_lower = line.lower()
                     line_stripped = line.strip()
                     
-                    # 跳過註釋和測試/示例代碼
+                    # 跳過註釋
                     if line_stripped.startswith("#"):
-                        continue
-                    if any(marker in str(file_path).lower() for marker in ['test', 'example', 'demo', 'sample']):
                         continue
                     
                     # 檢查硬編碼憑證
