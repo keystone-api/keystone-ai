@@ -142,7 +142,7 @@ class HardcodedPasswordFixer(VulnerabilityFixer):
                         if lines[i].startswith('import ') or lines[i].startswith('from '):
                             if not lines[i].startswith(('import os', 'from os ')):
                                 found_stdlib_import = True
-                                insert_pos = i
+                                insert_pos = i + 1
                         elif found_stdlib_import and lines[i].strip() and not lines[i].startswith(('#', 'import', 'from')):
                             # 找到第一個非導入、非空、非註釋行，說明導入區結束
                             break
@@ -592,7 +592,8 @@ def main() -> None:
         print("⚠️  試運行模式尚未完全實現，將跳過文件寫入操作")
         # Note: 完整的試運行模式需要在各個修復器中添加dry_run參數支持
     else:
-        fixer.auto_fix_all(scan_results)
+        report = fixer.auto_fix_all(scan_results)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
 
 if __name__ == "__main__":
     main()
