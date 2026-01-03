@@ -249,7 +249,6 @@ describe('Logging Middleware', () => {
         finishCallback();
 
         const logCall = consoleLogSpy.mock.calls[0];
-        const logMessage = JSON.stringify(logCall);
         // Should include timing information
         expect(logCall).toBeDefined();
       }
