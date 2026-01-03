@@ -425,6 +425,7 @@ MachineNativeOps Auto Monitor is a production-ready system monitoring solution w
 ```bash
 # Clone repository
 git clone https://github.com/MachineNativeOps/machine-native-ops.git
+cd machine-native-ops/workspace/engine/machinenativenops-auto-monitor
 cd machine-native-ops/engine/machinenativenops-auto-monitor
 
 # Install in development mode
