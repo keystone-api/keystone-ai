@@ -460,7 +460,7 @@ If you encounter issues not covered here:
    - [Cloudflare Workers Discord](https://discord.gg/cloudflaredev)
 
 2. **Check MachineNativeOps Docs**:
-   - [Cloudflare Deployment Guide](./CLOUDFLARE_DEPLOYMENT_FIX.md)
+   - [Cloudflare Deployment Guide](../CLOUDFLARE_DEPLOYMENT_FIX.md)
    - [Cloudflare GitHub Integration](./CLOUDFLARE_GITHUB_INTEGRATION.md)
 
 3. **Report Issues**:
@@ -473,7 +473,7 @@ If you encounter issues not covered here:
 
 ### MachineNativeOps Documentation
 
-- **[Cloudflare Deployment Fix](./CLOUDFLARE_DEPLOYMENT_FIX.md)** - Troubleshooting deployment issues
+- **[Cloudflare Deployment Guide](../CLOUDFLARE_DEPLOYMENT_FIX.md)** - Troubleshooting deployment issues
 - **[Cloudflare GitHub Integration](./CLOUDFLARE_GITHUB_INTEGRATION.md)** - Complete integration guide
 - **[Deployment Guide](./DEPLOYMENT_GUIDE.md)** - General deployment procedures
 - **[Deployment Checklist](./DEPLOYMENT_CHECKLIST.md)** - Pre-deployment validation
