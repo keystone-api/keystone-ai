@@ -1,4 +1,15 @@
-# MachineNativeOps AAPS - Root Layer
+# MachineNativeOps
+
+本倉庫同時包含：
+
+- **AAPS Root Layer**：以 Linux FHS 風格落地的最小根層骨架，並將治理配置集中到 `controlplane/`。
+- **CI/CD System**：以 GitHub Actions 為核心的企業級交付流水線，包含安全掃描、驗證閘門、Cloudflare 部署等。
+
+若你是第一次進來：先看「AAPS Root Layer」理解目錄邊界，再看「CI/CD System」了解交付與驗證機制。
+
+---
+
+## 🏗️ AAPS Root Layer
 
 ## 🏗️ 架構概述
 
@@ -76,23 +87,40 @@ pytest
 
 ---
 
+## 🔁 CI/CD System
+
+此 repo 內建完整的 CI/CD 與治理閘門（多數工作流在 `.github/workflows/`），常用入口如下：
+
+- `workspace/scripts/`：CI/CD 與維運腳本（驗證、部署、命名遷移、健康檢查等）
+- `workspace/docs/`：交付/治理/操作手冊
+- `cloudflare/`：Cloudflare Pages / Workers 相關配置與專案
+
+**Key Features**（高層概覽）：
+
+- Automated CI/CD pipeline（GitHub Actions）
+- Progressive / canary deployment workflows
+- Intelligent rollback / drill simulation tooling
+- Security & compliance gates（含供應鏈/簽章/掃描等）
+
+---
+
 ## 📁 目錄說明
 
 ### FHS 標準目錄
 
-| 目錄 | 用途 | 權限 |
-|------|------|------|
-| `bin/` | 基本用戶命令 | 755 |
-| `sbin/` | 系統管理命令 | 755 |
-| `etc/` | 系統配置 | 755 |
-| `lib/` | 共享庫 | 755 |
-| `var/` | 變動數據 | 755 |
-| `usr/` | 用戶程式 | 755 |
-| `home/` | 用戶目錄 | 755 |
-| `tmp/` | 臨時文件 | 1777 |
-| `opt/` | 可選軟件 | 755 |
-| `srv/` | 服務數據 | 755 |
-| `init.d/` | 初始化腳本 | 755 |
+| 目錄      | 用途         | 權限 |
+| --------- | ------------ | ---- |
+| `bin/`    | 基本用戶命令 | 755  |
+| `sbin/`   | 系統管理命令 | 755  |
+| `etc/`    | 系統配置     | 755  |
+| `lib/`    | 共享庫       | 755  |
+| `var/`    | 變動數據     | 755  |
+| `usr/`    | 用戶程式     | 755  |
+| `home/`   | 用戶目錄     | 755  |
+| `tmp/`    | 臨時文件     | 1777 |
+| `opt/`    | 可選軟件     | 755  |
+| `srv/`    | 服務數據     | 755  |
+| `init.d/` | 初始化腳本   | 755  |
 
 ### Controlplane（治理層）
 
@@ -225,11 +253,13 @@ cd ${WORKSPACE_PATH}/docs/
 所有代碼中的路徑引用需要更新：
 
 **舊路徑**:
+
 ```python
 config = "root.config.yaml"
 ```
 
 **新路徑**:
+
 ```python
 config = "controlplane/config/root.config.yaml"
 # 或使用環境變數
@@ -239,6 +269,7 @@ config = os.path.join(os.environ['CONTROLPLANE_CONFIG'], 'root.config.yaml')
 ### Controlplane 只讀
 
 運行時 controlplane 應該是只讀的。更新配置應該通過：
+
 1. CI/CD 流程
 2. 受控的配置管理工具
 3. 版本控制系統
