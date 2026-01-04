@@ -18,6 +18,9 @@ export MACHINENATIVEOPS_HOME="/opt/machinenativenops"
 export MACHINENATIVEOPS_ROOT="${MACHINENATIVEOPS_HOME}"
 export MACHINENATIVEOPS_USER="root"
 export MACHINENATIVEOPS_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+export CHATOPS_HOME="${MACHINENATIVEOPS_SCRIPT_DIR}/chatops"
+export CHATOPS_SCRIPTS="${CHATOPS_HOME}/scripts"
+export CHATOPS_SERVICES="${CHATOPS_HOME}/services"
 
 # === 目錄結構定義 ===
 export MACHINENATIVEOPS_CONFIG="/etc/machinenativenops"
@@ -86,6 +89,7 @@ export PATH="${MACHINENATIVEOPS_MODULES}/bin:${PATH}"
 
 # 工具與腳本路徑
 export PATH="${MACHINENATIVEOPS_HOME}/tools:${MACHINENATIVEOPS_HOME}/scripts:${PATH}"
+export PATH="${CHATOPS_SCRIPTS}:${PATH}"
 
 # Python 路徑（如果使用 Python 模組）
 if [ -d "${MACHINENATIVEOPS_MODULES}/python" ]; then

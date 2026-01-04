@@ -303,6 +303,44 @@ spec:
       failure_actions:
       - manual_workflow_mode
       - limited_execution_capability
+  - phase: chatops_integration
+    description: Integrate ChatOps automation scripts and services into controlplane workflows
+    timeout: 180s
+    critical: false
+    on_failure: continue_with_warnings
+    steps:
+    - name: register_chatops_artifacts
+      description: Register ChatOps scripts and services for execution engine
+      module: controlplane-loader
+      action: register_external_module
+      parameters:
+        module_id: chatops-automation
+        scripts_path: chatops/scripts
+        services_path: chatops/services
+        init_sequence: chatops/root/init/steps
+      dependencies:
+      - register_and_start_modules
+      success_criteria:
+      - chatops_scripts_registered
+      - chatops_services_registered
+    - name: execute_chatops_init_hooks
+      description: Execute ChatOps initialization hooks
+      module: super-execution-engine
+      action: run_hooks
+      parameters:
+        hooks:
+        - chatops/root/init/steps/00-init.sh
+        - chatops/root/init/steps/01-governance-init.sh
+        - chatops/root/init/steps/02-modules-init.sh
+        - chatops/root/init/steps/03-super-execution-init.sh
+        - chatops/root/init/steps/04-trust-init.sh
+        - chatops/root/init/steps/05-provenance-init.sh
+      dependencies:
+      - chatops_scripts_registered
+      success_criteria:
+      - chatops_init_hooks_completed
+      - chatops_governance_loaded
+      - chatops_trust_ready
   - phase: post_boot
     description: Post-boot validation and finalization
     timeout: 120s

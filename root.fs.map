@@ -102,6 +102,8 @@ mno_execution:/opt/machinenativenops/modules/execution:ext4:relatime,rw:-rwxr-xr
 mno_config:/opt/machinenativenops/modules/config:ext4:relatime,rw:-rwxr-xr-x:Configuration management module
 mno_logging:/opt/machinenativenops/modules/logging:ext4:relatime,rw:-rwxr-xr-x:Logging service module
 mno_monitoring:/opt/machinenativenops/modules/monitoring:ext4:relatime,rw:-rwxr-xr-x:Monitoring module
+chatops_root:./chatops:ext4:relatime,rw:-rwxr-xr-x:ChatOps workspace entrypoint
+chatops_scripts:./chatops/scripts:ext4:relatime,rw:-rwxr-xr-x:ChatOps automation scripts
 
 # === 安全目錄 (Security Directories) ===
 
