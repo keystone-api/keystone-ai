@@ -84,7 +84,7 @@ jobs:
           # Note: Using case-insensitive grep with -i flag
           # instead of (?i) PCRE syntax
           # git grep -E doesn't support Perl regex features
-          set +e  # Don't fail on grep matches
+          # Do not disable 'set -e' globally; handle grep exit codes explicitly where needed.
 
           # High-confidence patterns that always fail (very specific formats)
           high_confidence_patterns=(
@@ -156,9 +156,6 @@ jobs:
             echo "✅ No secrets found."
             exit 0
           fi
-          # Note: Using explicit character class patterns for case-insensitive matching
-          # git grep -E doesn't support PCRE (?i) syntax
-          set +e  # Don't fail immediately on grep matches
           
           # High-confidence patterns that should fail the build
           high_confidence_patterns=(
