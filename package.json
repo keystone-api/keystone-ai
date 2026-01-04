@@ -1,0 +1,12 @@
+{
+  "name": "machine-native-ops-root",
+  "private": true,
+  "description": "Root helper package.json for CI/Cloudflare builds",
+  "scripts": {
+    "build": "npm ci --prefix workspace/src/frontend/ui && npm run build --prefix workspace/src/frontend/ui && rm -rf dist && cp -a workspace/src/frontend/ui/dist ./dist && cp -a cloudflare/pages/_headers dist/_headers && cp -a cloudflare/pages/_redirects dist/_redirects"
+  },
+  "engines": {
+    "node": ">=20",
+    "npm": ">=9"
+  }
+}
