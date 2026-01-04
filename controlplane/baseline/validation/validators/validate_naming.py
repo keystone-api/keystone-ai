@@ -63,7 +63,7 @@ def validate_file_name(filename: str, spec: Dict[str, Any]) -> Tuple[List[str], 
             if re.match(root_pattern, filename):
                 root_match = True
         except re.error as exc:
-            errors.append(f"Invalid root pattern '{root_pattern}': {exc}")
+            errors.append(f"Invalid root pattern '{root_pattern}' for '{filename}': {exc}")
     
     # Check for double extensions
     if filename.count('.') > 1 and not root_match:

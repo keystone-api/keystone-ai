@@ -74,7 +74,7 @@ def validate_namespace_syntax(namespace: str, spec: Dict[str, Any]) -> Tuple[Lis
     
     # Allow hierarchical namespaces using the configured separator
     hierarchical_pattern = None
-    if separator:
+    if separator and separator.strip():
         sep_escaped = re.escape(separator)
         hierarchical_pattern = rf"^[a-z][a-z0-9-]*(?:{sep_escaped}[a-z][a-z0-9-]*)*$"
     
