@@ -36,6 +36,12 @@
 - **功能**：[待補充具體功能說明]
 - **依賴**：[待補充依賴關係]
 
+### git-advanced-commands.md
+
+- **職責**：Markdown 文檔
+- **功能**：Git 高級命令參考指南，包含 git stash、git cherry-pick、git revert 和 git reset 的詳細說明和範例
+- **依賴**：無
+
 ## 職責分離說明
 
 [待補充：說明此目錄內各檔案如何實現職責分離，以及職責邊界的劃分]
