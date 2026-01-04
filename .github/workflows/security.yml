@@ -73,7 +73,7 @@ jobs:
           # Note: Using case-insensitive grep with -i flag
           # instead of (?i) PCRE syntax
           # git grep -E doesn't support Perl regex features
-          set +e  # Don't fail on grep matches
+          # Do not disable 'set -e' globally; handle grep exit codes explicitly where needed.
 
           # High-confidence patterns that always fail (very specific formats)
           high_confidence_patterns=(
