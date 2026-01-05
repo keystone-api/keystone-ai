@@ -22,7 +22,7 @@ dimensions:
   type: dimension
   category: strategic
   owner: governance-team
-  path: governance/00-vision-strategy
+  path: workspace/src/governance/00-vision-strategy
   depends_on:
   - 01-architecture
   - 23-policies
@@ -32,7 +32,7 @@ dimensions:
   type: dimension
   category: strategic
   owner: architecture-team
-  path: governance/01-architecture
+  path: workspace/src/governance/01-architecture
   depends_on:
   - 00-vision-strategy
   purpose: Enterprise architecture and technical framework design
@@ -41,7 +41,7 @@ dimensions:
   type: dimension
   category: strategic
   owner: governance-team
-  path: governance/02-decision
+  path: workspace/src/governance/02-decision
   depends_on:
   - 00-vision-strategy
   - 01-architecture
@@ -51,7 +51,7 @@ dimensions:
   type: dimension
   category: strategic
   owner: change-management-team
-  path: governance/03-change
+  path: workspace/src/governance/03-change
   depends_on:
   - 02-decision
   purpose: Change management, version control, and impact assessment
@@ -60,7 +60,7 @@ dimensions:
   type: dimension
   category: strategic
   owner: risk-management-team
-  path: governance/04-risk
+  path: workspace/src/governance/04-risk
   depends_on:
   - 02-decision
   - 03-change
@@ -70,7 +70,7 @@ dimensions:
   type: dimension
   category: strategic
   owner: compliance-team
-  path: governance/05-compliance
+  path: workspace/src/governance/05-compliance
   depends_on:
   - 04-risk
   - 06-security
@@ -81,7 +81,7 @@ dimensions:
   type: dimension
   category: strategic
   owner: security-team
-  path: governance/06-security
+  path: workspace/src/governance/06-security
   depends_on:
   - 04-risk
   purpose: Security policies, controls, and threat management
@@ -91,7 +91,7 @@ dimensions:
   type: dimension
   category: strategic
   owner: audit-team
-  path: governance/07-audit
+  path: workspace/src/governance/07-audit
   depends_on:
   - 05-compliance
   - 06-security
@@ -102,7 +102,7 @@ dimensions:
   type: dimension
   category: strategic
   owner: process-team
-  path: governance/08-process
+  path: workspace/src/governance/08-process
   depends_on:
   - 03-change
   purpose: Process definition, optimization, and standardization
@@ -111,7 +111,7 @@ dimensions:
   type: dimension
   category: strategic
   owner: performance-team
-  path: governance/09-performance
+  path: workspace/src/governance/09-performance
   depends_on:
   - 08-process
   - 13-metrics-reporting
@@ -121,7 +121,7 @@ dimensions:
   type: dimension
   category: policy
   owner: policy-engine
-  path: governance/10-policy
+  path: workspace/src/governance/10-policy
   depends_on: []
   purpose: Policy as Code framework and enforcement
   status: active
@@ -129,7 +129,7 @@ dimensions:
   type: dimension
   category: policy
   owner: tools-team
-  path: governance/11-tools-systems
+  path: workspace/src/governance/11-tools-systems
   depends_on:
   - 01-architecture
   purpose: Tools and systems governance
@@ -138,7 +138,7 @@ dimensions:
   type: dimension
   category: policy
   owner: culture-team
-  path: governance/12-culture-capability
+  path: workspace/src/governance/12-culture-capability
   depends_on:
   - 08-process
   purpose: Organizational culture and capability development
@@ -147,7 +147,7 @@ dimensions:
   type: dimension
   category: policy
   owner: metrics-team
-  path: governance/13-metrics-reporting
+  path: workspace/src/governance/13-metrics-reporting
   depends_on:
   - 09-performance
   purpose: Metrics collection, analysis, and reporting
@@ -156,7 +156,7 @@ dimensions:
   type: dimension
   category: policy
   owner: improvement-team
-  path: governance/14-improvement
+  path: workspace/src/governance/14-improvement
   depends_on:
   - 13-metrics-reporting
   purpose: Continuous improvement and optimization
@@ -165,7 +165,7 @@ dimensions:
   type: dimension
   category: policy
   owner: economics-team
-  path: governance/15-economic
+  path: workspace/src/governance/15-economic
   depends_on:
   - 04-risk
   purpose: Economic governance and financial management
@@ -174,7 +174,7 @@ dimensions:
   type: dimension
   category: policy
   owner: psychology-team
-  path: governance/16-psychological
+  path: workspace/src/governance/16-psychological
   depends_on:
   - 12-culture-capability
   purpose: Psychological safety and human factors
@@ -183,7 +183,7 @@ dimensions:
   type: dimension
   category: policy
   owner: sociology-team
-  path: governance/17-sociological
+  path: workspace/src/governance/17-sociological
   depends_on:
   - 12-culture-capability
   purpose: Social dynamics and team collaboration
@@ -192,7 +192,7 @@ dimensions:
   type: dimension
   category: policy
   owner: complexity-team
-  path: governance/18-complex-system
+  path: workspace/src/governance/18-complex-system
   depends_on:
   - 01-architecture
   purpose: Complex systems thinking and emergence
@@ -201,7 +201,7 @@ dimensions:
   type: dimension
   category: policy
   owner: evolution-team
-  path: governance/19-evolutionary
+  path: workspace/src/governance/19-evolutionary
   depends_on:
   - 14-improvement
   purpose: Evolutionary architecture and adaptive systems
@@ -210,7 +210,7 @@ dimensions:
   type: dimension
   category: governance
   owner: information-team
-  path: governance/_legacy/20-information
+  path: workspace/src/governance/_legacy/20-information
   depends_on: []
   purpose: Legacy information governance (governance layer) preserved after 20-intent became the active execution-layer module; former consumers should migrate to 20-intent by 2026-03-31
   deprecation_date: '2026-03-31'
@@ -219,7 +219,7 @@ dimensions:
   type: dimension
   category: orchestration
   owner: orchestration-team
-  path: governance/20-intent
+  path: workspace/src/governance/20-intent
   depends_on:
   - 10-policy
   purpose: Intent-based orchestration and semantic mapping (execution layer)
@@ -228,7 +228,7 @@ dimensions:
   type: dimension
   category: policy
   owner: ecology-team
-  path: governance/21-ecological
+  path: workspace/src/governance/21-ecological
   depends_on:
   - 18-complex-system
   purpose: Ecological systems and sustainability
@@ -237,7 +237,7 @@ dimensions:
   type: dimension
   category: policy
   owner: design-team
-  path: governance/22-aesthetic
+  path: workspace/src/governance/22-aesthetic
   depends_on:
   - 01-architecture
   purpose: Design aesthetics and user experience
@@ -246,7 +246,7 @@ dimensions:
   type: dimension
   category: policy
   owner: policy-team
-  path: governance/23-policies
+  path: workspace/src/governance/23-policies
   depends_on:
   - 10-policy
   purpose: Global policy library and enforcement rules
@@ -256,7 +256,7 @@ dimensions:
   type: dimension
   category: policy
   owner: registry-team
-  path: governance/24-registry
+  path: workspace/src/governance/24-registry
   depends_on:
   - 60-contracts
   purpose: Central registry for governance assets
@@ -265,7 +265,7 @@ dimensions:
   type: dimension
   category: policy
   owner: principles-team
-  path: governance/25-principles
+  path: workspace/src/governance/25-principles
   depends_on:
   - 00-vision-strategy
   purpose: Core principles and values
@@ -274,7 +274,7 @@ dimensions:
   type: dimension
   category: policy
   owner: tooling-team
-  path: governance/26-tools
+  path: workspace/src/governance/26-tools
   depends_on:
   - 11-tools-systems
   purpose: Tooling ecosystem and automation
@@ -283,7 +283,7 @@ dimensions:
   type: dimension
   category: policy
   owner: template-team
-  path: governance/27-templates
+  path: workspace/src/governance/27-templates
   depends_on:
   - 01-architecture
   purpose: Reusable templates and scaffolding
@@ -292,7 +292,7 @@ dimensions:
   type: dimension
   category: policy
   owner: qa-team
-  path: governance/28-tests
+  path: workspace/src/governance/28-tests
   depends_on:
   - 08-process
   purpose: Testing framework and quality assurance
@@ -301,7 +301,7 @@ dimensions:
   type: dimension
   category: policy
   owner: documentation-team
-  path: governance/29-docs
+  path: workspace/src/governance/29-docs
   depends_on:
   - 20-intent
   purpose: Documentation management and knowledge base
@@ -310,7 +310,7 @@ dimensions:
   type: dimension
   category: execution
   owner: ai-governance-team
-  path: governance/30-agents
+  path: workspace/src/governance/30-agents
   depends_on:
   - 20-intent
   purpose: AI Agent governance and lifecycle management
@@ -319,7 +319,7 @@ dimensions:
   type: dimension
   category: execution
   owner: schema-team
-  path: governance/31-schemas
+  path: workspace/src/governance/31-schemas
   depends_on:
   - 01-architecture
   purpose: Schema definitions and validation
@@ -328,7 +328,7 @@ dimensions:
   type: dimension
   category: execution
   owner: rules-engine-team
-  path: governance/32-rules
+  path: workspace/src/governance/32-rules
   depends_on:
   - 23-policies
   purpose: Business rules engine and execution
@@ -337,7 +337,7 @@ dimensions:
   type: dimension
   category: execution
   owner: common-team
-  path: governance/33-common
+  path: workspace/src/governance/33-common
   depends_on: []
   purpose: Common utilities and shared components
   status: active
@@ -345,7 +345,7 @@ dimensions:
   type: dimension
   category: execution
   owner: config-team
-  path: governance/34-config
+  path: workspace/src/governance/34-config
   depends_on:
   - 01-architecture
   purpose: Configuration management and deployment
@@ -354,7 +354,7 @@ dimensions:
   type: dimension
   category: execution
   owner: automation-team
-  path: governance/35-scripts
+  path: workspace/src/governance/35-scripts
   depends_on:
   - 39-automation
   purpose: Automation scripts and utilities
@@ -363,7 +363,7 @@ dimensions:
   type: dimension
   category: execution
   owner: module-team
-  path: governance/36-modules
+  path: workspace/src/governance/36-modules
   depends_on:
   - 01-architecture
   purpose: Module registry and dependency management
@@ -372,7 +372,7 @@ dimensions:
   type: dimension
   category: execution
   owner: contract-team
-  path: governance/37-behavior-contracts
+  path: workspace/src/governance/37-behavior-contracts
   depends_on:
   - 60-contracts
   purpose: Behavior contracts and interface definitions
@@ -381,7 +381,7 @@ dimensions:
   type: dimension
   category: execution
   owner: security-team
-  path: governance/38-sbom
+  path: workspace/src/governance/38-sbom
   depends_on:
   - 06-security
   purpose: Software Bill of Materials and supply chain
@@ -390,7 +390,7 @@ dimensions:
   type: dimension
   category: execution
   owner: automation-team
-  path: governance/39-automation
+  path: workspace/src/governance/39-automation
   depends_on:
   - 30-agents
   purpose: Automation engines and coordinators
@@ -400,7 +400,7 @@ dimensions:
   type: dimension
   category: execution
   owner: sre-team
-  path: governance/40-self-healing
+  path: workspace/src/governance/40-self-healing
   depends_on:
   - 39-automation
   purpose: Self-healing framework and auto-remediation
@@ -410,7 +410,7 @@ dimensions:
   type: dimension
   category: observability
   owner: contract-team
-  path: governance/60-contracts
+  path: workspace/src/governance/60-contracts
   depends_on: []
   purpose: Contract registry and behavior contracts
   status: active
@@ -419,7 +419,7 @@ dimensions:
   type: dimension
   category: observability
   owner: audit-team
-  path: governance/70-audit
+  path: workspace/src/governance/70-audit
   depends_on:
   - 60-contracts
   purpose: Audit trails and traceability
@@ -429,7 +429,7 @@ dimensions:
   type: dimension
   category: feedback
   owner: optimization-team
-  path: governance/80-feedback
+  path: workspace/src/governance/80-feedback
   depends_on:
   - 70-audit
   purpose: Closed-loop feedback and continuous optimization
@@ -438,7 +438,7 @@ dimensions:
   type: dimension
   category: extended
   owner: governance-bot
-  path: governance/dimensions/81-auto-comment
+  path: workspace/src/governance/dimensions/81-auto-comment
   depends_on:
   - 39-automation
   - 80-synthesis
@@ -448,7 +448,7 @@ dimensions:
   type: dimension
   category: extended
   owner: governance-bot
-  path: governance/dimensions/82-stakeholder
+  path: workspace/src/governance/dimensions/82-stakeholder
   depends_on:
   - 00-vision-strategy
   purpose: Stakeholder management and engagement governance
@@ -457,7 +457,7 @@ dimensions:
   type: dimension
   category: extended
   owner: governance-bot
-  path: governance/dimensions/83-integration
+  path: workspace/src/governance/dimensions/83-integration
   depends_on:
   - 01-architecture
   purpose: Integration patterns and orchestration governance
@@ -470,7 +470,7 @@ dimensions:
   category: meta-specification
   layer: "90-99"
   owner: governance-bot
-  path: governance/dimensions/99-naming-convention
+  path: workspace/src/governance/dimensions/99-naming-convention
   depends_on:
   - 01-architecture
   - 25-principles
@@ -492,14 +492,14 @@ shared_resources:
 - name: ci
   type: shared
   owner: infra-team
-  path: governance/ci
+  path: workspace/src/governance/ci
   purpose: CI/CD workflows and reusable actions
   consumers:
   - all dimensions
 - name: policies
   type: shared
   owner: policy-engine
-  path: governance/policies
+  path: workspace/src/governance/policies
   purpose: Global policy library (Rego/OPA/Conftest)
   consumers:
   - 10-policy
@@ -508,7 +508,7 @@ shared_resources:
 - name: schemas
   type: shared
   owner: schema-team
-  path: governance/schemas
+  path: workspace/src/governance/schemas
   purpose: JSON Schema definitions and validation rules
   consumers:
   - 31-schemas
@@ -516,7 +516,7 @@ shared_resources:
 - name: scripts
   type: shared
   owner: automation-team
-  path: governance/scripts
+  path: workspace/src/governance/scripts
   purpose: Utility scripts and automation helpers
   consumers:
   - 35-scripts
@@ -524,14 +524,14 @@ shared_resources:
 - name: packages
   type: shared
   owner: infra-team
-  path: governance/packages
+  path: workspace/src/governance/packages
   purpose: Reusable packages and libraries
   consumers:
   - all dimensions
 - name: dimensions
   type: shared
   owner: governance-bot
-  path: governance/dimensions
+  path: workspace/src/governance/dimensions
   purpose: Dimension metadata registry (00-99, including meta-specification layer)
   consumers:
   - governance-bot
@@ -539,7 +539,7 @@ shared_resources:
 - name: _scratch
   type: shared
   owner: development-team
-  path: governance/_scratch
+  path: workspace/src/governance/_scratch
   purpose: Temporary workspace for development and testing
   consumers:
   - development-team
@@ -547,22 +547,22 @@ root_documentation:
 - name: README.md
   type: documentation
   owner: governance-team
-  path: governance/README.md
+  path: workspace/src/governance/README.md
   purpose: Governance overview and directory structure guide
 - name: GOVERNANCE_INTEGRATION_ARCHITECTURE.md
   type: documentation
   owner: architecture-team
-  path: governance/GOVERNANCE_INTEGRATION_ARCHITECTURE.md
+  path: workspace/src/governance/GOVERNANCE_INTEGRATION_ARCHITECTURE.md
   purpose: Complete integration architecture documentation
 - name: INSTANT_TRANSFORMATION_SUMMARY.md
   type: documentation
   owner: governance-team
-  path: governance/INSTANT_TRANSFORMATION_SUMMARY.md
+  path: workspace/src/governance/INSTANT_TRANSFORMATION_SUMMARY.md
   purpose: INSTANT execution transformation summary
 - name: COMPREHENSIVE_SYSTEM_ANALYSIS.md
   type: documentation
   owner: analysis-team
-  path: governance/COMPREHENSIVE_SYSTEM_ANALYSIS.md
+  path: workspace/src/governance/COMPREHENSIVE_SYSTEM_ANALYSIS.md
   purpose: System-wide comprehensive analysis report
   status: pending_migration
   migration:
@@ -572,7 +572,7 @@ root_documentation:
 migrations:
   pending:
   - asset: COMPREHENSIVE_SYSTEM_ANALYSIS.md
-    current_location: governance/
+    current_location: workspace/src/governance/
     target_dimensions:
     - 00-vision-strategy (executive summary)
     - 01-architecture (system overview)
@@ -589,7 +589,7 @@ migrations:
     owner: copilot-agent
 validation:
   enabled: true
-  script_path: governance/scripts/validate-governance-structure.py
+  script_path: workspace/src/governance/scripts/validate-governance-structure.py
   ci_integration: .github/workflows/governance-validation.yml
   rules:
   - check_dimension_files: true
