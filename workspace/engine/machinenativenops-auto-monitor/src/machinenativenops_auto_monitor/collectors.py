@@ -698,6 +698,8 @@ class KubernetesCollector:
         """Collect metrics from all nodes."""
         # Placeholder for Kubernetes integration
         return []
+
+"""
 Metrics collectors for system, quantum, and Kubernetes monitoring
 """
 

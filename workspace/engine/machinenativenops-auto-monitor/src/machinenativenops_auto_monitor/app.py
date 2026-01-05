@@ -173,6 +173,8 @@ from typing import Any, Dict
 from .alerts import AlertManager, AlertSeverity
 from .collectors import SystemCollector, ServiceCollector, MetricCollector
 from .config import MonitorConfig
+
+"""
 Auto-Monitor Application Core
 自動監控應用核心
 
@@ -509,6 +511,8 @@ class AutoMonitorApp:
             'logs_collected': self.storage.get_logs_count(),
             'events_collected': self.storage.get_events_count(),
         }
+
+"""
 Main application for MachineNativeOps Auto Monitor
 Core monitoring logic without auto-installation
 """

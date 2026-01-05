@@ -288,6 +288,7 @@ Examples:
 
 if __name__ == "__main__":
     main()
+
 """
 MachineNativeOps Auto Monitor CLI Entry Point
 Provides multiple command modes for different use cases
