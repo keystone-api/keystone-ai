@@ -240,45 +240,11 @@ class AlertRule:
             return value > self.threshold
         elif '<' in self.condition:
             return value < self.threshold
-        elif '=' in self.condition:
-            return value == self.threshold
         elif '!=' in self.condition:
             return value != self.threshold
+        elif '=' in self.condition:
+            return value == self.threshold
         else:
             return False
 
-
-# Pre-defined alert rules for common scenarios
-def create_default_rules() -> List[AlertRule]:
-    """Create default alert rules for MachineNativeOps monitoring."""
-    return [
-        AlertRule(
-            name="high_cpu_usage",
-            condition=lambda m: m.get('cpu_percent', 0) > 80,
-            severity=AlertSeverity.WARNING,
-            message_template="CPU usage is high: {cpu_percent}%",
-            labels={'component': 'system', 'resource': 'cpu'},
-        ),
-        AlertRule(
-            name="high_memory_usage",
-            condition=lambda m: m.get('memory_percent', 0) > 85,
-            severity=AlertSeverity.WARNING,
-            message_template="Memory usage is high: {memory_percent}%",
-            labels={'component': 'system', 'resource': 'memory'},
-        ),
-        AlertRule(
-            name="disk_space_low",
-            condition=lambda m: m.get('disk_percent', 0) > 90,
-            severity=AlertSeverity.CRITICAL,
-            message_template="Disk space is critically low: {disk_percent}%",
-            labels={'component': 'system', 'resource': 'disk'},
-        ),
-        AlertRule(
-            name="service_down",
-            condition=lambda m: not m.get('service_healthy', True),
-            severity=AlertSeverity.CRITICAL,
-            message_template="Service is down: {service_name}",
-            labels={'component': 'service', 'health': 'down'},
-        ),
-    ]
 
