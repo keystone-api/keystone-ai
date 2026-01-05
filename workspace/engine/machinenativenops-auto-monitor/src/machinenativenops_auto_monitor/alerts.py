@@ -39,21 +39,17 @@ class AlertStatus(Enum):
 @dataclass
 class Alert:
     """Represents an alert instance."""
+    id: str
     name: str
     severity: AlertSeverity
     state: AlertState
     message: str
-    id: str = ""
     labels: Dict[str, str] = field(default_factory=dict)
     annotations: Dict[str, str] = field(default_factory=dict)
     started_at: datetime = field(default_factory=datetime.now)
     resolved_at: Optional[datetime] = None
     source: str = ""
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
-    def __post_init__(self):
-        if not self.id:
-            self.id = f"{self.name}_{datetime.now().timestamp()}"
     
     def resolve(self):
         """Mark alert as resolved"""
@@ -113,7 +109,9 @@ class AlertManager:
         
         if value >= threshold:
             severity = self._determine_severity(metric_name, value, threshold)
+            alert_id = f"{metric_name}_high_{datetime.now().timestamp()}"
             alert = Alert(
+                id=alert_id,
                 name=f"{metric_name}_high",
                 severity=severity,
                 state=AlertState.FIRING,
