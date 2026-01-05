@@ -83,7 +83,7 @@ def main():
     
     try:
         if args.daemon:
-            # Run in daemon mode with background thread
+            # Run in daemon mode (uses background thread for collection)
             app.run_daemon()
         else:
             # Run in normal (foreground) mode
