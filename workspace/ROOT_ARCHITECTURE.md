@@ -8,22 +8,24 @@
 
 ## 🗂️ 根層目錄結構
 
-### 治理配置檔案（根層）
+### 治理配置檔案（controlplane/config）
 ```
 MachineNativeOps/
-├── root.config.yaml              # 全域基本配置
-├── root.governance.yaml          # 治理/權限/策略配置
-├── root.modules.yaml             # 模組註冊管理與相依
-├── root.super-execution.yaml     # 超級執行/流程定義
-├── root.trust.yaml               # 信任/憑證/安全配置
-├── root.provenance.yaml          # 來源追溯與元資料
-├── root.integrity.yaml           # 整體性驗證規則
+├── controlplane/
+│   └── config/                   # 治理配置（唯讀）
+│       ├── root.config.yaml          # 全域基本配置
+│       ├── root.governance.yaml      # 治理/權限/策略配置
+│       ├── root.modules.yaml         # 模組註冊管理與相依
+│       ├── root.super-execution.yaml # 超級執行/流程定義
+│       ├── root.trust.yaml           # 信任/憑證/安全配置
+│       ├── root.provenance.yaml      # 來源追溯與元資料
+│       ├── root.integrity.yaml       # 整體性驗證規則
+│       ├── root.devices.map          # 裝置檔案對應表
+│       ├── root.kernel.map           # 核心模組/函式庫對應
+│       └── root.naming-policy.yaml   # 命名規範政策
 ├── root.bootstrap.yaml           # 開機與初始化設定
-├── root.devices.map              # 裝置檔案對應表
 ├── root.fs.map                   # 系統層級目錄映射
-├── root.kernel.map               # 核心模組/函式庫對應
-├── root.env.sh                   # Root 使用者殼層環境
-└── root.naming-policy.yaml       # 命名規範政策
+└── root.env.sh                   # Root 使用者殼層環境
 ```
 
 ### 標準 FHS 目錄
@@ -209,8 +211,17 @@ MachineNativeOps/
 **After (新架構):**
 ```
 MachineNativeOps/
-├── root.config.yaml          # 提升到根層
-├── root.governance.yaml      # 提升到根層
+├── controlplane/
+│   └── config/               # 集中治理配置（唯讀）
+│       ├── root.config.yaml
+│       ├── root.governance.yaml
+│       ├── root.modules.yaml
+│       ├── root.trust.yaml
+│       ├── root.provenance.yaml
+│       ├── root.integrity.yaml
+│       └── root.naming-policy.yaml
+├── root.bootstrap.yaml       # 根層啟動設定
+├── root.fs.map               # 根層映射
 ├── bin/                      # 新增 FHS 目錄
 ├── sbin/                     # 新增 FHS 目錄
 ├── etc/                      # 新增 FHS 目錄
@@ -218,7 +229,7 @@ MachineNativeOps/
 ```
 
 ### 變更內容
-1. ✅ 所有 `root/*` 檔案提升到根層
+1. ✅ 所有 `root.*` 配置集中於 `controlplane/config/`（唯讀）
 2. ✅ 建立標準 FHS 目錄結構
 3. ✅ 治理文檔移至 `docs/governance/`
 4. ✅ 歷史文檔歸檔至 `archive/legacy-root-files/`
