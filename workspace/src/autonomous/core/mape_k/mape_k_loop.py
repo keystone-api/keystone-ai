@@ -16,6 +16,10 @@ from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime, timezone
 import asyncio
+import logging
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 class LoopState(Enum):
@@ -151,7 +155,7 @@ class MAPEKLoop:
                     metrics.append(result)
             except Exception as e:
                 # Log error but continue monitoring
-                pass
+                logger.error(f"Monitor failed: {e}", exc_info=True)
         return metrics
 
     async def _analyze(self, metrics: List[SystemMetric]) -> List[Anomaly]:
@@ -162,8 +166,8 @@ class MAPEKLoop:
                 result = await analyzer(metrics)
                 if result:
                     anomalies.extend(result if isinstance(result, list) else [result])
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error(f"Analyzer failed: {e}", exc_info=True)
         return anomalies
 
     async def _plan(self, anomalies: List[Anomaly]) -> List[RemediationPlan]:
@@ -176,8 +180,8 @@ class MAPEKLoop:
                     if plan:
                         plans.append(plan)
                         break  # One plan per anomaly
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.error(f"Planner failed for anomaly {anomaly.id}: {e}", exc_info=True)
         return plans
 
     async def _execute(self, plans: List[RemediationPlan]) -> List[ExecutionResult]:
