@@ -1518,16 +1518,14 @@ async function executeDissolvedTool(
   }
 
   // Simulate tool execution based on quantum capability
-  if (tool.quantumEnabled && tool.fallbackEnabled) {
-    // Try quantum execution, fallback to classical if needed
   // For quantum-enabled tools with fallback support
-  if (tool.quantum_enabled && tool.fallback_enabled) {
+  if (tool.quantumEnabled && tool.fallbackEnabled) {
     try {
       // Attempt quantum execution
       const quantumResult = await executeQuantumTool(toolName, args, tool);
       return {
         success: true,
-        result: buildToolResult(toolName, tool.source_module, args, true, quantumResult),
+        result: buildToolResult(toolName, tool.sourceModule, args, true, quantumResult),
         execution_method: "quantum",
       };
     } catch (error) {
@@ -1538,13 +1536,10 @@ async function executeDissolvedTool(
           tool: toolName,
           sourceModule: tool.sourceModule,
           args,
-          execution_timestamp: new Date().toISOString(),
-          quantum_executed: true,
-        },
-        execution_method: "quantum",
-          source_module: tool.source_module,
+          execution_method: "quantum",
           error: error instanceof Error ? error.message : String(error),
           timestamp: new Date().toISOString(),
+          quantum_executed: true,
         }
       );
 
@@ -1557,7 +1552,7 @@ async function executeDissolvedTool(
       const classicalResult = await executeClassicalFallback(toolName, args, tool);
       return {
         success: true,
-        result: buildToolResult(toolName, tool.source_module, args, false, {
+        result: buildToolResult(toolName, tool.sourceModule, args, false, {
           fallback_used: true,
           fallback_reason: error instanceof Error ? error.message : "Quantum execution failed",
           ...classicalResult,
