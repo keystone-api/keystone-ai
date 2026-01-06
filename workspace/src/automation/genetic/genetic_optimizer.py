@@ -238,11 +238,24 @@ class GeneticOptimizer:
                 individual.genes[gene] = max(min_val, min(max_val, new_value))
 
     def _check_convergence(self, recent_fitness: List[float]) -> bool:
-        """Check if optimization has converged."""
-        if len(recent_fitness) < 2:
+        """Check if optimization has converged.
+        
+        Args:
+            recent_fitness: List of recent fitness values
+            
+        Returns:
+            True if variance is below threshold, False otherwise
+        """
+        # Ensure we have sufficient data points for meaningful variance calculation
+        if not recent_fitness or len(recent_fitness) < 2:
             return False
-        variance = sum((f - sum(recent_fitness)/len(recent_fitness))**2
-                       for f in recent_fitness) / len(recent_fitness)
+        
+        # Calculate mean once for efficiency
+        mean = sum(recent_fitness) / len(recent_fitness)
+        
+        # Calculate variance
+        variance = sum((f - mean) ** 2 for f in recent_fitness) / len(recent_fitness)
+        
         return variance < 1e-6
 
 
