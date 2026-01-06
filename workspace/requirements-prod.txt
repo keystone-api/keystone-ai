@@ -33,7 +33,7 @@ python-json-logger==2.0.7
 
 # HTTP client
 httpx==0.25.2
-aiohttp==3.13.2
+aiohttp==3.13.3
 
 # Utilities
 pyyaml==6.0.1
