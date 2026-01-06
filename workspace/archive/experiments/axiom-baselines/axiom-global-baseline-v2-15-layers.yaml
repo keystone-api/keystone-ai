@@ -61,12 +61,12 @@ spec:
       - G6: { name: "Hash Governance", critical: true, dual_hash: true }
       - G7: { name: "Integrity Check", critical: true, merkle_verify: true }
       - G47: { name: "Merkle Root Lock", critical: true, immutable: true }
-    
+
     slo:
-      availability: 99.999%
-      boot_time: <30s
-      verification_latency: <100ms
-      quantum_resistance_level: 256-bit
+      availability: "99.999%"
+      boot_time: "<30s"
+      verification_latency: "<100ms"
+      quantum_resistance_level: "256-bit"
 
   # ==========================================================================
   # L1: NEURAL COMPUTE LAYER - AI/ML Foundation
@@ -114,9 +114,9 @@ spec:
       - G15: { name: "Quantum ML Integration", critical: false }
     
     slo:
-      inference_latency: <50ms
-      training_efficiency: >10x_classical
-      quantum_fidelity: >0.95
+      inference_latency: "<50ms"
+      training_efficiency: ">10x_classical"
+      quantum_fidelity: ">0.95"
 
   # ==========================================================================
   # L2: KNOWLEDGE SYNTHESIS LAYER - Intelligent Data Processing
@@ -160,9 +160,9 @@ spec:
       - G17: { name: "Synthesis Core", critical: true }
     
     slo:
-      query_response: <100ms
-      synthesis_time: <5s
-      accuracy: >99%
+      query_response: "<100ms"
+      synthesis_time: "<5s"
+      accuracy: ">99%"
 
   # ==========================================================================
   # L3: PROTOCOL MESH LAYER - Communication & Routing
@@ -194,9 +194,9 @@ spec:
       - G37: { name: "Cross-layer Communication", critical: false }
     
     slo:
-      latency_p99: <10ms
-      throughput: >100k_rps
-      packet_loss: <0.001%
+      latency_p99: "<10ms"
+      throughput: ">100k_rps"
+      packet_loss: "<0.001%"
 
   # ==========================================================================
   # L4: MULTI-AGENT ORCHESTRATION - Autonomous Coordination
@@ -230,8 +230,8 @@ spec:
       - G4: { name: "Autonomy Evolution", critical: true }
     
     slo:
-      decision_latency: <500ms
-      consensus_time: <2s
+      decision_latency: "<500ms"
+      consensus_time: "<2s"
       adaptation_rate: continuous
 
   # ==========================================================================
@@ -273,9 +273,9 @@ spec:
       - G26-G30: { name: "MAPE-K Components", critical: false }
     
     slo:
-      detection_time: <10s
-      healing_time: <60s
-      prevention_rate: >80%
+      detection_time: "<10s"
+      healing_time: "<60s"
+      prevention_rate: ">80%"
 
   # ==========================================================================
   # L6: FEDERATED LEARNING - Distributed Intelligence
@@ -296,9 +296,9 @@ spec:
         bandwidth_optimization: adaptive_throttling
     
     slo:
-      convergence_rounds: <100
+      convergence_rounds: "<100"
       privacy_budget: ε=1.0
-      model_accuracy: >95%
+      model_accuracy: ">95%"
 
   # ==========================================================================
   # L7: INFRASTRUCTURE AUTOMATION - Cloud-Native Operations
@@ -331,8 +331,8 @@ spec:
       - G41: { name: "Finalize Pipeline", critical: true }
     
     slo:
-      deployment_time: <5min
-      rollback_time: <30s
+      deployment_time: "<5min"
+      rollback_time: "<30s"
       availability: 99.99%
 
   # ==========================================================================
@@ -359,9 +359,9 @@ spec:
       - G42-G46: { name: "Supply Chain Gates", critical: true }
     
     slo:
-      scan_time: <30s
-      false_positive_rate: <5%
-      compliance_score: >95%
+      scan_time: "<30s"
+      false_positive_rate: "<5%"
+      compliance_score: ">95%"
 
   # ==========================================================================
   # L9: QUANTUM OPTIMIZATION - Advanced Problem Solving
@@ -388,9 +388,9 @@ spec:
           embedding: pegasus_topology
     
     slo:
-      quantum_advantage: >10x_classical
-      solution_quality: >98%_optimal
-      execution_time: <60s
+      quantum_advantage: ">10x_classical"
+      solution_quality: ">98%_optimal"
+      execution_time: "<60s"
 
   # ==========================================================================
   # L10: SYSTEM OPTIMIZATION - Performance Tuning
@@ -411,9 +411,9 @@ spec:
         energy_efficiency: dvfs_enabled
     
     slo:
-      optimization_gain: >20%
-      resource_utilization: >80%
-      energy_reduction: >15%
+      optimization_gain: ">20%"
+      resource_utilization: ">80%"
+      energy_reduction: ">15%"
 
   # ==========================================================================
   # L11: METACOGNITION - Self-Aware Intelligence
@@ -439,9 +439,9 @@ spec:
         pattern_formation: reaction_diffusion
     
     slo:
-      strategy_quality: >90%_optimal
-      adaptation_speed: <10_iterations
-      emergence_detection: >95%_accuracy
+      strategy_quality: ">90%_optimal"
+      adaptation_speed: "<10_iterations"
+      emergence_detection: ">95%_accuracy"
 
   # ==========================================================================
   # L12: EDGE COMPUTING - Distributed Edge Intelligence
@@ -467,8 +467,8 @@ spec:
         access_control: zero_trust_edge
     
     slo:
-      edge_latency: <5ms
-      bandwidth_efficiency: >90%
+      edge_latency: "<5ms"
+      bandwidth_efficiency: ">90%"
       availability: 99.9%
 
   # ==========================================================================
@@ -495,9 +495,9 @@ spec:
         update_frequency: sub_second
     
     slo:
-      simulation_accuracy: >95%
+      simulation_accuracy: ">95%"
       prediction_horizon: 30_days
-      sync_latency: <100ms
+      sync_latency: "<100ms"
 
   # ==========================================================================
   # L14: STRATEGIC GOVERNANCE - Policy & Compliance
@@ -526,8 +526,8 @@ spec:
       - G48: { name: "Final Attestation", critical: true }
     
     slo:
-      policy_evaluation: <10ms
-      compliance_score: >98%
+      policy_evaluation: "<10ms"
+      compliance_score: ">98%"
       audit_completeness: 100%
 
 # ==========================================================================

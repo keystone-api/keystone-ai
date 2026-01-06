@@ -292,13 +292,13 @@ version_control:
         - "Patches"
         - "Minor corrections"
       example: "1.0.0 → 1.0.1"
-  
+
   prerelease_tags:
     - "alpha"
     - "beta"
-    - "rc" (release candidate)
-    - "dev" (development)
-  
+    - "rc"  # release candidate
+    - "dev"  # development
+
   build_metadata:
     - "git.commit"
     - "build.number"

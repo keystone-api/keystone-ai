@@ -267,8 +267,8 @@ canaryPlan:
     
     - name: approval_obtained
       required: true
-      approvers_count: >=2
-  
+      approvers_count: ">=2"
+
   # 後續行動
   post_actions:
     on_success:

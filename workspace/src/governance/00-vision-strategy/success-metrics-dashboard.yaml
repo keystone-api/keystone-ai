@@ -511,14 +511,14 @@ alerts:
       enabled: true
       for_severity: ["Critical", "High"]
       escalation_policy: "Follow on-call rotation"
-      
+
     slack:
       channels:
-        - "#critical-alerts" (Critical only)
-        - "#okr-tracking" (OKR-related)
-        - "#eng-alerts" (Engineering metrics)
-        - "#customer-health" (Customer metrics)
-      
+        - "#critical-alerts"  # Critical only
+        - "#okr-tracking"  # OKR-related
+        - "#eng-alerts"  # Engineering metrics
+        - "#customer-health"  # Customer metrics
+
     email:
       recipients_by_severity:
         critical: "CEO + CTO + affected team"

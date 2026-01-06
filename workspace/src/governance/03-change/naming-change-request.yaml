@@ -287,9 +287,9 @@ references:
     title: "{{reference-title}}"
     url: "{{reference-url}}"
     description: "{{reference-description}}"
-  
-  related_rfc:
-    - "RFC-{{year}}-{{sequence}}"
+
+related_rfc:
+  - "RFC-{{year}}-{{sequence}}"
 
 # ============================================================================
 # Appendices | 附錄

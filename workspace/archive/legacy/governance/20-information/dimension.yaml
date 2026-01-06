@@ -13,7 +13,11 @@ metadata:
   - legacy
   - governance
 spec:
-  description: Legacy Information Governance reference preserved after 20-intent became the active execution-layer module; consult this for historical governance and data lineage context, and use governance/20-intent for any active orchestration. Migration deadline: 2026-03-31. Examples: move workflow routing and semantic orchestration to 20-intent; keep archival policy matrices and information architecture snapshots here.
+  description: >-
+    Legacy Information Governance reference preserved after 20-intent became the active execution-layer module;
+    consult this for historical governance and data lineage context, and use governance/20-intent for any active orchestration.
+    Migration deadline: 2026-03-31. Examples: move workflow routing and semantic orchestration to 20-intent;
+    keep archival policy matrices and information architecture snapshots here.
   schema:
     path: ./schema.json
     format: json-schema

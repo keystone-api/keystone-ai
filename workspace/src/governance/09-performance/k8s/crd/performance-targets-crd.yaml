@@ -230,26 +230,26 @@ spec:
                 properties:
                   metricsCollection:
                     type: object
-                      properties:
-                        interval:
+                    properties:
+                      interval:
+                        type: string
+                        description: "Collection interval"
+                        example: "30 seconds"
+                      retention:
+                        type: string
+                        description: "Data retention period"
+                        example: "90 days"
+                      aggregation:
+                        type: array
+                        items:
                           type: string
-                          description: "Collection interval"
-                          example: "30 seconds"
-                        retention:
-                          type: string
-                          description: "Data retention period"
-                          example: "90 days"
-                        aggregation:
-                          type: array
-                          items:
-                            type: string
-                          description: "Aggregation levels"
-                          example: ["1m", "5m", "1h", "1d"]
-                        storageBackend:
-                          type: string
-                          enum: [prometheus, influxdb, elasticsearch, datadog]
-                          description: "Storage backend"
-                          example: "prometheus"
+                        description: "Aggregation levels"
+                        example: ["1m", "5m", "1h", "1d"]
+                      storageBackend:
+                        type: string
+                        enum: [prometheus, influxdb, elasticsearch, datadog]
+                        description: "Storage backend"
+                        example: "prometheus"
                   alertingRules:
                     type: array
                     items:

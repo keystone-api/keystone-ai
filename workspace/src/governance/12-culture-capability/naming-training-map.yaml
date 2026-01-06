@@ -696,10 +696,10 @@ teaching_strategies:
   lecture_based:
     name: "講述式教學"
     description: "傳統講課方式傳達知識"
-   适用_roles: ["general-user", "business-window"]
+    适用_roles: ["general-user", "business-window"]
     duration: "1-2 hours"
     effectiveness: "基礎知識傳遞"
-  
+
   practical_hands_on:
     name: "實作教學"
     description: "動手實際操作學習"

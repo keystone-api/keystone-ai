@@ -59,10 +59,10 @@ best_practices:
 
 anti_patterns:
   bad_examples:
-    - "my-service-123" (缺少環境和團隊)
-    - "ProductionDatabase" (使用大寫和無分隔符)
-    - "svc-001" (缺乏語義)
-    
+    - "my-service-123"  # 缺少環境和團隊
+    - "ProductionDatabase"  # 使用大寫和無分隔符
+    - "svc-001"  # 缺乏語義
+
   reasons:
     - "不符合標準模式"
     - "缺乏上下文信息"

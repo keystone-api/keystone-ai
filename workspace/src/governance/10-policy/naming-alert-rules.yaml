@@ -405,8 +405,8 @@ testing:
     - "Syntax validation"
     - "Condition testing"
     - "Notification verification"
-    
- 演练:
+
+  演练:
     frequency: "Semi-annual"
     scenarios:
       - "Critical alert response"
