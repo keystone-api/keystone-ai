@@ -329,102 +329,93 @@ class UnifiedPipelineManifest:
     spec: UnifiedPipelineSpec
 
 
-def load_manifest(path: Path = MANIFEST_PATH) -> UnifiedPipelineManifest:
-    """Load YAML manifest into typed dataclasses with validation."""
-    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+def _parse_instant_pipelines(spec: Dict[str, Any]) -> Optional[List[InstantPipeline]]:
+    """Parse instant pipelines from spec data."""
+    if "instantPipelines" not in spec:
+        return None
 
-    # Validate top-level keys
-    for key in ("apiVersion", "kind", "metadata", "spec"):
-        if key not in data:
-            raise ValueError(f"Missing required top-level key: {key}")
+    instant_pipelines_data = spec["instantPipelines"]
+    if not isinstance(instant_pipelines_data, list):
+        raise ValueError("spec.instantPipelines must be a list")
 
-    spec = data["spec"]
+    result = []
+    for ip in instant_pipelines_data:
+        stages = [
+            _safe_construct(InstantPipelineStage, s, "instantPipelines[*].stages[*]")
+            for s in ip.get("stages", [])
+        ]
+        result.append(InstantPipeline(
+            name=ip["name"],
+            description=ip.get("description"),
+            totalLatencyTarget=ip["totalLatencyTarget"],
+            humanIntervention=ip["humanIntervention"],
+            successRateTarget=ip["successRateTarget"],
+            stages=stages,
+        ))
+    return result
 
-    # Validate required spec sections
-    for section in ("inputUnification", "coreScheduling", "mcpIntegration", "outputs"):
-        if section not in spec:
-            raise ValueError(f"Missing required spec section: {section}")
 
-    # Parse pipelines
-    pipelines_data = spec.get("pipelines", [])
-    if not isinstance(pipelines_data, list):
-        raise ValueError("spec.pipelines must be a list")
-    pipelines = [_safe_construct(PipelineEntry, p, "pipelines[*]") for p in pipelines_data]
+def _parse_auto_scaling(spec: Dict[str, Any]) -> Optional[AutoScalingConfig]:
+    """Parse auto-scaling configuration from spec data."""
+    if "autoScaling" not in spec.get("coreScheduling", {}):
+        return None
 
-    # Parse instant pipelines (v3)
-    instant_pipelines = None
-    if "instantPipelines" in spec:
-        instant_pipelines_data = spec["instantPipelines"]
-        if not isinstance(instant_pipelines_data, list):
-            raise ValueError("spec.instantPipelines must be a list")
-        instant_pipelines = []
-        for ip in instant_pipelines_data:
-            stages = [_safe_construct(InstantPipelineStage, s, "instantPipelines[*].stages[*]") for s in ip.get("stages", [])]
-            instant_pipelines.append(InstantPipeline(
-                name=ip["name"],
-                description=ip.get("description"),
-                totalLatencyTarget=ip["totalLatencyTarget"],
-                humanIntervention=ip["humanIntervention"],
-                successRateTarget=ip["successRateTarget"],
-                stages=stages,
-            ))
+    as_data = spec["coreScheduling"]["autoScaling"]
+    metrics = [
+        _safe_construct(ScalingMetric, m, "coreScheduling.autoScaling.metrics[*]")
+        for m in as_data.get("metrics", [])
+    ]
+    return AutoScalingConfig(
+        enabled=as_data.get("enabled", False),
+        scaleFactor=as_data.get("scaleFactor", 1.0),
+        cooldownSeconds=as_data.get("cooldownSeconds", 30),
+        metrics=metrics,
+    )
 
-    # Parse tool adapters
-    adapters_data = spec["mcpIntegration"].get("toolAdapters", [])
-    if not isinstance(adapters_data, list):
-        raise ValueError("spec.mcpIntegration.toolAdapters must be a list")
-    adapters = [_safe_construct(ToolAdapter, t, "mcpIntegration.toolAdapters[*]") for t in adapters_data]
 
-    # Parse auto-scaling
-    auto_scaling = None
-    if "autoScaling" in spec.get("coreScheduling", {}):
-        as_data = spec["coreScheduling"]["autoScaling"]
-        metrics = [_safe_construct(ScalingMetric, m, "coreScheduling.autoScaling.metrics[*]") for m in as_data.get("metrics", [])]
-        auto_scaling = AutoScalingConfig(
-            enabled=as_data.get("enabled", False),
-            scaleFactor=as_data.get("scaleFactor", 1.0),
-            cooldownSeconds=as_data.get("cooldownSeconds", 30),
-            metrics=metrics,
-        )
+def _parse_auto_healing(spec: Dict[str, Any]) -> Optional[AutoHealing]:
+    """Parse auto-healing configuration from spec data."""
+    if "autoHealing" not in spec:
+        return None
 
-    # Parse event-driven config
-    event_driven = None
-    if "eventDriven" in spec.get("inputUnification", {}):
-        ed_data = spec["inputUnification"]["eventDriven"]
-        event_driven = _safe_construct(EventDrivenConfig, ed_data, "inputUnification.eventDriven")
+    ah_data = spec["autoHealing"]
+    strategies = [
+        _safe_construct(HealingStrategy, s, "autoHealing.strategies[*]")
+        for s in ah_data.get("strategies", [])
+    ]
+    return AutoHealing(
+        enabled=ah_data.get("enabled", False),
+        strategies=strategies,
+    )
 
-    # Parse latency thresholds
-    latency_thresholds = None
-    if "latencyThresholds" in spec:
-        latency_thresholds = _safe_construct(LatencyThresholds, spec["latencyThresholds"], "latencyThresholds")
 
-    # Parse auto-healing
-    auto_healing = None
-    if "autoHealing" in spec:
-        ah_data = spec["autoHealing"]
-        strategies = [_safe_construct(HealingStrategy, s, "autoHealing.strategies[*]") for s in ah_data.get("strategies", [])]
-        auto_healing = AutoHealing(
-            enabled=ah_data.get("enabled", False),
-            strategies=strategies,
-        )
+def _parse_governance_validation(spec: Dict[str, Any]) -> Optional[List[GovernanceValidationRule]]:
+    """Parse governance validation rules from spec data."""
+    if "governanceValidation" not in spec:
+        return None
 
-    # Parse governance validation
-    governance_validation = None
-    if "governanceValidation" in spec:
-        gv_data = spec["governanceValidation"]
-        if isinstance(gv_data, list):
-            governance_validation = [_safe_construct(GovernanceValidationRule, g, "governanceValidation[*]") for g in gv_data]
+    gv_data = spec["governanceValidation"]
+    if not isinstance(gv_data, list):
+        return None
 
-    # Parse metadata
+    return [
+        _safe_construct(GovernanceValidationRule, g, "governanceValidation[*]")
+        for g in gv_data
+    ]
+
+
+def _parse_metadata(data: Dict[str, Any]) -> PipelineMetadata:
+    """Parse pipeline metadata from manifest data."""
     meta_data = data["metadata"]
     labels = None
     if "labels" in meta_data:
         labels = _safe_construct(PipelineLabels, meta_data["labels"], "metadata.labels")
+
     annotations = None
     if "annotations" in meta_data:
         annotations = _safe_construct(PipelineAnnotations, meta_data["annotations"], "metadata.annotations")
 
-    metadata = PipelineMetadata(
+    return PipelineMetadata(
         name=meta_data["name"],
         version=meta_data["version"],
         mode=meta_data["mode"],
@@ -432,9 +423,16 @@ def load_manifest(path: Path = MANIFEST_PATH) -> UnifiedPipelineManifest:
         annotations=annotations,
     )
 
-    # Build input unification
+
+def _parse_input_unification(spec: Dict[str, Any]) -> InputUnification:
+    """Parse input unification configuration from spec data."""
     iu_data = spec["inputUnification"]
-    input_unification = InputUnification(
+
+    event_driven = None
+    if "eventDriven" in iu_data:
+        event_driven = _safe_construct(EventDrivenConfig, iu_data["eventDriven"], "inputUnification.eventDriven")
+
+    return InputUnification(
         protocols=iu_data["protocols"],
         normalization=iu_data["normalization"],
         validation=iu_data["validation"],
@@ -442,9 +440,11 @@ def load_manifest(path: Path = MANIFEST_PATH) -> UnifiedPipelineManifest:
         eventDriven=event_driven,
     )
 
-    # Build core scheduling
+
+def _parse_core_scheduling(spec: Dict[str, Any], auto_scaling: Optional[AutoScalingConfig]) -> CoreScheduling:
+    """Parse core scheduling configuration from spec data."""
     cs_data = spec["coreScheduling"]
-    core_scheduling = CoreScheduling(
+    return CoreScheduling(
         maxParallelAgents=cs_data["maxParallelAgents"],
         minParallelAgents=cs_data.get("minParallelAgents"),
         taskDecomposition=cs_data["taskDecomposition"],
@@ -454,29 +454,75 @@ def load_manifest(path: Path = MANIFEST_PATH) -> UnifiedPipelineManifest:
         autoScaling=auto_scaling,
     )
 
-    # Build MCP integration
+
+def _parse_mcp_integration(spec: Dict[str, Any]) -> McpIntegration:
+    """Parse MCP integration configuration from spec data."""
     mcp_data = spec["mcpIntegration"]
-    mcp_integration = McpIntegration(
+
+    adapters_data = mcp_data.get("toolAdapters", [])
+    if not isinstance(adapters_data, list):
+        raise ValueError("spec.mcpIntegration.toolAdapters must be a list")
+    adapters = [_safe_construct(ToolAdapter, t, "mcpIntegration.toolAdapters[*]") for t in adapters_data]
+
+    return McpIntegration(
         serverRef=mcp_data["serverRef"],
         toolAdapters=adapters,
         realTimeSync=mcp_data["realTimeSync"],
         crossPlatformCoordination=mcp_data.get("crossPlatformCoordination"),
     )
 
+
+def _validate_manifest_structure(data: Dict[str, Any]) -> None:
+    """Validate required top-level keys and spec sections."""
+    for key in ("apiVersion", "kind", "metadata", "spec"):
+        if key not in data:
+            raise ValueError(f"Missing required top-level key: {key}")
+
+    spec = data["spec"]
+    for section in ("inputUnification", "coreScheduling", "mcpIntegration", "outputs"):
+        if section not in spec:
+            raise ValueError(f"Missing required spec section: {section}")
+
+
+def _parse_pipelines(spec: Dict[str, Any]) -> List[PipelineEntry]:
+    """Parse pipeline entries from spec data."""
+    pipelines_data = spec.get("pipelines", [])
+    if not isinstance(pipelines_data, list):
+        raise ValueError("spec.pipelines must be a list")
+    return [_safe_construct(PipelineEntry, p, "pipelines[*]") for p in pipelines_data]
+
+
+def load_manifest(path: Path = MANIFEST_PATH) -> UnifiedPipelineManifest:
+    """Load YAML manifest into typed dataclasses with validation.
+
+    This function orchestrates the parsing of all manifest sections by
+    delegating to specialized helper functions for each configuration area.
+    """
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    _validate_manifest_structure(data)
+    spec = data["spec"]
+
+    # Parse optional configurations
+    auto_scaling = _parse_auto_scaling(spec)
+    latency_thresholds = (
+        _safe_construct(LatencyThresholds, spec["latencyThresholds"], "latencyThresholds")
+        if "latencyThresholds" in spec else None
+    )
+
     return UnifiedPipelineManifest(
         apiVersion=data["apiVersion"],
         kind=data["kind"],
-        metadata=metadata,
+        metadata=_parse_metadata(data),
         spec=UnifiedPipelineSpec(
-            inputUnification=input_unification,
-            coreScheduling=core_scheduling,
+            inputUnification=_parse_input_unification(spec),
+            coreScheduling=_parse_core_scheduling(spec, auto_scaling),
             latencyThresholds=latency_thresholds,
-            pipelines=pipelines,
-            instantPipelines=instant_pipelines,
-            mcpIntegration=mcp_integration,
+            pipelines=_parse_pipelines(spec),
+            instantPipelines=_parse_instant_pipelines(spec),
+            mcpIntegration=_parse_mcp_integration(spec),
             outputs=_safe_construct(Outputs, spec["outputs"], "outputs"),
-            autoHealing=auto_healing,
-            governanceValidation=governance_validation,
+            autoHealing=_parse_auto_healing(spec),
+            governanceValidation=_parse_governance_validation(spec),
         ),
     )
 
