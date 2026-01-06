@@ -98,7 +98,7 @@ def load_manifest(path: Path = MANIFEST_PATH) -> UnifiedPipelineManifest:
         if section not in spec:
             raise ValueError(f"Missing required spec section: {section}")
     pipelines = [PipelineEntry(**p) for p in spec.get("pipelines", [])]
-    adapters = [ToolAdapter(**t) for t in spec.get("mcpIntegration", {}).get("toolAdapters", [])]
+    adapters = [ToolAdapter(**t) for t in spec["mcpIntegration"].get("toolAdapters", [])]
     return UnifiedPipelineManifest(
         apiVersion=data["apiVersion"],
         kind=data["kind"],

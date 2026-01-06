@@ -56,7 +56,7 @@ graph TB
 ## 主要產物
 - YAML manifest：`workspace/mcp/pipelines/unified-pipeline-config.yaml`
 - JSON Schema：`workspace/mcp/schemas/unified-pipeline.schema.json`
-- TypeScript 型別：`workspace/mcp/types/unifiedPipeline.ts`
+- TypeScript 类型：`workspace/mcp/types/unifiedPipeline.ts`
 - Python 載入器：`workspace/mcp/tools/load_unified_pipeline.py`
 
 ## 快速檢視
