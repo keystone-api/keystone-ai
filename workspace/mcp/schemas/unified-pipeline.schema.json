@@ -255,6 +255,99 @@
             },
             "additionalProperties": false
           }
+        },
+        "integrationReferences": {
+          "type": "object",
+          "description": "Cross-module integration references - 硫酸解構法 systematic deconstruction",
+          "properties": {
+            "indexRef": { "type": "string" },
+            "engineLayer": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "path": { "type": "string" },
+                  "provides": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            },
+            "mcpServers": {
+              "type": "object",
+              "properties": {
+                "basePath": { "type": "string" },
+                "servers": { "type": "array", "items": { "type": "string" } },
+                "deployment": { "type": "string" }
+              },
+              "additionalProperties": false
+            },
+            "instantEngine": {
+              "type": "object",
+              "properties": {
+                "engineV2": {
+                  "type": "object",
+                  "properties": {
+                    "path": { "type": "string" },
+                    "provides": { "type": "array", "items": { "type": "string" } }
+                  }
+                },
+                "configuration": {
+                  "type": "object",
+                  "properties": {
+                    "parallelAgents": { "type": "string" },
+                    "eventTriggers": { "type": "string" }
+                  }
+                },
+                "manifest": { "type": "string" }
+              },
+              "additionalProperties": false
+            },
+            "behaviorContracts": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            },
+            "governance": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            },
+            "cicd": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            }
+          },
+          "additionalProperties": true
+        },
+        "agentPool": {
+          "type": "object",
+          "description": "Agent pool configuration for parallel execution",
+          "properties": {
+            "types": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["type", "capabilities", "maxLatency", "defaultParallelism"],
+                "properties": {
+                  "type": { "type": "string", "enum": ["analyzer", "generator", "validator", "deployer", "sentinel", "diagnostic", "fixer", "optimizer", "architect", "tester"] },
+                  "capabilities": { "type": "array", "items": { "type": "string" } },
+                  "maxLatency": { "type": "integer", "minimum": 0 },
+                  "defaultParallelism": { "type": "integer", "minimum": 1 }
+                },
+                "additionalProperties": false
+              }
+            },
+            "poolConfig": {
+              "type": "object",
+              "properties": {
+                "minWorkers": { "type": "integer", "minimum": 1 },
+                "maxWorkers": { "type": "integer", "minimum": 1 },
+                "autoScaling": { "type": "boolean" },
+                "healthCheckInterval": { "type": "integer", "minimum": 0 },
+                "failureThreshold": { "type": "integer", "minimum": 1 },
+                "autoRestart": { "type": "boolean" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

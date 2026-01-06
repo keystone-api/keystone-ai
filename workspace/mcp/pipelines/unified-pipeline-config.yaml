@@ -248,3 +248,117 @@ spec:
       checkInterval: 0
       criteria: ["all_stages_within_threshold", "total_latency_compliant", "no_bottlenecks"]
       failureAction: auto-optimize
+
+  # ========================================
+  # 跨模組整合引用 - Cross-Module Integration References
+  # 硫酸解構法: 系統性解構與重組
+  # ========================================
+  integrationReferences:
+    # 整合索引
+    indexRef: workspace/mcp/INTEGRATION_INDEX.yaml
+
+    # 核心引擎層
+    engineLayer:
+      mcpIntegration:
+        path: workspace/src/core/engine/mcp_integration.py
+        provides: ["MCPToolProvider", "MCPToolConsumer", "MCPBridge"]
+      serverManager:
+        path: workspace/src/core/integrations/mcp_server_manager.py
+        provides: ["MCPServerManager", "ServerStatus"]
+      enhancedServers:
+        path: workspace/src/core/plugins/mcp_servers_enhanced/
+        provides: ["tool_registry", "workflow_orchestrator", "realtime_connector"]
+
+    # MCP 伺服器 (9 個 JavaScript 服務)
+    mcpServers:
+      basePath: workspace/src/mcp-servers/
+      servers:
+        - code-analyzer.js
+        - test-generator.js
+        - doc-generator.js
+        - slsa-validator.js
+        - security-scanner.js
+        - deployment-validator.js
+        - logic-validator.js
+        - performance-analyzer.js
+        - comprehensive-validator.js
+      deployment: workspace/src/mcp-servers/deploy/
+
+    # INSTANT 執行引擎
+    instantEngine:
+      engineV2:
+        path: workspace/src/autonomous/deployment/instant_execution_engine_v2.py
+        provides: ["InstantExecutionEngine", "ParallelAgentPool", "InstantPipeline"]
+      configuration:
+        parallelAgents: workspace/config/instant-execution/parallel-agents-config.yaml
+        eventTriggers: workspace/config/instant-execution/event-triggers-config.yaml
+      manifest: contracts/INSTANT-EXECUTION-MANIFEST.yaml
+
+    # 行為契約
+    behaviorContracts:
+      mcpServices: workspace/src/governance/37-behavior-contracts/services.mcp.yaml
+
+    # 治理層
+    governance:
+      visionStrategy: workspace/src/governance/00-vision-strategy/
+      selfHealing: workspace/src/governance/40-self-healing/
+      serviceRegistry: workspace/src/governance/24-registry/services.yaml
+
+    # CI/CD 工作流
+    cicd:
+      instantValidator: .github/workflows/instant-execution-validator.yml
+      quantumValidation: .github/workflows/quantum-validation-pr.yml
+
+  # ========================================
+  # 代理池配置 - Agent Pool Configuration
+  # ========================================
+  agentPool:
+    types:
+      - type: analyzer
+        capabilities: ["requirement-analysis", "spec-generation", "impact-assessment"]
+        maxLatency: 5000
+        defaultParallelism: 8
+      - type: generator
+        capabilities: ["instant-architecture", "multi-language", "code-synthesis"]
+        maxLatency: 30000
+        defaultParallelism: 128
+      - type: validator
+        capabilities: ["syntax", "semantic", "security", "compliance"]
+        maxLatency: 10000
+        defaultParallelism: 64
+      - type: deployer
+        capabilities: ["blue-green", "canary", "zero-downtime", "auto-rollback"]
+        maxLatency: 30000
+        defaultParallelism: 32
+      - type: sentinel
+        capabilities: ["real-time-monitoring", "anomaly-detection", "threshold-alerting"]
+        maxLatency: 1000
+        defaultParallelism: 16
+      - type: diagnostic
+        capabilities: ["root-cause-analysis", "impact-assessment", "correlation"]
+        maxLatency: 2000
+        defaultParallelism: 8
+      - type: fixer
+        capabilities: ["auto-fix-generation", "patch-application", "regression-prevention"]
+        maxLatency: 10000
+        defaultParallelism: 16
+      - type: optimizer
+        capabilities: ["performance-analysis", "auto-optimization", "resource-tuning"]
+        maxLatency: 15000
+        defaultParallelism: 16
+      - type: architect
+        capabilities: ["auto-design", "pattern-recognition", "evolution-planning"]
+        maxLatency: 5000
+        defaultParallelism: 4
+      - type: tester
+        capabilities: ["auto-test-generation", "coverage-analysis", "mutation-testing"]
+        maxLatency: 10000
+        defaultParallelism: 64
+
+    poolConfig:
+      minWorkers: 64
+      maxWorkers: 256
+      autoScaling: true
+      healthCheckInterval: 5000
+      failureThreshold: 3
+      autoRestart: true
