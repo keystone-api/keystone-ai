@@ -192,11 +192,11 @@ but found another document
 ## 🔧 已識別問題
 
 ### 已知問題
-- 🟡 **Duplicate type declarations in axiom-dissolved-server.ts**
-  - 修復優先級: high
-- 🟢 **Mixed snake_case and camelCase in tool definitions**
-  - 修復優先級: medium
+- 目前無新的已知問題。
 
+### 已修復問題（本次 PR）
+- ✅ **Duplicate type declarations in axiom-dissolved-server.ts**（已在本次 PR 中修復）
+- ✅ **Mixed snake_case and camelCase in tool definitions**（已在本次 PR 中修復）
 
 ---
 
