@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional
 
 import yaml
 
@@ -25,7 +25,7 @@ class InputUnification:
     protocols: List[str]
     normalization: str
     validation: str
-    timeout: Union[str, int]
+    timeout: int  # milliseconds
 
 
 @dataclass
@@ -88,9 +88,15 @@ class UnifiedPipelineManifest:
 
 
 def load_manifest(path: Path = MANIFEST_PATH) -> UnifiedPipelineManifest:
-    """Load YAML manifest into typed dataclasses (schema validation optional)."""
+    """Load YAML manifest into typed dataclasses with minimal required-field validation."""
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    for key in ("apiVersion", "kind", "metadata", "spec"):
+        if key not in data:
+            raise ValueError(f"Missing required top-level key: {key}")
     spec = data["spec"]
+    for section in ("inputUnification", "coreScheduling", "mcpIntegration", "outputs"):
+        if section not in spec:
+            raise ValueError(f"Missing required spec section: {section}")
     pipelines = [PipelineEntry(**p) for p in spec.get("pipelines", [])]
     adapters = [ToolAdapter(**t) for t in spec.get("mcpIntegration", {}).get("toolAdapters", [])]
     return UnifiedPipelineManifest(

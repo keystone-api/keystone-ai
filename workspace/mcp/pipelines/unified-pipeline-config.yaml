@@ -9,7 +9,7 @@ spec:
     protocols: ["webhook", "mcp", "cli", "rest", "grpc", "eventbus"]
     normalization: canonical_event_format
     validation: schema_strict
-    timeout: 100ms
+    timeout: 100
 
   coreScheduling:
     maxParallelAgents: 256

@@ -2,7 +2,7 @@ export interface InputUnification {
   protocols: string[];
   normalization: string;
   validation: string;
-  timeout: string | number;
+  timeout: number; // milliseconds
 }
 
 export interface CoreScheduling {

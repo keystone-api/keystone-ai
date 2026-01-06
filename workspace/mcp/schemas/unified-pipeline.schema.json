@@ -27,7 +27,7 @@
             "protocols": { "type": "array", "items": { "type": "string" } },
             "normalization": { "type": "string" },
             "validation": { "type": "string" },
-            "timeout": { "type": ["string", "number"] }
+            "timeout": { "type": "number" }
           },
           "additionalProperties": false
         },
