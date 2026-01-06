@@ -1,9 +1,9 @@
 # MachineNativeOps /workspace/mcp 深度分析報告（2026-01-06）
 
 ## 專案與範圍
-- **平台／倉庫**: GitHub `MachineNativeOps/machine-native-ops`
-- **分析範圍**: `workspace/mcp` 子專案（含 pipelines、schemas、types、tools、validation、servers 引用）與清單中引用的相關路徑。
-- **核心依據**:  
+- **平台／倉庫**：GitHub `MachineNativeOps/machine-native-ops`
+- **分析範圍**：`workspace/mcp` 子專案（含 pipelines、schemas、types、tools、validation、servers 引用）與清單中引用的相關路徑。
+- **核心依據**：  
   - 架構與標準：`workspace/mcp/README.md`、`workspace/mcp/pipelines/unified-pipeline-config.yaml`  
   - 型別與載入：`workspace/mcp/types/unifiedPipeline.ts`、`workspace/mcp/tools/load_unified_pipeline.py`  
   - 自動化掃描腳本：`workspace/mcp/tools/github_project_analyzer.py`  
@@ -12,7 +12,7 @@
 ---
 
 ## 1. 架構設計理念分析
-- **核心架構模式**: INSTANT Execution 架構（事件驅動、零人工、<3 分鐘全堆疊），在 `workspace/mcp/README.md` 以分層 mermaid 圖呈現，並以 `unified-pipeline-config.yaml` 描述各層。
+- **核心架構模式**：INSTANT Execution 架構（事件驅動、零人工、<3 分鐘全堆疊），在 `workspace/mcp/README.md` 以分層 mermaid 圖呈現，並以 `unified-pipeline-config.yaml` 描述各層。
 - **技術棧選擇與優勢**  
   - **YAML/JSON Schema** 驗證：`pipelines/unified-pipeline-config.yaml` + `schemas/unified-pipeline.schema.json` 提供嚴格配置與向後相容性。  
   - **TypeScript 型別**：`types/unifiedPipeline.ts` 提供編譯期守衛與執行期常數，用於 MCP 端工具及前後端共享。  
@@ -27,7 +27,7 @@
   - YAML/TS/Python 三套型別與載入層提供前後一致性與向前相容性（未知欄位警告而不崩潰）。  
   - Instant pipelines 以分階段延遲目標（分析/生成/驗證/部署）支持分層優化。
 
-**小結**: 架構以「即時、零人工」為核心，透過 manifest + 型別雙軌鎖定一致性；治理與 MCP 工具以引用方式鬆耦合，兼顧擴展與回溯相容。
+**小結**：架構以「即時、零人工」為核心，透過 manifest + 型別雙軌鎖定一致性；治理與 MCP 工具以引用方式鬆耦合，兼顧擴展與回溯相容。
 
 ---
 
@@ -35,10 +35,10 @@
 - **已實現核心功能**  
   - `pipelines`: 5 條主管線（quantum_validation、refactor_execution、安全合規、交付、監控）已定義入口與並行度。  
   - `instantPipelines`: 3 條即時管線（feature/fix/optimization），均強制 `humanIntervention: 0` 並含成功率目標。  
-  - **Agent Pool**: 10 類代理、並行度與延遲上限明確（manifest 320+ 行）。  
-  - **MCP Integration**: 5 個 tool adapters 映射到 JS MCP 端點；realTimeSync/crossPlatformCoordination 已啟用。  
-  - **Auto-Healing**: retry/fallback/circuit-breaker 策略可配置，含重試次數與後退係數。  
-  - **型別與載入**: TS 與 Python loader 均提供 isInstant/validate_latency/validate_parallelism 等執行期檢查。
+  - **Agent Pool**：10 類代理、並行度與延遲上限明確（manifest 320+ 行）。  
+  - **MCP Integration**：5 個 tool adapters 映射到 JS MCP 端點；realTimeSync/crossPlatformCoordination 已啟用。  
+  - **Auto-Healing**：retry/fallback/circuit-breaker 策略可配置，含重試次數與後退係數。  
+  - **型別與載入**：TS 與 Python loader 均提供 isInstant/validate_latency/validate_parallelism 等執行期檢查。
 - **成熟度觀察**  
   - 主管線與即時管線規格完整，並行與延遲邊界明確。  
   - 治理驗證腳本標為 `planned`（尚未落地），表示治理能力部分未實裝。  
@@ -52,7 +52,7 @@
   - 多語言型別與 loader 鎖定一致性，降低配置漂移風險；  
   - MCP 工具覆蓋分析、測試、安全、性能多維度，支援跨平台協調。
 
-**小結**: 核心執行與即時管線配置完善並具自動化彈性；治理與文檔一致性仍需補完。
+**小結**：核心執行與即時管線配置完善並具自動化彈性；治理與文檔一致性仍需補完。
 
 ---
 
@@ -83,19 +83,19 @@
   - 確認 MCP 端工具的輸入驗證覆蓋（安全掃描器存在但未見自動化報表）；  
   - `toolAdapters` 路徑包含 shell/JS 執行器，需確保 CI 中執行安全掃描。
 
-**小結**: 文檔衝突與治理驗證缺位是當前最急迫的可見問題；性能與安全指標需要實測與報表化。
+**小結**：文檔衝突與治理驗證缺位是當前最急迫的可見問題；性能與安全指標需要實測與報表化。
 
 ---
 
 ## 5. 深度細節補充
-- **代碼質量**: TS 型別與 Python dataclass 具明確邊界； `_safe_construct` 會記錄未知欄位警告，利於向前相容。建議為 MCP JS 端與 loader 補充 lint/test pipeline，降低靜態缺陷風險。  
-- **文檔**: `workspace/mcp/README.md` 架構詳盡；MCP 端 README 需修復衝突後再對齊。可增設「實測指標/運行手冊」區塊。  
-- **測試策略**: 目前未見針對 `tools`/`types` 的自動測試；建議新增最小單元測試（載入合法/違規 manifest、延遲/並行邊界、humanIntervention 斷言）。  
-- **CI/CD 與部署**: manifest 指向 `.github/workflows/instant-execution-validator.yml`、`quantum-validation-pr.yml`，但缺少 MCP 端特定報告；建議在 CI 中加入 `npm run check:strict`（MCP servers README 所述）並產生工件。  
-- **社群與貢獻**: 未在 mcp 子專案發現貢獻者/活躍度指標；可透過 GitHub Insights 或 analyzer 腳本增補。  
-- **依賴管理**: MCP servers 使用 `npm`（`workspace/src/mcp-servers/package.json`），mcp 根目錄有 `package-lock.json`、`requirements-*.txt`；建議啟用自動依賴漏洞掃描並對齊語義版本。
+- **代碼質量**：TS 型別與 Python dataclass 具明確邊界； `_safe_construct` 會記錄未知欄位警告，利於向前相容。建議為 MCP JS 端與 loader 補充 lint/test pipeline，降低靜態缺陷風險。  
+- **文檔**：`workspace/mcp/README.md` 架構詳盡；MCP 端 README 需修復衝突後再對齊。可增設「實測指標/運行手冊」區塊。  
+- **測試策略**：目前未見針對 `tools`/`types` 的自動測試；建議新增最小單元測試（載入合法/違規 manifest、延遲/並行邊界、humanIntervention 斷言）。  
+- **CI/CD 與部署**：manifest 指向 `.github/workflows/instant-execution-validator.yml`、`quantum-validation-pr.yml`，但缺少 MCP 端特定報告；建議在 CI 中加入 `npm run check:strict`（MCP servers README 所述）並產生構件。  
+- **社群與貢獻**：未在 mcp 子專案發現貢獻者/活躍度指標；可透過 GitHub Insights 或 analyzer 腳本增補。  
+- **依賴管理**：MCP servers 使用 `npm`（`workspace/src/mcp-servers/package.json`），mcp 根目錄有 `package-lock.json`、`requirements-*.txt`；建議啟用自動依賴漏洞掃描並對齊語義版本。
 
-**小結**: 型別與配置質量高，但測試/治理/文檔一致性需補強；CI 應納入 MCP 專用驗證與安全掃描。
+**小結**：型別與配置質量高，但測試/治理/文檔一致性需補強；CI 應納入 MCP 專用驗證與安全掃描。
 
 ---
 
