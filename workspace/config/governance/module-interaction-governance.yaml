@@ -28,5 +28,5 @@ validation:
   autonomy: "human_intervention = 0"
   binary_state: 已實現
   evidence:
-    - workspace/config/governance/system-module-map.yaml
+    - system-module-map.yaml
     - workspace/docs/refactor_playbooks/EXECUTION_STATUS.md
