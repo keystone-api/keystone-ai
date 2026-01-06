@@ -137,7 +137,7 @@ layers:
     status: implemented
     coverage: 85%
     existing_components:
-      - path: workspace/src/autonomous/core/mape-k
+      - path: workspace/src/autonomous/core/mape_k
         status: created
         completeness: 90%
       - path: workspace/src/autonomous/core/remediation

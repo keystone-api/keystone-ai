@@ -83,7 +83,7 @@ mappings:
     primary_path: workspace/src/autonomous/core
     components:
       mape_k_loop:
-        path: workspace/src/autonomous/core/mape-k
+        path: workspace/src/autonomous/core/mape_k
         status: to_create
       auto_remediation:
         path: workspace/src/autonomous/core/remediation
@@ -231,7 +231,7 @@ directories_to_create:
   - workspace/src/services/mesh
   - workspace/src/services/edge/infra
   - workspace/src/services/edge/ai
-  - workspace/src/autonomous/core/mape-k
+  - workspace/src/autonomous/core/mape_k
   - workspace/src/autonomous/core/remediation
   - workspace/src/automation/genetic
 

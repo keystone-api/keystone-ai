@@ -71,7 +71,7 @@ directories_created:
     - workspace/src/ai/embeddings
     - workspace/src/ai/quantum
   L5_autonomous_healing:
-    - workspace/src/autonomous/core/mape-k
+    - workspace/src/autonomous/core/mape_k
     - workspace/src/autonomous/core/remediation
   L6_federated_learning:
     - workspace/src/ai/federated/framework
@@ -101,7 +101,7 @@ files_created:
     - workspace/src/core/crypto/quantum_safe_crypto.py
     - workspace/src/ai/embeddings/embedding_engine.py
     - workspace/src/services/mesh/service_mesh.py
-    - workspace/src/autonomous/core/mape-k/mape_k_loop.py
+    - workspace/src/autonomous/core/mape_k/mape_k_loop.py
     - workspace/src/autonomous/core/remediation/auto_remediation.py
     - workspace/src/ai/federated/framework/federation_framework.py
     - workspace/src/automation/genetic/genetic_optimizer.py
@@ -114,7 +114,7 @@ files_created:
     - workspace/src/core/crypto/__init__.py
     - workspace/src/ai/embeddings/__init__.py
     - workspace/src/services/mesh/__init__.py
-    - workspace/src/autonomous/core/mape-k/__init__.py
+    - workspace/src/autonomous/core/mape_k/__init__.py
     - workspace/src/autonomous/core/remediation/__init__.py
     - workspace/src/ai/federated/framework/__init__.py
     - workspace/src/automation/genetic/__init__.py
