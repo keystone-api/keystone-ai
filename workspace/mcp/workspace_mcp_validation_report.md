@@ -180,13 +180,19 @@ but found another document
 
 ## 📋 待辦事項
 
-### 高優先級
-- **Fix TypeScript syntax issues in axiom-dissolved-server.ts** (優先級: critical)
-  - 預估工作量: 1-2 hours
-- **Remove duplicate imports and declarations** (優先級: high)
+### 已完成項目 (Completed in PR #1107)
+- ✅ **Duplicate type declarations in axiom-dissolved-server.ts** - 已修復
+- ✅ **Mixed snake_case and camelCase in tool definitions** - 已修復
+
+### 後續工作項目 (Future Work)
+- **Fix YAML multi-document syntax errors** (優先級: medium)
+  - 影響檔案: INTEGRATION_INDEX.yaml, AXIOM_DISSOLVED_INTEGRATION_MANIFEST.yaml, axiom-dissolved-mcp-architecture.yaml, WORLD_CLASS_VALIDATION_PIPELINE.yaml
+  - 預估工作量: 2-3 hours
+  - 說明: 單一串流中包含多個未正確分隔的文件，需要修正分隔或拆分為多個檔案
+- **Resolve remaining duplicate import warnings** (優先級: low)
+  - 影響檔案: Multiple tool files under workspace/mcp/servers/tools/
   - 預估工作量: 30 minutes
-- **Add comprehensive TypeScript linting** (優先級: high)
-  - 預估工作量: 1 hour
+  - 說明: 工具模組中仍有一些重複的 import 語句需要清理
 
 
 ---
