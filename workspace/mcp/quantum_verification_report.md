@@ -78,8 +78,8 @@ PR #1067 涉及 4 個文件，已全面分析：
 ## 完整證據鏈
 
 * **PR URL**: https://github.com/MachineNativeOps/machine-native-ops/pull/1067
-* **Merge SHA**: 260b2f75
-* **Head SHA**: 260b2f75
+* **Merge SHA**: dd851bc
+* **Head SHA**: dd851bc
 * **文件變更**: 4 個 (+175/-14行)
 * **合併時間**: 2026-01-06T11:14:00Z
 * **驗證結果**: ✅ 通過
