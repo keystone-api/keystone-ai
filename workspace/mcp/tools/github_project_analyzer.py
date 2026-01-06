@@ -22,7 +22,6 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-import subprocess
 
 try:
     import requests
@@ -116,22 +115,8 @@ class GitHubProjectAnalyzer:
             results["typescript_files"] = len(list(local_path.rglob("*.ts")))
             results["yaml_configs"] = len(list(local_path.rglob("*.yaml"))) + len(list(local_path.rglob("*.yml")))
 
-            # Scan for merge conflict markers
-            try:
-                result = subprocess.run(
-                    ["grep", "-r", "-l", "<<<<<<<", str(local_path / "workspace")],
-                    capture_output=True,
-                    text=True,
-                    timeout=30
-                )
-                if result.stdout:
-                    results["merge_conflicts"] = [
-                        line.replace(str(local_path) + "/", "")
-                        for line in result.stdout.strip().split("\n")
-                        if line and not any(skip in line for skip in [".json", "supply-chain", "governance-execution"])
-                    ]
-            except (subprocess.TimeoutExpired, FileNotFoundError):
-                pass
+            # Scan for merge conflict markers using Python (safer than subprocess)
+            results["merge_conflicts"] = self._scan_for_conflicts(local_path / "workspace")
 
             # Scan governance scripts
             governance_scripts_path = local_path / "workspace" / "src" / "governance" / "scripts"
@@ -180,6 +165,56 @@ class GitHubProjectAnalyzer:
             self._repo_stats = {}
 
         return self._repo_stats
+
+    def _scan_for_conflicts(self, search_path: Path) -> List[str]:
+        """Scan for merge conflict markers using Python (safer than subprocess).
+        
+        Args:
+            search_path: Directory path to search for conflict markers.
+            
+        Returns:
+            List of relative file paths containing conflict markers.
+        """
+        conflict_files = []
+        conflict_marker = "<<<<<<<".encode()
+        
+        # File extensions that are likely to have conflicts
+        text_extensions = {'.md', '.yaml', '.yml', '.py', '.ts', '.js', '.json', '.txt', '.sh'}
+        # Patterns to skip (binary files, specific directories)
+        skip_patterns = {'node_modules', '.git', '__pycache__', 'dist', 'build', 'supply-chain', 'governance-execution'}
+        
+        if not search_path.exists():
+            return conflict_files
+            
+        try:
+            for file_path in search_path.rglob('*'):
+                # Skip directories and binary files
+                if file_path.is_dir():
+                    continue
+                    
+                # Skip files in excluded directories
+                if any(skip in str(file_path) for skip in skip_patterns):
+                    continue
+                    
+                # Only check text files
+                if file_path.suffix.lower() not in text_extensions:
+                    continue
+                    
+                try:
+                    # Read file in binary mode to avoid encoding issues
+                    content = file_path.read_bytes()
+                    if conflict_marker in content:
+                        # Convert to relative path
+                        rel_path = str(file_path.relative_to(search_path.parent))
+                        conflict_files.append(rel_path)
+                except (IOError, OSError):
+                    # Skip files that can't be read
+                    continue
+                    
+        except Exception as e:
+            logger.warning("Error scanning for conflicts: %s", e)
+            
+        return conflict_files
 
     def _get_metadata(self) -> Dict[str, Any]:
         """獲取專案元數據"""

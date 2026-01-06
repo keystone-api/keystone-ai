@@ -19,7 +19,7 @@ import yaml
 import json
 import argparse
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any, Tuple
 
 # ANSI color codes for terminal output
@@ -50,7 +50,7 @@ class LatencyMonitor:
         self.verbose = verbose
         self.config_path = config_path
         self.results: Dict[str, Any] = {
-            'timestamp': datetime.now(datetime.UTC).isoformat() if hasattr(datetime, 'UTC') else datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'standard': 'LATENCY_COMPLIANCE',
             'checks': [],
             'passed': True,
