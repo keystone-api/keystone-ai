@@ -1255,6 +1255,12 @@ const DISSOLVED_PROMPTS: PromptDefinition[] = [
 // TOOL EXECUTION HANDLERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// Metrics for tracking quantum fallback frequency
+const quantumFallbackMetrics = {
+  totalFallbacks: 0,
+  fallbacksByTool: new Map<string, number>(),
+};
+
 async function executeDissolvedTool(
   toolName: string,
   args: Record<string, unknown>
@@ -1279,7 +1285,23 @@ async function executeDissolvedTool(
         },
         execution_method: "quantum",
       };
-    } catch {
+    } catch (error) {
+      // Log the quantum execution failure for debugging
+      console.error(
+        `[QUANTUM_FALLBACK] Quantum execution failed for tool '${toolName}', falling back to classical execution.`,
+        {
+          tool: toolName,
+          source_module: tool.source_module,
+          error: error instanceof Error ? error.message : String(error),
+          timestamp: new Date().toISOString(),
+        }
+      );
+
+      // Track fallback metrics
+      quantumFallbackMetrics.totalFallbacks++;
+      const currentCount = quantumFallbackMetrics.fallbacksByTool.get(toolName) || 0;
+      quantumFallbackMetrics.fallbacksByTool.set(toolName, currentCount + 1);
+
       return {
         success: true,
         result: {
@@ -1289,6 +1311,7 @@ async function executeDissolvedTool(
           execution_timestamp: new Date().toISOString(),
           quantum_executed: false,
           fallback_used: true,
+          error_message: error instanceof Error ? error.message : String(error),
         },
         execution_method: "classical_fallback",
       };
