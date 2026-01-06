@@ -18,6 +18,8 @@ import {
   ReadResourceRequestSchema,
   ListPromptsRequestSchema,
   GetPromptRequestSchema,
+  ErrorCode,
+  McpError,
 } from "@modelcontextprotocol/sdk/types.js";
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1283,6 +1285,125 @@ This evaluation will use:
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// VALIDATION HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Validates arguments against a JSON Schema
+ * @param args - Arguments to validate
+ * @param schema - JSON Schema to validate against
+ * @throws {Error} If validation fails
+ */
+function validateToolArguments(
+  args: Record<string, unknown>,
+  schema: any
+): void {
+  if (!schema || typeof schema !== "object") {
+    return; // No schema to validate against
+  }
+
+  const { type, properties, required } = schema;
+
+  // Validate type
+  if (type === "object" && (typeof args !== "object" || args === null)) {
+    throw new Error(`Expected arguments to be an object, got ${args === null ? "null" : typeof args}`);
+  }
+
+  // Validate required fields
+  if (required && Array.isArray(required)) {
+    for (const field of required) {
+      if (!(field in args)) {
+        throw new Error(`Missing required field: ${field}`);
+      }
+    }
+  }
+
+  // Validate properties
+  if (properties && typeof properties === "object") {
+    for (const [key, value] of Object.entries(args)) {
+      const propSchema = properties[key];
+      if (!propSchema) {
+        // Skip validation for unknown properties (allow additional properties by default)
+        continue;
+      }
+
+      validateProperty(key, value, propSchema);
+    }
+  }
+}
+
+/**
+ * Validates a single property against its schema
+ * @param key - Property name
+ * @param value - Property value
+ * @param propSchema - Property schema
+ * @throws {Error} If validation fails
+ */
+function validateProperty(
+  key: string,
+  value: unknown,
+  propSchema: any
+): void {
+  const { type, enum: enumValues, items } = propSchema;
+
+  // Check enum constraint
+  if (enumValues && Array.isArray(enumValues)) {
+    if (!enumValues.includes(value)) {
+      throw new Error(
+        `Invalid value for ${key}: expected one of [${enumValues.join(", ")}], got ${value}`
+      );
+    }
+  }
+
+  // Check type constraint
+  if (type) {
+    const actualType = Array.isArray(value)
+      ? "array"
+      : value === null
+      ? "null"
+      : typeof value;
+
+    let expectedType = type;
+    if (type === "integer") {
+      expectedType = "number";
+      // Handle both number and string representations of integers
+      if (actualType === "number") {
+        if (!Number.isInteger(value as number)) {
+          throw new Error(`Invalid type for ${key}: expected integer, got ${value}`);
+        }
+      } else if (actualType === "string") {
+        const numValue = Number(value);
+        if (isNaN(numValue) || !Number.isInteger(numValue)) {
+          throw new Error(`Invalid type for ${key}: expected integer, got ${value}`);
+        }
+        // Check for safe integer range to avoid precision loss
+        if (!Number.isSafeInteger(numValue)) {
+          throw new Error(`Invalid type for ${key}: integer value ${value} is outside safe range`);
+        }
+      } else {
+        throw new Error(
+          `Invalid type for ${key}: expected integer, got ${actualType}`
+        );
+      }
+      return; // Type validated, no need for further type checks
+    }
+
+    if (actualType !== expectedType) {
+      throw new Error(
+        `Invalid type for ${key}: expected ${type}, got ${actualType}`
+      );
+    }
+
+    // Validate array items
+    if (type === "array" && items && Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        validateProperty(`${key}[${i}]`, value[i], items);
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TOOL EXECUTION HANDLERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1365,10 +1486,27 @@ function buildToolResult(
 async function executeDissolvedTool(
   toolName: string,
   args: Record<string, unknown>
-): Promise<{ success: boolean; result: unknown; execution_method?: string }> {
+): Promise<{ success: boolean; result: unknown; execution_method?: string; error_type?: string }> {
   const tool = DISSOLVED_TOOLS.find((t) => t.name === toolName);
   if (!tool) {
-    return { success: false, result: { error: `Unknown tool: ${toolName}` } };
+    return { 
+      success: false, 
+      result: { error: `Unknown tool: ${toolName}` },
+      error_type: "tool_not_found",
+    };
+  }
+
+  // Validate input arguments against the tool's input schema
+  try {
+    validateToolArguments(args, tool.input_schema);
+  } catch (error) {
+    return {
+      success: false,
+      result: {
+        error: `Validation failed: ${error instanceof Error ? error.message : String(error)}`,
+      },
+      error_type: "validation_error",
+    };
   }
 
   // For quantum-enabled tools with fallback support
@@ -1597,6 +1735,21 @@ async function simulateClassicalExecution(
   }
 }
 
+/**
+ * Extracts error message from execution result
+ * @param result - Execution result object
+ * @param defaultMessage - Default message if extraction fails
+ * @returns Extracted error message
+ */
+function extractErrorMessage(
+  result: { result: unknown },
+  defaultMessage: string
+): string {
+  return result.result && typeof result.result === "object" && "error" in result.result
+    ? String((result.result as any).error)
+    : defaultMessage;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // MCP SERVER IMPLEMENTATION
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1629,17 +1782,45 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 // Call Tool Handler
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
-  const result = await executeDissolvedTool(name, args || {});
+  
+  try {
+    const result = await executeDissolvedTool(name, args || {});
+    
+    // If execution failed with a validation error, throw appropriate MCP error
+    if (!result.success) {
+      if (result.error_type === "validation_error") {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          extractErrorMessage(result, "Validation failed")
+        );
+      } else if (result.error_type === "tool_not_found") {
+        throw new McpError(
+          ErrorCode.MethodNotFound,
+          extractErrorMessage(result, "Tool not found")
+        );
+      }
+    }
 
-  return {
-    content: [
-      {
-        type: "text",
-        text: JSON.stringify(result, null, 2),
-      },
-    ],
-    isError: !result.success,
-  };
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(result, null, 2),
+        },
+      ],
+      isError: !result.success,
+    };
+  } catch (error) {
+    // Re-throw McpError as-is
+    if (error instanceof McpError) {
+      throw error;
+    }
+    // Wrap other errors
+    throw new McpError(
+      ErrorCode.InternalError,
+      `Tool execution failed: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
 });
 
 // List Resources Handler
