@@ -22,34 +22,14 @@ import {
   McpError,
 } from "@modelcontextprotocol/sdk/types.js";
 import { DISSOLVED_TOOLS } from "./tools/index.js";
-import type { ToolDefinition, ResourceDefinition, PromptDefinition } from "./tools/types.js";
+import type { ToolDefinition, ResourceDefinition, PromptDefinition as BasePromptDefinition } from "./tools/types.js";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPE DEFINITIONS - MCP Aligned
 // ═══════════════════════════════════════════════════════════════════════════════
 
-interface ToolDefinition {
-  name: string;
-  description: string;
-  sourceModule: string;
-  inputSchema: object;
-  quantumEnabled: boolean;
-  fallbackEnabled?: boolean;
-  priority: number;
-}
-
-interface ResourceDefinition {
-  uri: string;
-  name: string;
-  description: string;
-  mimeType: string;
-  metadata: object;
-}
-
-interface PromptDefinition {
-  name: string;
-  description: string;
-  arguments: Array<{ name: string; description: string; required: boolean }>;
+// Extend PromptDefinition with template function for server implementation
+interface PromptDefinition extends BasePromptDefinition {
   template: (args?: Record<string, unknown>) => string;
 }
 
@@ -1506,7 +1486,7 @@ async function executeDissolvedTool(
 
   // Validate input arguments against the tool's input schema
   try {
-    validateToolArguments(args, tool.input_schema);
+    validateToolArguments(args, tool.inputSchema);
   } catch (error) {
     return {
       success: false,
@@ -1521,13 +1501,13 @@ async function executeDissolvedTool(
   if (tool.quantumEnabled && tool.fallbackEnabled) {
     // Try quantum execution, fallback to classical if needed
   // For quantum-enabled tools with fallback support
-  if (tool.quantum_enabled && tool.fallback_enabled) {
+  if (tool.quantumEnabled && tool.fallbackEnabled) {
     try {
       // Attempt quantum execution
       const quantumResult = await executeQuantumTool(toolName, args, tool);
       return {
         success: true,
-        result: buildToolResult(toolName, tool.source_module, args, true, quantumResult),
+        result: buildToolResult(toolName, tool.sourceModule, args, true, quantumResult),
         execution_method: "quantum",
       };
     } catch (error) {
@@ -1542,7 +1522,7 @@ async function executeDissolvedTool(
           quantum_executed: true,
         },
         execution_method: "quantum",
-          source_module: tool.source_module,
+          source_module: tool.sourceModule,
           error: error instanceof Error ? error.message : String(error),
           timestamp: new Date().toISOString(),
         }
@@ -1557,7 +1537,7 @@ async function executeDissolvedTool(
       const classicalResult = await executeClassicalFallback(toolName, args, tool);
       return {
         success: true,
-        result: buildToolResult(toolName, tool.source_module, args, false, {
+        result: buildToolResult(toolName, tool.sourceModule, args, false, {
           fallback_used: true,
           fallback_reason: error instanceof Error ? error.message : "Quantum execution failed",
           ...classicalResult,
@@ -1568,13 +1548,13 @@ async function executeDissolvedTool(
   }
 
   // For tools without fallback or non-quantum tools
-  if (tool.quantum_enabled) {
+  if (tool.quantumEnabled) {
     // Quantum-only tools (no fallback)
     try {
       const quantumResult = await executeQuantumTool(toolName, args, tool);
       return {
         success: true,
-        result: buildToolResult(toolName, tool.source_module, args, true, quantumResult),
+        result: buildToolResult(toolName, tool.sourceModule, args, true, quantumResult),
         execution_method: "quantum",
       };
     } catch (error) {
@@ -1606,7 +1586,7 @@ async function executeDissolvedTool(
       quantumEnabled: tool.quantumEnabled,
     },
     execution_method: tool.quantumEnabled ? "quantum" : "classical",
-    result: buildToolResult(toolName, tool.source_module, args, false, classicalResult),
+    result: buildToolResult(toolName, tool.sourceModule, args, false, classicalResult),
     execution_method: "classical",
   };
 }
