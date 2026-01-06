@@ -468,7 +468,7 @@ statistics:
   totalPipelineFiles: 27
 
   mcpServerCount: 16  # 9 original + 7 dissolved
-  mcpToolCount: 74+  # 15+ original + 59 dissolved
+  mcpToolCount: 74  # 15 original + 59 dissolved
   agentTypeCount: 10
 
   # AXIOM Dissolution Statistics
