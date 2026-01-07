@@ -101,13 +101,13 @@ graph TB
 
 | Artifact | Path | Description |
 |----------|------|-------------|
-| YAML Manifest | `workspace/mcp/pipelines/unified-pipeline-config.yaml` | v3 pipeline configuration |
-| JSON Schema | `workspace/mcp/schemas/unified-pipeline.schema.json` | Strict validation schema |
-| TypeScript Types | `workspace/mcp/types/unifiedPipeline.ts` | Type-safe interfaces |
-| Python Loader | `workspace/mcp/tools/load_unified_pipeline.py` | Typed dataclass loader |
-| **AXIOM Dissolved** | `workspace/mcp/axiom-dissolved-mcp-architecture.yaml` | 59 MCP tools from dissolved AXIOM |
-| AXIOM Server | `workspace/mcp/servers/axiom-dissolved-server.ts` | MCP server implementation |
-| Integration Manifest | `workspace/mcp/AXIOM_DISSOLVED_INTEGRATION_MANIFEST.yaml` | Seamless MCP embedding |
+| YAML Manifest | `workspace/mcp/validation-mcp/pipelines/unified-pipeline-config.yaml` | v3 pipeline configuration |
+| JSON Schema | `workspace/mcp/validation-mcp/schemas/unified-pipeline.schema.json` | Strict validation schema |
+| TypeScript Types | `workspace/mcp/validation-mcp/types/unifiedPipeline.ts` | Type-safe interfaces |
+| Python Loader | `workspace/mcp/validation-mcp/tools/load_unified_pipeline.py` | Typed dataclass loader |
+| **AXIOM Dissolved** | `workspace/mcp/validation-mcp/axiom-dissolved-mcp-architecture.yaml` | 59 MCP tools from dissolved AXIOM |
+| AXIOM Server | `workspace/mcp/validation-mcp/servers/axiom-dissolved-server.ts` | MCP server implementation |
+| Integration Manifest | `workspace/mcp/validation-mcp/AXIOM_DISSOLVED_INTEGRATION_MANIFEST.yaml` | Seamless MCP embedding |
 
 ## AXIOM Dissolved Architecture (硫酸溶解法)
 
@@ -253,7 +253,7 @@ if is_instant_mode(manifest):
 | Adapter | Path | Capabilities |
 |---------|------|--------------|
 | validation_tooling | tools/validation/world_class_validation.py | syntax, semantic, security |
-| pipeline_manifest | workspace/mcp/pipelines/unified-pipeline-config.yaml | config, schema |
+| pipeline_manifest | workspace/mcp/validation-mcp/pipelines/unified-pipeline-config.yaml | config, schema |
 | code_analyzer | workspace/src/mcp-servers/code-analyzer.js | complexity, quality, security |
 | test_generator | workspace/src/mcp-servers/test-generator.js | unit, integration, e2e |
 | security_scanner | workspace/src/mcp-servers/security-scanner.js | vulnerability, owasp, compliance |
@@ -302,15 +302,15 @@ if is_instant_mode(manifest):
 ```bash
 # Validate INSTANT execution standards
 python workspace/src/governance/scripts/vision-tracker.py \
-  --config workspace/mcp/pipelines/unified-pipeline-config.yaml --verbose
+  --config workspace/mcp/validation-mcp/pipelines/unified-pipeline-config.yaml --verbose
 
 # Validate autonomy levels
 python workspace/src/governance/scripts/validate-autonomy.py \
-  --config workspace/mcp/pipelines/unified-pipeline-config.yaml --verbose
+  --config workspace/mcp/validation-mcp/pipelines/unified-pipeline-config.yaml --verbose
 
 # Monitor latency compliance
 python workspace/src/governance/scripts/latency-monitor.py \
-  --config workspace/mcp/pipelines/unified-pipeline-config.yaml --verbose
+  --config workspace/mcp/validation-mcp/pipelines/unified-pipeline-config.yaml --verbose
 ```
 
 ### Running Pipeline Loader Tests
