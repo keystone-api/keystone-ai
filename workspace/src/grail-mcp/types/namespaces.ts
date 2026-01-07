@@ -611,6 +611,12 @@ export namespace Grail {
 
     /**
      * Inter-Protocol Bridge
+     * @deprecated Use direct imports from './protocols-bridge.js' instead
+     * @see {@link ./protocols-bridge.js}
+     */
+    export namespace Bridge {
+      export type ProtocolAdapter<T, U> = import('./protocols-bridge.js').ProtocolAdapter<T, U>;
+      export type InterProtocolBridge = import('./protocols-bridge.js').InterProtocolBridge;
      * @deprecated Use direct imports from './protocols.js' instead
      */
     export namespace Bridge {
