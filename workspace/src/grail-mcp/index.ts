@@ -149,6 +149,13 @@ class GrailMCPImpl implements Partial<GrailMCP> {
 
   /**
    * Demonstrate the power of the Holy Grail
+   * 
+   * **IMPORTANT:** This method returns hardcoded placeholder values for demonstration
+   * purposes only. The returned metrics (semanticDepth: 0.95, speedup: 100, multiplier: 10,
+   * etc.) are NOT based on actual system measurements or real performance data.
+   * 
+   * @returns Mock demonstration data with example/placeholder values
+   * @see {@link GrailDemonstration} for details on the placeholder nature of returned values
    */
   async demonstrate(): Promise<GrailDemonstration> {
     if (!this._activated) {
