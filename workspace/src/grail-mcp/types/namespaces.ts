@@ -6,6 +6,9 @@
  * @style 臨床穿透 | 反諷揭露
  */
 
+// Import ES2015 module types for re-export in namespaces
+import type * as ProtocolsBridgeTypes from './protocols-bridge.js';
+
 // ============================================================================
 // NAMESPACE PATH UTILITIES
 // ============================================================================
@@ -634,20 +637,12 @@ export namespace Grail {
 
     /**
      * Inter-Protocol Bridge
+     * @deprecated Use direct imports from './protocols-bridge.js' instead
+     * @see {@link ../protocols-bridge}
      */
     export namespace Bridge {
-      export interface ProtocolAdapter<T, U> {
-        readonly sourceProtocol: string;
-        readonly targetProtocol: string;
-        adapt(message: T): U;
-        reverse(message: U): T;
-      }
-
-      export interface InterProtocolBridge {
-        registerAdapter<T, U>(adapter: ProtocolAdapter<T, U>): void;
-        bridge<T, U>(message: T, sourceProtocol: string, targetProtocol: string): U;
-        getSupportedBridges(): Array<[string, string]>;
-      }
+      export type ProtocolAdapter<T, U> = ProtocolsBridgeTypes.ProtocolAdapter<T, U>;
+      export type InterProtocolBridge = ProtocolsBridgeTypes.InterProtocolBridge;
     }
   }
 }
