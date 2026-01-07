@@ -6,6 +6,7 @@
  */
 
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
+import * as yaml from 'js-yaml';
 import type {
   FormatConverter,
   SupportedFormat,
@@ -202,17 +203,20 @@ export class GrailFormatConverter implements FormatConverter {
       }
     });
 
-    // YAML handler (simplified)
+    // YAML handler using js-yaml library
     this.formatHandlers.set('yaml', {
       parse: async (data: unknown) => {
-        // Basic YAML parsing (for full support, use a library)
         if (typeof data !== 'string') {
           return data;
         }
-        return this.parseSimpleYaml(data);
+        return yaml.load(data);
       },
       serialize: async (data: unknown, options?: FormatOptions) => {
-        return this.serializeToYaml(data, options?.pretty ? 2 : 0);
+        return yaml.dump(data, {
+          indent: options?.pretty ? 2 : 0,
+          lineWidth: -1, // Don't wrap long lines
+          noRefs: true   // Don't use anchors/aliases
+        });
       }
     });
 
@@ -295,78 +299,6 @@ export class GrailFormatConverter implements FormatConverter {
       parse: parseBinary,
       serialize: serializeBinary
     });
-  }
-
-  private parseSimpleYaml(yaml: string): unknown {
-    const result: Record<string, unknown> = {};
-    const lines = yaml.split('\n');
-
-    for (const line of lines) {
-      const match = line.match(/^(\s*)(\w+):\s*(.*)$/);
-      if (match) {
-        const [, , key, value] = match;
-        result[key] = this.parseYamlValue(value.trim());
-      }
-    }
-
-    return result;
-  }
-
-  private parseYamlValue(value: string): unknown {
-    if (value === 'true') return true;
-    if (value === 'false') return false;
-    if (value === 'null' || value === '~') return null;
-    if (/^-?\d+$/.test(value)) return parseInt(value, 10);
-    if (/^-?\d+\.\d+$/.test(value)) return parseFloat(value);
-    if ((value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'"))) {
-      return value.slice(1, -1);
-    }
-    return value;
-  }
-
-  private serializeToYaml(data: unknown, indent: number): string {
-    const lines: string[] = [];
-    this.serializeYamlValue(data, lines, 0, indent);
-    return lines.join('\n');
-  }
-
-  private serializeYamlValue(
-    value: unknown,
-    lines: string[],
-    depth: number,
-    indent: number
-  ): void {
-    const prefix = ' '.repeat(depth * indent);
-
-    if (value === null || value === undefined) {
-      lines.push(`${prefix}null`);
-    } else if (typeof value === 'object' && !Array.isArray(value)) {
-      for (const [k, v] of Object.entries(value)) {
-        if (typeof v === 'object' && v !== null) {
-          lines.push(`${prefix}${k}:`);
-          this.serializeYamlValue(v, lines, depth + 1, indent);
-        } else {
-          lines.push(`${prefix}${k}: ${this.yamlValueToString(v)}`);
-        }
-      }
-    } else if (Array.isArray(value)) {
-      for (const item of value) {
-        lines.push(`${prefix}- ${this.yamlValueToString(item)}`);
-      }
-    }
-  }
-
-  private yamlValueToString(value: unknown): string {
-    if (value === null || value === undefined) return 'null';
-    if (typeof value === 'string') {
-      if (value.includes('\n') || value.includes(':')) {
-        const escaped = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-        return `"${escaped}"`;
-      }
-      return value;
-    }
-    return String(value);
   }
 
   private parseCsv(csv: string): unknown[] {
