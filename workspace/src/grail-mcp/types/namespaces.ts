@@ -560,12 +560,10 @@ export interface StreamProcessor {
      * @deprecated Use direct imports from './converters-quantum.js' instead
      * @see converters-quantum.ts
      */
-    export namespace Quantum {
-      export type QuantumConversionConfig = import('./converters-quantum.js').QuantumConversionConfig;
-      export type QuantumConversionResult<T> = import('./converters-quantum.js').QuantumConversionResult<T>;
-      export type QuantumAssistedConverter = import('./converters-quantum.js').QuantumAssistedConverter;
-      export type QuantumConversionMetrics = import('./converters-quantum.js').QuantumConversionMetrics;
-    }
+    export type QuantumConversionConfig = import('./converters-quantum.js').QuantumConversionConfig;
+    export type QuantumConversionResult<T> = import('./converters-quantum.js').QuantumConversionResult<T>;
+    export type QuantumAssistedConverter = import('./converters-quantum.js').QuantumAssistedConverter;
+    export type QuantumConversionMetrics = import('./converters-quantum.js').QuantumConversionMetrics;
   }
 
   // ============================================================================
