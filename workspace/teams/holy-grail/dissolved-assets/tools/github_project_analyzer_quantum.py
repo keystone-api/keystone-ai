@@ -90,7 +90,7 @@ class ResourceManager:
 class WorkspaceValidator:
     """Workspace/MCP 檔案驗證器"""
 
-    def __init__(self, workspace_path: str = "workspace/mcp"):
+    def __init__(self, workspace_path: str = "workspace/teams"):
         self.workspace_path = Path(workspace_path)
         self.validation_results = {
             "yaml_files": [],
@@ -708,6 +708,7 @@ class GitHubProjectAnalyzer:
             current = data.get("current")
             if current is None:
                 current = data.get("p95", "N/A")
+            # 如果缺少即時數值則使用 p95 指標作為性能代表值
             target = data.get("target", "N/A")
             result += f"| {metric} | {current} | {target} | {status_emoji} |\n"
         return result
