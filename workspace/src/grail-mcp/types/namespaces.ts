@@ -589,7 +589,7 @@ export namespace Grail {
     /**
      * Standard Protocol (no divinity required)
      * @deprecated Use direct imports from './protocols-standard.js' instead
-     * @see {@link ./protocols-standard}
+     * @see protocols-standard.ts
      */
     export namespace Standard {
       export type ProtocolMessage = import('./protocols-standard.js').ProtocolMessage;
@@ -599,7 +599,7 @@ export namespace Grail {
     /**
      * MCP Extensions
      * @deprecated Use direct imports from './protocols-mcp.js' instead
-     * @see {@link ./protocols-mcp}
+     * @see protocols-mcp.ts
      */
     export namespace MCP {
       export type GrailToolDefinition = import('./protocols-mcp.js').GrailToolDefinition;
@@ -610,7 +610,7 @@ export namespace Grail {
     /**
      * Inter-Protocol Bridge
      * @deprecated Use direct imports from './protocols-bridge.js' instead
-     * @see {@link ./protocols-bridge}
+     * @see protocols-bridge.ts
      */
     export namespace Bridge {
       export type ProtocolAdapter<T, U> = import('./protocols-bridge.js').ProtocolAdapter<T, U>;
