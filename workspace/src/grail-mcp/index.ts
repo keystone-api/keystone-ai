@@ -59,6 +59,27 @@ import { GrailTypeConverter, getGlobalConverter } from './converters/type-conver
 import { GrailFormatConverter, getGlobalFormatConverter } from './converters/format-converter.js';
 import { createNamespacePath } from './types/namespaces.js';
 
+// ============================================================================
+// ERROR CLASSES
+// ============================================================================
+
+/**
+ * Error thrown when GRAIL activation fails
+ */
+export class GrailActivationError extends Error {
+  constructor(
+    message: string,
+    public readonly cause?: unknown
+  ) {
+    super(message);
+    this.name = 'GrailActivationError';
+  }
+}
+
+// ============================================================================
+// GRAIL MCP IMPLEMENTATION
+// ============================================================================
+
 /**
  * Clinical conversion engine implementation
  *
@@ -91,6 +112,8 @@ class GrailMCPImpl implements Partial<GrailMCP> {
 
   /**
    * Activate the system (no magic, just initialization)
+   * 
+   * @throws {GrailActivationError} If activation fails during initialization
    */
   async activate(): Promise<boolean> {
     if (this._activated) {
@@ -142,8 +165,8 @@ class GrailMCPImpl implements Partial<GrailMCP> {
       this._activated = true;
       return true;
     } catch (error) {
-      console.error('GRAIL activation failed:', error);
-      return false;
+      const message = error instanceof Error ? error.message : String(error);
+      throw new GrailActivationError(`GRAIL activation failed: ${message}`, error);
     }
   }
 
