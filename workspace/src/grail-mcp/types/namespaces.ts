@@ -6,9 +6,6 @@
  * @valuation $10M+
  */
 
-// Import ES2015 module types for re-export in namespaces
-import type * as ConvertersQuantumTypes from './converters-quantum.js';
-
 // ============================================================================
 // NAMESPACE PATH UTILITIES
 // ============================================================================
@@ -557,13 +554,13 @@ export namespace Grail {
     /**
      * Quantum-Assisted Conversion
      * @deprecated Use direct imports from './converters-quantum.js' instead
-     * @see {@link ../converters-quantum}
+     * @see {@link ./converters-quantum.js}
      */
     export namespace Quantum {
-      export type QuantumConversionConfig = ConvertersQuantumTypes.QuantumConversionConfig;
-      export type QuantumConversionResult<T> = ConvertersQuantumTypes.QuantumConversionResult<T>;
-      export type QuantumAssistedConverter = ConvertersQuantumTypes.QuantumAssistedConverter;
-      export type QuantumConversionMetrics = ConvertersQuantumTypes.QuantumConversionMetrics;
+      export type QuantumConversionConfig = import('./converters-quantum.js').QuantumConversionConfig;
+      export type QuantumConversionResult<T> = import('./converters-quantum.js').QuantumConversionResult<T>;
+      export type QuantumAssistedConverter = import('./converters-quantum.js').QuantumAssistedConverter;
+      export type QuantumConversionMetrics = import('./converters-quantum.js').QuantumConversionMetrics;
     }
   }
 
