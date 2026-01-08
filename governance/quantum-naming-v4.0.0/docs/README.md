@@ -258,7 +258,7 @@ python benchmark/quantum-performance.py \
 ### GitHub Actions Workflow
 
 ```yaml
-# .github/workflows/quantum-naming-governance.yaml.txt
+# .github/workflows/quantum-naming-governance.yaml
 name: Quantum-Enhanced Naming Governance Pipeline
 on: [push, pull_request]
 

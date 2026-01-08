@@ -39,24 +39,24 @@ Transform traditional resource naming from a manual, error-prone process into a 
    - Decoherence calibration
    - **Note**: Existing tool at workspace/tools/quantum-alignment-engine/ is used for quantum transformations
 
-2. **Quantum Configuration** (`naming-governance-v2.0.0.yaml.txt`)
+2. **Quantum Configuration** (`naming-governance-v2.0.0.yaml`)
    - Complete three-layer governance specification
    - Quantum parameters and thresholds
    - Policy bundles and compliance standards
    - API endpoints and security configuration
 
-3. **Quantum CI/CD Pipeline** (`.github/workflows/quantum-naming-governance.yaml.txt`)
+3. **Quantum CI/CD Pipeline** (`.github/workflows/quantum-naming-governance.yaml`)
    - Automated quantum canonicalization
    - Cross-layer validation with quantum parallelism
    - Real-time observability injection
    - Quantum auto-repair mechanisms
 
 4. **Quantum Monitoring Stack**
-   - **Prometheus Rules** (`prometheus-quantum-rules.yaml.txt`): 25+ quantum metrics
-   - **Grafana Dashboard** (`grafana-quantum-dashboard.json.txt`): 10-panel visualization
+   - **Prometheus Rules** (`prometheus-quantum-rules.yaml`): 25+ quantum metrics
+   - **Grafana Dashboard** (`grafana-quantum-dashboard.json`): 10-panel visualization
    - **Service Health**: Quantum coherence, entanglement, decoherence monitoring
 
-5. **Kubernetes Deployment** (`quantum-deployment-manifest.yaml.txt`)
+5. **Kubernetes Deployment** (`quantum-deployment-manifest.yaml`)
    - Quantum resource management
    - Auto-scaling based on quantum metrics
    - Security policies and network isolation
@@ -127,11 +127,11 @@ governance:
 
 ```
 MachineNativeOps-Quantum-Naming-Governance/
-├── 📄 naming-governance-v2.0.0.yaml.txt          # Core quantum configuration
-├── 📄 .github/workflows/quantum-naming-governance.yaml.txt  # CI/CD pipeline
-├── 📄 prometheus-quantum-rules.yaml.txt          # Monitoring rules
-├── 📄 grafana-quantum-dashboard.json.txt         # Visualization dashboard
-├── 📄 quantum-deployment-manifest.yaml.txt       # Kubernetes deployment
+├── 📄 naming-governance-v2.0.0.yaml          # Core quantum configuration
+├── 📄 .github/workflows/quantum-naming-governance.yaml  # CI/CD pipeline
+├── 📄 prometheus-quantum-rules.yaml          # Monitoring rules
+├── 📄 grafana-quantum-dashboard.json         # Visualization dashboard
+├── 📄 quantum-deployment-manifest.yaml       # Kubernetes deployment
 ├── 📄 QUICK_INSTALL.sh                           # One-click installation
 ├── 📄 README.md                                  # Comprehensive documentation
 ├── 📄 PROJECT_SUMMARY.md                         # This summary
@@ -143,7 +143,7 @@ Note: Quantum transformation engine is located at workspace/tools/quantum-alignm
 
 ### Component Details
 
-#### 1. Core Configuration (`naming-governance-v2.0.0.yaml.txt`)
+#### 1. Core Configuration (`naming-governance-v2.0.0.yaml`)
 - **Size**: 15,000+ lines of YAML configuration
 - **Layers**: Strategic, Operational, Technical
 - **Features**: Quantum parameters, compliance, API endpoints
@@ -156,7 +156,7 @@ Note: Quantum transformation engine is located at workspace/tools/quantum-alignm
 - **Performance**: 15,000x faster than traditional methods
 - **Location**: Existing tool at workspace/tools/quantum-alignment-engine/
 
-#### 3. CI/CD Pipeline (`.github/workflows/quantum-naming-governance.yaml.txt`)
+#### 3. CI/CD Pipeline (`.github/workflows/quantum-naming-governance.yaml`)
 - **Jobs**: 7 parallel quantum workflows
 - **Features**: Automated validation, observability, auto-repair
 - **Triggers**: Push, PR, schedule (every 6 hours)
@@ -183,7 +183,7 @@ Note: Quantum transformation engine is located at workspace/tools/quantum-alignm
 curl -fsSL https://raw.githubusercontent.com/MachineNativeOps/machine-native-ops/main/QUICK_INSTALL.sh | bash
 
 # Or manual installation
-kubectl apply -f quantum-deployment-manifest.yaml.txt
+kubectl apply -f quantum-deployment-manifest.yaml
 
 # Verify deployment
 kubectl wait --for=condition=ready pod \

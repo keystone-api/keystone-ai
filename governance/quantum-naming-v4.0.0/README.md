@@ -9,14 +9,14 @@ This directory contains the complete quantum-enhanced naming governance system f
 ```
 quantum-naming-v4.0.0/
 ├── config/                                    # Core quantum configuration
-│   └── naming-governance-v2.0.0.yaml.txt     # Three-layer governance architecture
+│   └── naming-governance-v2.0.0.yaml         # Three-layer governance architecture
 ├── workflows/                                 # CI/CD automation
-│   └── quantum-naming-governance.yaml.txt    # GitHub Actions quantum pipeline
+│   └── quantum-naming-governance.yaml        # GitHub Actions quantum pipeline
 ├── monitoring/                                # Observability stack
-│   ├── prometheus-quantum-rules.yaml.txt     # 25+ quantum metrics
-│   └── grafana-quantum-dashboard.json.txt    # 10-panel visualization
+│   ├── prometheus-quantum-rules.yaml         # 25+ quantum metrics
+│   └── grafana-quantum-dashboard.json        # 10-panel visualization
 ├── deployment/                                # Kubernetes deployment
-│   └── quantum-deployment-manifest.yaml.txt  # Complete K8s manifests
+│   └── quantum-deployment-manifest.yaml      # Complete K8s manifests
 ├── scripts/                                   # Automation scripts
 │   └── QUICK_INSTALL.sh                      # One-click installation
 └── docs/                                      # Documentation
@@ -48,7 +48,7 @@ chmod +x QUICK_INSTALL.sh
 
 ```bash
 # Apply Kubernetes manifests
-kubectl apply -f deployment/quantum-deployment-manifest.yaml.txt
+kubectl apply -f deployment/quantum-deployment-manifest.yaml
 
 # Verify deployment
 kubectl wait --for=condition=ready pod \
