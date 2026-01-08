@@ -12,7 +12,7 @@ jobs:
       security-events: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Node audit
         if: ${{ hashFiles('package-lock.json') != '' || hashFiles('pnpm-lock.yaml') != '' }}
@@ -29,7 +29,7 @@ jobs:
           output: trivy.sarif
 
       - name: Upload Trivy results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@c37a8b7cd97e31de3fcbd9d84c401870edeb8d34 # v3
         with:
           sarif_file: trivy.sarif
 
