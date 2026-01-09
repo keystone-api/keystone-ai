@@ -21,8 +21,8 @@
 - 測試命令：`python -m pytest tests`（已在本次檢視中通過）。
 - 轉換入口：`./scripts/convert.sh <source> <target>`；測試入口：`./scripts/test.sh`。
 
-## 待核對／缺失項
-- README 中提到的 `.instant-manifest.yaml`, `advanced_converter.py`, `advanced-convert.sh`, `converted-example/`, `reports/` 等項目目前不在目錄中，若需啟用需另行補齊或調整文檔。
-- 未見 `.instant-manifest.yaml` 或其他自動化生成工件，現有流程以 `config/` 與 `scripts/convert.sh` 為主。
+## 更新紀錄
+- 補齊 README 提及的結構：`.instant-manifest.yaml`、`src/advanced_converter.py`、`scripts/advanced-convert.sh`、`examples/converted-example/`、`reports/` 目錄。
+- `.instant-manifest.yaml` 用於列舉關鍵工件（含新增佔位項），保持 INSTANT 兼容。
 
 以上盤點可作為後續架構調整與治理校驗的即時基線。
