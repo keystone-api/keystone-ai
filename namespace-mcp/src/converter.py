@@ -175,21 +175,73 @@ class MachineNativeConverter:
         ]
     
     def _build_dependency_rules(self) -> List[ConversionRule]:
-        """構建依賴規則"""
+        """構建依賴規則 - v2.0 增強版：支援裸導入和字串導入"""
         dependency_mapping = self.config.get("dependency_mapping", {})
         rules = []
         
         for lang, mappings in dependency_mapping.items():
             for old_dep, new_dep in mappings.items():
+                # 轉義特殊字符
+                escaped_old = re.escape(old_dep)
+                
+                # 規則 1: 字串形式的依賴 (如 "django", 'flask')
                 rules.append(ConversionRule(
-                    name=f"dependency_{lang}_{old_dep}",
-                    pattern=rf'\b{re.escape(old_dep)}\b',
-                    replacement=new_dep,
+                    name=f"dependency_{lang}_{old_dep}_string",
+                    pattern=f'["\']({escaped_old})["\']',
+                    replacement=f'"{new_dep}"',
                     file_types=["source_code", "config_files"],
-                    context=f"{lang}_dependencies",
-                    priority=85,
-                    description=f"替換 {old_dep} 為 {new_dep}"
+                    context=f"{lang}_dependencies_string",
+                    priority=90,
+                    description=f"替換字串依賴 {old_dep} 為 {new_dep}"
                 ))
+                
+                # 規則 2: Python 裸導入 (import django, from flask import)
+                if lang == "python":
+                    # import django
+                    rules.append(ConversionRule(
+                        name=f"dependency_{lang}_{old_dep}_bare_import",
+                        pattern=f'\\bimport\\s+{escaped_old}\\b',
+                        replacement=f'import {new_dep.replace("-", "_")}',
+                        file_types=["source_code"],
+                        context=f"{lang}_dependencies_bare",
+                        priority=95,
+                        description=f"替換裸導入 import {old_dep}"
+                    ))
+                    
+                    # from django import
+                    rules.append(ConversionRule(
+                        name=f"dependency_{lang}_{old_dep}_from_import",
+                        pattern=f'\\bfrom\\s+{escaped_old}\\b',
+                        replacement=f'from {new_dep.replace("-", "_")}',
+                        file_types=["source_code"],
+                        context=f"{lang}_dependencies_from",
+                        priority=95,
+                        description=f"替換 from {old_dep} import"
+                    ))
+                
+                # 規則 3: JavaScript require/import
+                if lang == "javascript":
+                    # require('express')
+                    rules.append(ConversionRule(
+                        name=f"dependency_{lang}_{old_dep}_require",
+                        pattern=f'require\\(["\']({escaped_old})["\']\\)',
+                        replacement=f'require("{new_dep}")',
+                        file_types=["source_code"],
+                        context=f"{lang}_dependencies_require",
+                        priority=95,
+                        description=f"替換 require('{old_dep}')"
+                    ))
+                    
+                    # import express from 'express'
+                    rules.append(ConversionRule(
+                        name=f"dependency_{lang}_{old_dep}_import",
+                        pattern=f'from\\s+["\']({escaped_old})["\']',
+                        replacement=f'from "{new_dep}"',
+                        file_types=["source_code"],
+                        context=f"{lang}_dependencies_import",
+                        priority=95,
+                        description=f"替換 from '{old_dep}'"
+                    ))
         
         return rules
     
