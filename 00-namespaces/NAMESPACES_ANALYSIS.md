@@ -1,6 +1,7 @@
 # 00-namespaces Comprehensive Analysis
 
-使用現有專案內的分析資產（`namespaces-adk.txt`、`IMPLEMENTATION_SUMMARY.md`、`PROJECT_SUMMARY.md`、`VERIFICATION_REPORT.md` 等）及實際目錄掃描，對 `namespaces-adk`、`namespaces-mcp`、`namespaces-sdk` 進行全面盤點。
+使用現有專案內的分析資產（`namespaces-adk.txt`、`IMPLEMENTATION_SUMMARY.md`、`PROJECT_SUMMARY.md`、`VERIFICATION_REPORT.md` 等）及實際目錄掃描，對 `namespaces-adk`、`namespaces-mcp`、`namespaces-sdk` 進行全面盤點。  
+English summary: Consolidated analysis of namespaces-adk, namespaces-mcp, and namespaces-sdk using in-repo reports plus directory inspection.
 
 ## namespaces-sdk（Ready）
 - **參考來源**：`PROJECT_SUMMARY.md`、`VERIFICATION_REPORT.md`、`README.md`、`src/docs/quickstart.md`。
@@ -9,7 +10,12 @@
 
 ## namespaces-mcp（Under Development）
 - **參考來源**：`PROJECT-SUMMARY.md`、`README.md`、`config/*`、`scripts/*`、`tests/test_converter.py`。
-- **現況**：核心轉換器 (`src/converter.py`、`src/advanced_converter.py`)、六層治理配置 (`conversion.yaml`、`mcp-rules.yaml`、`governance.yaml`)、執行腳本 (`convert.sh`、`advanced-convert.sh`、`test.sh`)、pytest 測試、INSTANT 兼容清單 (`.instant-manifest.yaml`) 已就緒。主 README 明確標註 🚧 開發中，而 `PROJECT-SUMMARY.md` 宣稱完成，狀態不一致，保守視為開發中。
+- **現況**：
+  - 核心轉換器：`src/converter.py`、`src/advanced_converter.py`。
+  - 配置：`conversion.yaml`、`mcp-rules.yaml`、`governance.yaml`。
+  - 執行腳本：`convert.sh`、`advanced-convert.sh`、`test.sh`。
+  - 測試與清單：pytest (`tests/test_converter.py`)、INSTANT 兼容清單 (`.instant-manifest.yaml`)。
+  - 狀態：README 標註 🚧 開發中，`PROJECT-SUMMARY.md` 宣稱完成，兩者不一致，保守視為開發中。
 - **缺口**：功能深度與測試覆蓋需驗證；協議伺服器層（JSON-RPC/傳輸層）尚未出現在程式碼中。
 
 ## namespaces-adk（Under Development）
