@@ -1,0 +1,228 @@
+# Parallel Agents Configuration
+# INSTANT Execution System v2.0.0
+#
+# 核心理念：AI 自動演化，即時交付，零延遲
+# 執行標準：< 3 分鐘完整堆疊，0 次人工介入，完全自治
+# 競爭力：與 Replit、Claude 4、GPT 同等水平的即時交付能力
+
+apiVersion: instant.machinenativeops.io/v2
+kind: ParallelAgentPool
+metadata:
+  name: instant-agent-pool
+  version: "2.0.0"
+  labels:
+    tier: production
+    mode: instant
+    human-intervention: "0"
+
+spec:
+  # 全局池配置
+  pool:
+    max_workers: 256
+    min_workers: 64
+    auto_scale: true
+    scale_factor: 2.0
+    cooldown_seconds: 30
+
+  # 延遲閾值
+  latency_thresholds:
+    instant: 100ms     # <=100ms for instant operations
+    fast: 500ms        # <=500ms for fast operations
+    standard: 5s       # <=5s for standard operations
+    max_stage: 30s     # Maximum per-stage latency
+    max_total: 180s    # Maximum total pipeline latency
+
+  # 代理類型定義
+  agents:
+    - type: analyzer
+      display_name: "Analyzer Agent"
+      description: "Requirement analysis and specification generation"
+      config:
+        parallelism: 8
+        max_latency: 5s
+        retry_count: 3
+        timeout: 60s
+      capabilities:
+        - requirement-analysis
+        - specification-generation
+        - dependency-identification
+        - complexity-assessment
+
+    - type: generator
+      display_name: "Code Generator Agent"
+      description: "Instant architecture design and multi-language code generation"
+      config:
+        parallelism: 128
+        max_latency: 30s
+        retry_count: 3
+        timeout: 120s
+      capabilities:
+        - instant-architecture
+        - multi-language-generation
+        - auto-testing
+        - code-quality-enforcement
+      performance_targets:
+        accuracy: ">=95%"
+        latency: "<=30s"
+
+    - type: validator
+      display_name: "Validator Agent"
+      description: "Automated validation and testing"
+      config:
+        parallelism: 64
+        max_latency: 10s
+        retry_count: 3
+        timeout: 60s
+      capabilities:
+        - syntax-validation
+        - semantic-validation
+        - security-scanning
+        - performance-profiling
+      coverage_target: ">=80%"
+
+    - type: deployer
+      display_name: "Deployer Agent"
+      description: "Zero-downtime deployment with auto-rollback"
+      config:
+        parallelism: 32
+        max_latency: 30s
+        retry_count: 5
+        timeout: 180s
+      capabilities:
+        - blue-green-deployment
+        - canary-deployment
+        - zero-downtime
+        - auto-rollback
+      success_rate_target: ">=99%"
+
+    - type: sentinel
+      display_name: "Sentinel Agent"
+      description: "Real-time monitoring and anomaly detection"
+      config:
+        parallelism: 16
+        max_latency: 1s
+        retry_count: 10
+        timeout: 30s
+      capabilities:
+        - real-time-monitoring
+        - anomaly-detection
+        - auto-healing
+        - predictive-scaling
+      detection_rate: ">=99%"
+      false_positive_rate: "<=1%"
+
+    - type: diagnostic
+      display_name: "Diagnostic Agent"
+      description: "Root cause analysis and impact assessment"
+      config:
+        parallelism: 8
+        max_latency: 2s
+        retry_count: 3
+        timeout: 30s
+      capabilities:
+        - root-cause-analysis
+        - impact-assessment
+        - fix-recommendation
+
+    - type: fixer
+      display_name: "Fixer Agent"
+      description: "Automated fix generation and application"
+      config:
+        parallelism: 16
+        max_latency: 10s
+        retry_count: 3
+        timeout: 60s
+      capabilities:
+        - auto-fix-generation
+        - patch-application
+        - regression-prevention
+
+    - type: optimizer
+      display_name: "Optimizer Agent"
+      description: "Performance optimization and tuning"
+      config:
+        parallelism: 16
+        max_latency: 15s
+        retry_count: 3
+        timeout: 90s
+      capabilities:
+        - performance-analysis
+        - bottleneck-identification
+        - auto-optimization
+        - resource-tuning
+
+    - type: architect
+      display_name: "Architect Agent"
+      description: "Automatic architecture design and pattern recognition"
+      config:
+        parallelism: 4
+        max_latency: 5s
+        retry_count: 2
+        timeout: 60s
+      capabilities:
+        - auto-design
+        - pattern-recognition
+        - architecture-optimization
+        - tech-stack-recommendation
+      quality_score_target: ">=90%"
+
+    - type: tester
+      display_name: "Tester Agent"
+      description: "Automated test generation and parallel execution"
+      config:
+        parallelism: 64
+        max_latency: 10s
+        retry_count: 3
+        timeout: 120s
+      capabilities:
+        - auto-test-generation
+        - parallel-execution
+        - coverage-analysis
+        - mutation-testing
+      coverage_target: ">=80%"
+
+  # 自動擴展策略
+  auto_scaling:
+    enabled: true
+    metrics:
+      - name: cpu_utilization
+        target: 70%
+        scale_up_threshold: 80%
+        scale_down_threshold: 40%
+      - name: latency_p99
+        target: 1s
+        scale_up_threshold: 2s
+      - name: queue_depth
+        target: 10
+        scale_up_threshold: 50
+    behavior:
+      scale_up:
+        stabilization_window: 30s
+        policies:
+          - type: percent
+            value: 100
+            period: 60s
+      scale_down:
+        stabilization_window: 300s
+        policies:
+          - type: percent
+            value: 50
+            period: 300s
+
+  # 健康檢查
+  health_check:
+    enabled: true
+    interval: 5s
+    timeout: 2s
+    failure_threshold: 3
+    success_threshold: 1
+    auto_restart: true
+
+  # 監控配置
+  monitoring:
+    enabled: true
+    metrics_endpoint: /metrics
+    export_interval: 10s
+    labels:
+      app: instant-execution
+      component: parallel-agents

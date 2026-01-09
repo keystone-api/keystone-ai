@@ -1,0 +1,28 @@
+# Quantum Code Alignment Engine - Dependencies
+
+# Core scientific computing
+numpy>=1.24.0
+scipy>=1.10.0
+
+# Quantum computing frameworks
+qiskit>=1.4.2
+qiskit-aer>=0.12.0
+cirq>=1.1.0
+
+# Machine learning embeddings
+sentence-transformers>=2.2.0
+torch>=2.6.0
+
+# AST parsing
+ast-unparse>=1.6.0
+
+# YAML parsing
+pyyaml>=6.0
+
+# Code quality
+black>=24.3.0
+mypy>=1.0.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0

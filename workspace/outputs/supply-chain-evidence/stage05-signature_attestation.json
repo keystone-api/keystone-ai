@@ -1,0 +1,215 @@
+{
+  "verification_hash": "1f6fa72bcbfeec8bddab7d4c4973206190318467f7287fc87cff23336a8dd4b102601ec7076faa8eb3fe2bd81adc2cb4893abd341f96898450fd0b3705f90c13",
+  "reproducible_hash": "ce0eab340eb8459b4921309de2800263a9b61eec903c43bd424cc199d71d23263a48574a3b40bad6d07255826451e4bb6db2503a121d7f232efc82c47d4b99de",
+  "data": {
+    "signatures": [
+      {
+        "image": "axiom-hft-quantum:v1.0.0",
+        "signature": "sha256:c3e9807cce7f776ab6fe148e7caa6c5ce0b842818499793f24daeb1fc9de1e39",
+        "signer": "github-actions@machinenativeops.io",
+        "signature_algorithm": "ecdsa",
+        "certificate": "CN=axiom-hft-quantum-v1.0.0-signer@machinenativeops.io",
+        "certificate_chain": [
+          "CN=machine-native-ops-intermediate",
+          "CN=machine-native-ops-root"
+        ],
+        "verified": true,
+        "trust_level": "TRUSTED",
+        "timestamp": "2026-01-06T01:16:31.456758+00:00"
+      },
+      {
+        "image": "axiom-inference-engine:v2.1.0",
+        "signature": "sha256:8199e6930cba71bb7fbda9873d40ce834031d68f71254b139d4b6466343abcfe",
+        "signer": "github-actions@machinenativeops.io",
+        "signature_algorithm": "ecdsa",
+        "certificate": "CN=axiom-inference-engine-v2.1.0-signer@machinenativeops.io",
+        "certificate_chain": [
+          "CN=machine-native-ops-intermediate",
+          "CN=machine-native-ops-root"
+        ],
+        "verified": true,
+        "trust_level": "TRUSTED",
+        "timestamp": "2026-01-06T01:16:31.456767+00:00"
+      },
+      {
+        "image": "axiom-quantum-coordinator:v1.5.0",
+        "signature": "sha256:538c1441956ee5c567385997a94a7be0ee3c4962d708315bd366b31b0ad9dfbe",
+        "signer": "github-actions@machinenativeops.io",
+        "signature_algorithm": "ecdsa",
+        "certificate": "CN=axiom-quantum-coordinator-v1.5.0-signer@machinenativeops.io",
+        "certificate_chain": [
+          "CN=machine-native-ops-intermediate",
+          "CN=machine-native-ops-root"
+        ],
+        "verified": true,
+        "trust_level": "TRUSTED",
+        "timestamp": "2026-01-06T01:16:31.456771+00:00"
+      }
+    ],
+    "provenance": {
+      "_type": "https://in-toto.io/Statement/v0.1",
+      "predicateType": "https://slsa.dev/provenance/v1",
+      "subject": [
+        {
+          "name": "machine-native-ops-aaps",
+          "digest": {
+            "sha256": "63ccea4dda3512eebf6a5a644577283ea7be0aab6b9062cadb481380fd61c42e"
+          }
+        }
+      ],
+      "predicate": {
+        "buildType": "https://github.com/actions",
+        "builder": {
+          "id": "https://github.com/MachineNativeOps/machine-native-ops/actions/runs/20734286200"
+        },
+        "invocation": {
+          "configSource": {
+            "uri": "git+https://github.com/MachineNativeOps/machine-native-ops@refs/heads/copilot/refactor-three-phase-framework",
+            "digest": {
+              "sha256": "6a9a2a80dde10fcd15a271c4ebb7352144c7a03e"
+            },
+            "entryPoint": ".github/workflows/supply-chain.yml"
+          },
+          "parameters": {
+            "build_target": "production",
+            "sign_artifacts": true
+          },
+          "environment": {
+            "github_actor": "copilot-swe-agent[bot]",
+            "github_event_name": "dynamic",
+            "github_ref": "refs/heads/copilot/refactor-three-phase-framework"
+          }
+        },
+        "metadata": {
+          "buildStartedOn": "2026-01-06T01:16:31.456794+00:00",
+          "buildFinishedOn": "2026-01-06T01:16:31.456809+00:00",
+          "completeness": {
+            "parameters": true,
+            "environment": true,
+            "materials": true
+          },
+          "reproducible": true
+        },
+        "materials": [
+          {
+            "uri": "git+https://github.com/MachineNativeOps/machine-native-ops-aaps",
+            "digest": {
+              "sha256": "6a9a2a80dde10fcd15a271c4ebb7352144c7a03e"
+            }
+          }
+        ]
+      }
+    },
+    "attestations": [
+      {
+        "_type": "https://in-toto.io/Statement/v0.1",
+        "predicateType": "https://in-toto.io/attestation/v0.1",
+        "subject": [
+          {
+            "name": "machine-native-ops-aaps",
+            "digest": {
+              "sha256": "41cf6794ba4200b839c53531555f0f3998df4cbb01a4d5cb0b94e3ca5e23947d"
+            }
+          }
+        ],
+        "predicate": {
+          "steps": [
+            {
+              "name": "lint",
+              "materials": {
+                "source": "4a387bdc80afa4fa"
+              },
+              "products": {
+                "lint-report.json": "generated_hash"
+              },
+              "byproducts": {
+                "stdout": "lint output",
+                "stderr": ""
+              },
+              "environment": {
+                "python_version": "3.11",
+                "tools": [
+                  "yamllint",
+                  "flake8",
+                  "pylint"
+                ]
+              },
+              "command": [
+                "python",
+                "supply-chain-complete-verifier.py",
+                "--stage=1"
+              ],
+              "return_value": 0
+            }
+          ]
+        }
+      },
+      {
+        "_type": "https://in-toto.io/Statement/v0.1",
+        "predicateType": "https://in-toto.io/attestation/v0.1",
+        "subject": [
+          {
+            "name": "machine-native-ops-aaps",
+            "digest": {
+              "sha256": "41cf6794ba4200b839c53531555f0f3998df4cbb01a4d5cb0b94e3ca5e23947d"
+            }
+          }
+        ],
+        "predicate": {
+          "steps": [
+            {
+              "name": "security_scan",
+              "materials": {
+                "source": "3bbe94586fc633b4"
+              },
+              "products": {
+                "sbom.json": "sbom_hash",
+                "vulnerability-report.json": "vuln_hash",
+                "secrets-scan.json": "secrets_hash"
+              },
+              "byproducts": {
+                "stdout": "scan output"
+              },
+              "environment": {
+                "tools": [
+                  "trivy",
+                  "gitleaks",
+                  "syft"
+                ]
+              },
+              "command": [
+                "python",
+                "supply-chain-complete-verifier.py",
+                "--stage=4"
+              ],
+              "return_value": 0
+            }
+          ]
+        }
+      }
+    ],
+    "transparency_log": {
+      "uuid": "33d866b24accd3e4b99a485f31410dc2f85f4c48511e84d37c73b21595a150a8",
+      "log_index": 5,
+      "body": "eyJ0eXBlIjogImhhc2hlZHJla29yZCIsICJhcGlWZXJzaW9uIjogIjAuMC4xIiwgInNwZWMiOiB7Imhhc2giOiB7ImFsZ29yaXRobSI6ICJzaGEyNTYiLCAidmFsdWUiOiAiMDNjNmJkOTc3MzlmNzgyNzhlN2I5MTg0YjMyN2EzN2ZmNDhiNGZjMmFlMzU2NDE1ZTJkOWU2ZmRiNmFhMGE2NGQzNzQzYTYzNGI5OGE2NmFlMTUyOTU1MjE2NzE4MTNiMzJlZjJmY2FkMThlNmMzY2FhMTg3YjNhMTEwODAzODQifSwgInNpZ25hdHVyZSI6IHsiZm9ybWF0IjogIng1MDkiLCAicHVibGljX2tleSI6ICItLS0tLUJFR0lOIFBVQkxJQyBLRVktLS0tLVxuLi4uXG4tLS0tLUVORCBQVUJMSUMgS0VZLS0tLS0iLCAiY29udGVudCI6ICJjMmxuYm1GMGRYSmxYMlJoZEdFPSJ9fX0=",
+      "integrated_time": 1767662191,
+      "log_id": "bc2bc471cd7501bed467fb18237906c1b2bcaaa4d51fe1db5d05b1215c908e11",
+      "verification": {
+        "signed_entry_timestamp": "dGltZXN0YW1wX3NpZ25hdHVyZQ==",
+        "inclusion_proof": {
+          "log_index": 5,
+          "root_hash": "005f43b7049e89e9edcc059fd25c1bb3fd65d2f0ad373cfbff7c75f7123fb801",
+          "tree_size": 5,
+          "hashes": [
+            "698856d9dad67aa414405e37a65f96c21ec2bc1f8fd0661b0cde7befbb7ab6bc"
+          ]
+        }
+      }
+    }
+  },
+  "artifacts": [],
+  "stage": 5,
+  "stage_name": "\u7c3d\u7ae0 + Attestation",
+  "evidence_type": "signature_attestation",
+  "timestamp": "2026-01-06T01:16:31.457097+00:00"
+}

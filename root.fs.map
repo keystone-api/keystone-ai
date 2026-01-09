@@ -1,0 +1,69 @@
+# Root Filesystem Mapping
+# 根層文件系統映射 - 只負責 controlplane 掛載
+
+apiVersion: root.fs.map/v1
+kind: FilesystemMapping
+
+metadata:
+  name: root-filesystem-mapping
+  version: v1.0.0
+
+# 掛載點配置
+mounts:
+  - name: controlplane
+    from: "./controlplane"
+    to: "/controlplane"
+    mode: "ro"  # read-only during runtime
+    description: "Control plane configuration and governance"
+  
+  - name: workspace
+    from: "./workspace"
+    to: "/workspace"
+    mode: "rw"  # read-write
+    description: "Working directory for all project files"
+
+# FHS 標準目錄映射
+fhsDirectories:
+  - name: bin
+    path: "./bin"
+    description: "Essential user command binaries"
+  
+  - name: sbin
+    path: "./sbin"
+    description: "System administration binaries"
+  
+  - name: etc
+    path: "./etc"
+    description: "System configuration files"
+  
+  - name: lib
+    path: "./lib"
+    description: "Shared libraries"
+  
+  - name: var
+    path: "./var"
+    description: "Variable data"
+  
+  - name: usr
+    path: "./usr"
+    description: "User programs"
+  
+  - name: home
+    path: "./home"
+    description: "User home directories"
+  
+  - name: tmp
+    path: "./tmp"
+    description: "Temporary files"
+  
+  - name: opt
+    path: "./opt"
+    description: "Optional application packages"
+  
+  - name: srv
+    path: "./srv"
+    description: "Service data"
+  
+  - name: init.d
+    path: "./init.d"
+    description: "Initialization scripts"

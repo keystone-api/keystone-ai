@@ -1,0 +1,40 @@
+{
+  "name": "machine-native-ops-root",
+  "version": "1.0.0",
+  "description": "MachineNativeOps - Enterprise-grade orchestration platform (root workspace)",
+  "private": true,
+  "workspaces": [
+    "workspace/src/mcp-servers",
+    "workspace/src/core/contract_service/contracts-L1/contracts",
+    "workspace/src/core/advisory-database",
+    "workspace/archive/unmanned-engineer-ceo/80-skeleton-configs"
+  ],
+  "scripts": {
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "dev:stack": "npm run dev:stack --workspaces --if-present",
+    "docs:lint": "npm run docs:lint --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
+    "cf:dev": "npm run cf:dev --workspaces --if-present",
+    "cf:deploy": "npm run cf:deploy --workspaces --if-present",
+    "validate:workspace": "node scripts/validate-workspace.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MachineNativeOps/machine-native-ops.git"
+  },
+  "keywords": [
+    "machine-native",
+    "ops",
+    "automation",
+    "governance",
+    "cloud-native"
+  ],
+  "author": "MachineNativeOps",
+  "license": "BSL-1.0",
+  "bugs": {
+    "url": "https://github.com/MachineNativeOps/machine-native-ops/issues"
+  },
+  "homepage": "https://github.com/MachineNativeOps/machine-native-ops#readme"
+}

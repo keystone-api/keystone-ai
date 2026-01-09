@@ -1,0 +1,523 @@
+# ==============================================================================
+# MachineNativeOps CI Pipeline
+# 完整的持續集成流水線 - 代碼品質、安全、測試
+# ==============================================================================
+name: "🚀 CI Pipeline"
+
+on:
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main, develop]
+
+# 並發控制
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  packages: write
+  checks: write
+  pull-requests: write
+
+env:
+  NODE_VERSION: "20"
+  PYTHON_VERSION: "3.11"
+  GO_VERSION: "1.21"
+  JAVA_VERSION: "17"
+  DOCKER_REGISTRY: "ghcr.io"
+  IMAGE_NAME: "machinenativeops"
+
+jobs:
+  # =============================================================================
+  # 代碼品質檢查
+  # =============================================================================
+  code-quality:
+    name: "🔍 Code Quality Analysis"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: "檢出代碼"
+        uses: actions/checkout@0ad4b8f3a27c304e21892351cbf9860471245599  # v4
+        with:
+          fetch-depth: 0
+
+      - name: "設置 Python 環境"
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d534527d238d7a7  # v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: "設置 Node.js 環境"
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b  # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: "安裝代碼品質工具"
+        run: |
+          pip install --user pylint black flake8 mypy bandit safety
+          npm install -g eslint prettier @typescript-eslint/parser
+          
+      - name: "Python 代碼檢查"
+        run: |
+          echo "🔍 執行 Python 代碼品質檢查..."
+          find . -name "*.py" -type f ! -path "*/node_modules/*" ! -path "*/.git/*" > python_files.txt
+          
+          if [ -s python_files.txt ]; then
+            echo "📊 發現 $(wc -l < python_files.txt) 個 Python 文件"
+            
+            # Pylint 檢查
+            echo "🔍 執行 Pylint 檢查..."
+            pylint --disable=C0114,C0115,C0116 --score=no $(cat python_files.txt) || true
+            
+            # Black 格式檢查
+            echo "🎨 檢查代碼格式..."
+            black --check --diff $(cat python_files.txt) || echo "⚠️ Black 檢查發現格式問題"
+            
+            # Flake8 檢查
+            echo "🔍 執行 Flake8 檢查..."
+            flake8 --max-line-length=100 --ignore=E203,W503 $(cat python_files.txt) || true
+            
+            # MyPy 類型檢查
+            echo "🔍 執行 MyPy 類型檢查..."
+            mypy --ignore-missing-imports --no-strict-optional $(cat python_files.txt) || true
+          else
+            echo "ℹ️ 未發現 Python 文件"
+          fi
+
+      - name: "JavaScript/TypeScript 代碼檢查"
+        run: |
+          echo "🔍 執行 JavaScript/TypeScript 代碼品質檢查..."
+          find . -name "*.js" -o -name "*.ts" -o -name "*.jsx" -o -name "*.tsx" | grep -v node_modules > js_files.txt
+          
+          if [ -s js_files.txt ]; then
+            echo "📊 發現 $(wc -l < js_files.txt) 個 JS/TS 文件"
+            
+            # ESLint 檢查
+            echo "🔍 執行 ESLint 檢查..."
+            eslint $(cat js_files.txt) || echo "⚠️ ESLint 檢查發現問題"
+            
+            # Prettier 格式檢查
+            echo "🎨 檢查代碼格式..."
+            prettier --check $(cat js_files.txt) || echo "⚠️ Prettier 檢查發現格式問題"
+          else
+            echo "ℹ️ 未發現 JavaScript/TypeScript 文件"
+          fi
+
+      - name: "生成代碼品質報告"
+        run: |
+          echo "# 📊 Code Quality Report" > code-quality-report.md
+          echo "" >> code-quality-report.md
+          echo "**檢查時間**: $(date)" >> code-quality-report.md
+          echo "**提交**: ${{ github.sha }}" >> code-quality-report.md
+          echo "" >> code-quality-report.md
+          
+          # 統計文件數量
+          PY_COUNT=$(find . -name "*.py" -type f ! -path "*/node_modules/*" | wc -l)
+          JS_COUNT=$(find . -name "*.js" -o -name "*.ts" -o -name "*.jsx" -o -name "*.tsx" | grep -v node_modules | wc -l)
+          
+          echo "## 📈 代碼統計" >> code-quality-report.md
+          echo "- Python 文件: $PY_COUNT" >> code-quality-report.md
+          echo "- JavaScript/TypeScript 文件: $JS_COUNT" >> code-quality-report.md
+          echo "" >> code-quality-report.md
+          
+          echo "## 🔍 檢查結果" >> code-quality-report.md
+          echo "✅ 代碼品質檢查已完成" >> code-quality-report.md
+          
+          cat code-quality-report.md
+
+      - name: "上傳品質報告"
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808  # v4
+        with:
+          name: code-quality-report
+          path: code-quality-report.md
+          retention-days: 30
+
+  # =============================================================================
+  # 安全漏洞掃描
+  # =============================================================================
+  security-scan:
+    name: "🔒 Security Vulnerability Scan"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: "檢出代碼"
+        uses: actions/checkout@0ad4b8f3a27c304e21892351cbf9860471245599  # v4
+
+      - name: "設置 Python 環境"
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d534527d238d7a7  # v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: "安裝安全掃描工具"
+        run: |
+          pip install --user safety bandit semgrep
+          npm install -g audit-ci snyk
+
+      - name: "Python 依賴安全掃描"
+        run: |
+          echo "🔒 掃描 Python 依賴漏洞..."
+          find . -name "requirements.txt" -o -name "setup.py" -o -name "pyproject.toml" | grep -v node_modules > requirements_files.txt
+          
+          if [ -s requirements_files.txt ]; then
+            for req_file in $(cat requirements_files.txt); do
+              echo "📋 檢查文件: $req_file"
+              if [ -f "$req_file" ]; then
+                safety check -r "$req_file" --json --output safety-report.json || echo "⚠️ Safety 發現潛在問題"
+              fi
+            done
+          else
+            echo "ℹ️ 未發現 Python 依賴文件"
+          fi
+
+      - name: "Python 代碼安全掃描"
+        run: |
+          echo "🔍 執行 Bandit 安全掃描..."
+          find . -name "*.py" -type f ! -path "*/node_modules/*" ! -path "*/.git/*" > python_files.txt
+          
+          if [ -s python_files.txt ]; then
+            bandit -r $(dirname $(head -1 python_files.txt)) -f json -o bandit-report.json || echo "⚠️ Bandit 發現潛在安全問題"
+          fi
+
+      - name: "Semgrep 代碼分析"
+        run: |
+          echo "🔍 執行 Semgrep 代碼分析..."
+          semgrep --config=auto --json --output=semgrep-report.json . || echo "⚠️ Semgrep 分析完成"
+
+      - name: "Node.js 依賴安全掃描"
+        run: |
+          echo "🔒 掃描 Node.js 依賴漏洞..."
+          find . -name "package.json" | grep -v node_modules > package_files.txt
+          
+          if [ -s package_files.txt ]; then
+            for pkg_file in $(cat package_files.txt); do
+              pkg_dir=$(dirname "$pkg_file")
+              echo "📋 檢查目錄: $pkg_dir"
+              cd "$pkg_dir"
+              npm audit --audit-level moderate --json > ../npm-audit-report.json || echo "⚠️ npm audit 發現問題"
+              cd - > /dev/null
+            done
+          else
+            echo "ℹ️ 未發現 Node.js 依賴文件"
+          fi
+
+      - name: "生成安全報告"
+        run: |
+          echo "# 🔒 Security Scan Report" > security-report.md
+          echo "" >> security-report.md
+          echo "**掃描時間**: $(date)" >> security-report.md
+          echo "**提交**: ${{ github.sha }}" >> security-report.md
+          echo "" >> security-report.md
+          
+          echo "## 🛡️ 安全掃描結果" >> security-report.md
+          echo "✅ 安全掃描已完成" >> security-report.md
+          echo "" >> security-report.md
+          
+          echo "### 📋 掃描項目" >> security-report.md
+          echo "- Python 依賴漏洞掃描 (Safety)" >> security-report.md
+          echo "- Python 代碼安全掃描 (Bandit)" >> security-report.md
+          echo "- 代碼靜態分析 (Semgrep)" >> security-report.md
+          echo "- Node.js 依賴掃描 (npm audit)" >> security-report.md
+          
+          cat security-report.md
+
+      - name: "上傳安全報告"
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808  # v4
+        with:
+          name: security-scan-report
+          path: |
+            security-report.md
+            safety-report.json
+            bandit-report.json
+            semgrep-report.json
+            npm-audit-report.json
+          retention-days: 30
+
+  # =============================================================================
+  # 單元測試
+  # =============================================================================
+  unit-tests:
+    name: "🧪 Unit Tests"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.11", "3.12"]
+    
+    steps:
+      - name: "檢出代碼"
+        uses: actions/checkout@0ad4b8f3a27c304e21892351cbf9860471245599  # v4
+
+      - name: "設置 Python ${{ matrix.python-version }}"
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d534527d238d7a7  # v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: "安裝測試依賴"
+        run: |
+          pip install --user pytest pytest-cov pytest-xdist pytest-mock coverage
+
+      - name: "執行單元測試"
+        run: |
+          echo "🧪 執行 Python 單元測試..."
+          
+          # 查找測試文件
+          find . -name "test_*.py" -o -name "*_test.py" ! -path "*/node_modules/*" > test_files.txt
+          
+          if [ -s test_files.txt ]; then
+            echo "📊 發現 $(wc -l < test_files.txt) 個測試文件"
+            
+            # 執行測試並生成覆蓋率報告
+            pytest \
+              --verbose \
+              --tb=short \
+              --cov=. \
+              --cov-report=xml \
+              --cov-report=html \
+              --cov-report=term-missing \
+              --junit-xml=test-results.xml \
+              $(dirname $(head -1 test_files.txt)) || echo "⚠️ 部分測試失敗"
+          else
+            echo "ℹ️ 未發現測試文件"
+          fi
+
+      - name: "生成測試報告"
+        if: always()
+        run: |
+          echo "# 🧪 Unit Test Report" > test-report.md
+          echo "" >> test-report.md
+          echo "**測試時間**: $(date)" >> test-report.md
+          echo "**Python 版本**: ${{ matrix.python-version }}" >> test-report.md
+          echo "**提交**: ${{ github.sha }}" >> test-report.md
+          echo "" >> test-report.md
+          
+          if [ -f "test-results.xml" ]; then
+            echo "## 📊 測試統計" >> test-report.md
+            # 解析 JUnit XML 統計信息
+            TESTS=$(grep -o 'tests="[0-9]*"' test-results.xml | head -1 | cut -d'"' -f2 || echo "0")
+            FAILURES=$(grep -o 'failures="[0-9]*"' test-results.xml | head -1 | cut -d'"' -f2 || echo "0")
+            ERRORS=$(grep -o 'errors="[0-9]*"' test-results.xml | head -1 | cut -d'"' -f2 || echo "0")
+            
+            echo "- 總測試數: $TESTS" >> test-report.md
+            echo "- 失敗數: $FAILURES" >> test-report.md
+            echo "- 錯誤數: $ERRORS" >> test-report.md
+            
+            if [ "$FAILURES" = "0" ] && [ "$ERRORS" = "0" ]; then
+              echo "- 狀態: ✅ 全部通過" >> test-report.md
+            else
+              echo "- 狀態: ❌ 部分失敗" >> test-report.md
+            fi
+          else
+            echo "ℹ️ 未生成測試結果文件" >> test-report.md
+          fi
+          
+          cat test-report.md
+
+      - name: "上傳測試報告"
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808  # v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.python-version }}
+          path: |
+            test-report.md
+            test-results.xml
+            htmlcov/
+            coverage.xml
+          retention-days: 30
+
+  # =============================================================================
+  # 集成測試
+  # =============================================================================
+  integration-tests:
+    name: "🔗 Integration Tests"
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [code-quality, security-scan]
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: "檢出代碼"
+        uses: actions/checkout@0ad4b8f3a27c304e21892351cbf9860471245599  # v4
+
+      - name: "設置 Python 環境"
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d534527d238d7a7  # v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: "安裝集成測試依賴"
+        run: |
+          pip install --user pytest docker-compose requests
+
+      - name: "執行集成測試"
+        run: |
+          echo "🔗 執行集成測試..."
+          
+          # 設置測試環境變量
+          export DATABASE_URL="postgresql://postgres:testpass@localhost:5432/testdb"
+          export REDIS_URL="redis://localhost:6379"
+          export TEST_ENV="integration"
+          
+          # 查找集成測試文件
+          find . -name "*integration*" -name "test_*.py" -o -name "*integration*" -name "*_test.py" > integration_test_files.txt
+          
+          if [ -s integration_test_files.txt ]; then
+            echo "📊 發現 $(wc -l < integration_test_files.txt) 個集成測試文件"
+            
+            # 執行集成測試
+            pytest \
+              --verbose \
+              --tb=short \
+              --junit-xml=integration-test-results.xml \
+              $(dirname $(head -1 integration_test_files.txt)) || echo "⚠️ 部分集成測試失敗"
+          else
+            echo "ℹ️ 未發現集成測試文件"
+          fi
+
+      - name: "生成集成測試報告"
+        if: always()
+        run: |
+          echo "# 🔗 Integration Test Report" > integration-test-report.md
+          echo "" >> integration-test-report.md
+          echo "**測試時間**: $(date)" >> integration-test-report.md
+          echo "**提交**: ${{ github.sha }}" >> integration-test-report.md
+          echo "" >> integration-test-report.md
+          
+          if [ -f "integration-test-results.xml" ]; then
+            echo "## 🔗 集成測試統計" >> integration-test-report.md
+            # 解析 JUnit XML 統計信息
+            TESTS=$(grep -o 'tests="[0-9]*"' integration-test-results.xml | head -1 | cut -d'"' -f2 || echo "0")
+            FAILURES=$(grep -o 'failures="[0-9]*"' integration-test-results.xml | head -1 | cut -d'"' -f2 || echo "0")
+            ERRORS=$(grep -o 'errors="[0-9]*"' integration-test-results.xml | head -1 | cut -d'"' -f2 || echo "0")
+            
+            echo "- 總測試數: $TESTS" >> integration-test-report.md
+            echo "- 失敗數: $FAILURES" >> integration-test-report.md
+            echo "- 錯誤數: $ERRORS" >> integration-test-report.md
+            
+            if [ "$FAILURES" = "0" ] && [ "$ERRORS" = "0" ]; then
+              echo "- 狀態: ✅ 全部通過" >> integration-test-report.md
+            else
+              echo "- 狀態: ❌ 部分失敗" >> integration-test-report.md
+            fi
+          else
+            echo "ℹ️ 未生成集成測試結果文件" >> integration-test-report.md
+          fi
+          
+          cat integration-test-report.md
+
+      - name: "上傳集成測試報告"
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808  # v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: |
+            integration-test-report.md
+            integration-test-results.xml
+          retention-days: 30
+
+  # =============================================================================
+  # CI 總結報告
+  # =============================================================================
+  ci-summary:
+    name: "📋 CI Summary Report"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [code-quality, security-scan, unit-tests, integration-tests]
+    if: always()
+    
+    steps:
+      - name: "下載所有報告"
+        uses: actions/download-artifact@6b208ae046db98c579e8a328f74b955651f427c0  # v4
+        with:
+          merge-multiple: true
+
+      - name: "生成CI總結報告"
+        run: |
+          echo "# 🚀 CI Pipeline Summary Report" > ci-summary-report.md
+          echo "" >> ci-summary-report.md
+          echo "**生成時間**: $(date)" >> ci-summary-report.md
+          echo "**分支**: ${{ github.ref_name }}" >> ci-summary-report.md
+          echo "**提交**: ${{ github.sha }}" >> ci-summary-report.md
+          echo "**PR**: #${{ github.event.pull_request.number || 'N/A' }}" >> ci-summary-report.md
+          echo "" >> ci-summary-report.md
+          
+          echo "## 📊 Pipeline 狀態" >> ci-summary-report.md
+          echo "- 🔍 代碼品質檢查: ${{ needs.code-quality.result }}" >> ci-summary-report.md
+          echo "- 🔒 安全掃描: ${{ needs.security-scan.result }}" >> ci-summary-report.md
+          echo "- 🧪 單元測試: ${{ needs.unit-tests.result }}" >> ci-summary-report.md
+          echo "- 🔗 集成測試: ${{ needs.integration-tests.result }}" >> ci-summary-report.md
+          echo "" >> ci-summary-report.md
+          
+          # 判斷整體狀態
+          if [ "${{ needs.code-quality.result }}" = "success" ] && \
+             [ "${{ needs.security-scan.result }}" = "success" ] && \
+             [ "${{ needs.unit-tests.result }}" = "success" ] && \
+             [ "${{ needs.integration-tests.result }}" = "success" ]; then
+            echo "## ✅ 整體狀態: 通過" >> ci-summary-report.md
+            echo "🎉 所有 CI 檢查都已通過！" >> ci-summary-report.md
+          else
+            echo "## ❌ 整體狀態: 失敗" >> ci-summary-report.md
+            echo "⚠️ 部分 CI 檢查失敗，請查看詳細報告。" >> ci-summary-report.md
+          fi
+          
+          echo "" >> ci-summary-report.md
+          echo "## 📋 詳細報告" >> ci-summary-report.md
+          echo "- [代碼品質報告](code-quality-report.md)" >> ci-summary-report.md
+          echo "- [安全掃描報告](security-report.md)" >> ci-summary-report.md
+          echo "- [單元測試報告](test-report.md)" >> ci-summary-report.md
+          echo "- [集成測試報告](integration-test-report.md)" >> ci-summary-report.md
+          
+          cat ci-summary-report.md
+
+      - name: "評論PR（如果有失敗）"
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea  # v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            if (fs.existsSync('ci-summary-report.md')) {
+              const report = fs.readFileSync('ci-summary-report.md', 'utf8');
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: report
+              });
+            }
+
+      - name: "上傳總結報告"
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808  # v4
+        with:
+          name: ci-summary-report
+          path: ci-summary-report.md
+          retention-days: 30

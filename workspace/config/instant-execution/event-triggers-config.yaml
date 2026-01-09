@@ -1,0 +1,290 @@
+# Event-Driven Triggers Configuration
+# INSTANT Execution System v2.0.0
+#
+# 事件驅動：trigger → event → action，閉環執行
+# 完全自治：0 次人工介入，AI 100% 決策
+
+apiVersion: instant.machinenativeops.io/v2
+kind: EventTriggerConfig
+metadata:
+  name: instant-event-triggers
+  version: "2.0.0"
+  labels:
+    mode: event-driven
+    autonomy: "100%"
+
+spec:
+  # 全局配置
+  global:
+    max_concurrent_events: 1000
+    event_queue_size: 10000
+    processing_timeout: 300s
+    retry_policy:
+      max_retries: 3
+      backoff_multiplier: 2
+      initial_delay: 100ms
+
+  # 事件來源定義
+  event_sources:
+    - name: github-webhook
+      type: webhook
+      endpoint: /webhooks/github
+      authentication: hmac-sha256
+      events:
+        - push
+        - pull_request
+        - issues
+        - workflow_run
+
+    - name: prometheus-alertmanager
+      type: alertmanager
+      endpoint: /webhooks/alertmanager
+      events:
+        - firing
+        - resolved
+
+    - name: kubernetes-events
+      type: kubernetes
+      namespaces: ["*"]
+      events:
+        - pod-failed
+        - deployment-rollout
+        - service-unhealthy
+
+    - name: internal-scheduler
+      type: cron
+      schedules:
+        - name: hourly-optimization
+          cron: "0 * * * *"
+          event_type: scheduled_optimization
+
+  # 事件觸發規則
+  triggers:
+    # ===== 即時功能交付觸發器 =====
+    - name: instant-feature-on-push
+      description: "Git push to main/develop triggers instant feature delivery"
+      event_source: github-webhook
+      event_type: push
+      conditions:
+        - field: ref
+          operator: in
+          values: ["refs/heads/main", "refs/heads/develop"]
+      actions:
+        - pipeline: instant-feature-delivery
+          priority: high
+          timeout: 180s
+      labels:
+        flow: feature-delivery
+        sla: instant
+
+    - name: instant-feature-on-issue
+      description: "Feature request issue triggers instant feature delivery"
+      event_source: github-webhook
+      event_type: issues
+      conditions:
+        - field: action
+          operator: equals
+          value: opened
+        - field: labels
+          operator: contains
+          value: feature-request
+      actions:
+        - pipeline: instant-feature-delivery
+          priority: medium
+          timeout: 180s
+      labels:
+        flow: feature-delivery
+        sla: instant
+
+    # ===== 即時修復交付觸發器 =====
+    - name: instant-fix-on-alert
+      description: "Prometheus alert triggers instant fix delivery"
+      event_source: prometheus-alertmanager
+      event_type: firing
+      conditions:
+        - field: severity
+          operator: in
+          values: ["critical", "high"]
+      actions:
+        - pipeline: instant-fix-delivery
+          priority: critical
+          timeout: 60s
+      labels:
+        flow: fix-delivery
+        sla: instant
+
+    - name: instant-fix-on-pod-failure
+      description: "Pod failure triggers instant fix delivery"
+      event_source: kubernetes-events
+      event_type: pod-failed
+      conditions:
+        - field: reason
+          operator: not_in
+          values: ["Evicted", "OOMKilled"]
+      actions:
+        - pipeline: instant-fix-delivery
+          priority: high
+          timeout: 60s
+      labels:
+        flow: fix-delivery
+        sla: instant
+
+    - name: instant-fix-on-bug-report
+      description: "Bug report issue triggers instant fix delivery"
+      event_source: github-webhook
+      event_type: issues
+      conditions:
+        - field: action
+          operator: equals
+          value: opened
+        - field: labels
+          operator: contains
+          value: bug
+      actions:
+        - pipeline: instant-fix-delivery
+          priority: high
+          timeout: 60s
+      labels:
+        flow: fix-delivery
+        sla: instant
+
+    # ===== 即時優化觸發器 =====
+    - name: instant-optimize-on-schedule
+      description: "Hourly scheduled optimization"
+      event_source: internal-scheduler
+      event_type: scheduled_optimization
+      actions:
+        - pipeline: instant-optimization
+          priority: low
+          timeout: 60s
+      labels:
+        flow: optimization
+        sla: instant
+
+    - name: instant-optimize-on-degradation
+      description: "Performance degradation triggers instant optimization"
+      event_source: prometheus-alertmanager
+      event_type: firing
+      conditions:
+        - field: alertname
+          operator: in
+          values: ["HighLatency", "SlowResponse", "HighCPU"]
+      actions:
+        - pipeline: instant-optimization
+          priority: medium
+          timeout: 60s
+      labels:
+        flow: optimization
+        sla: instant
+
+  # 流水線定義
+  pipelines:
+    - name: instant-feature-delivery
+      description: "Instant feature delivery pipeline"
+      total_latency_target: 120s
+      human_intervention: 0
+      success_rate_target: ">=95%"
+      stages:
+        - name: analysis
+          agent: analyzer
+          latency: 5s
+          parallelism: 1
+        - name: generation
+          agent: generator
+          latency: 30s
+          parallelism: 64
+        - name: validation
+          agent: validator
+          latency: 10s
+          parallelism: 32
+        - name: deployment
+          agent: deployer
+          latency: 30s
+          parallelism: 32
+
+    - name: instant-fix-delivery
+      description: "Instant fix delivery pipeline"
+      total_latency_target: 60s
+      human_intervention: 0
+      success_rate_target: ">=90%"
+      stages:
+        - name: detection
+          agent: sentinel
+          latency: 1s
+          parallelism: 1
+        - name: diagnosis
+          agent: diagnostic
+          latency: 2s
+          parallelism: 8
+        - name: fix
+          agent: fixer
+          latency: 10s
+          parallelism: 16
+        - name: deployment
+          agent: deployer
+          latency: 30s
+          parallelism: 32
+
+    - name: instant-optimization
+      description: "Instant optimization pipeline"
+      total_latency_target: 60s
+      human_intervention: 0
+      success_rate_target: ">=85%"
+      stages:
+        - name: analysis
+          agent: optimizer
+          latency: 5s
+          parallelism: 4
+        - name: optimization
+          agent: generator
+          latency: 15s
+          parallelism: 16
+        - name: deployment
+          agent: deployer
+          latency: 30s
+          parallelism: 16
+
+  # 自動修復策略
+  auto_healing:
+    enabled: true
+    strategies:
+      - name: retry-with-backoff
+        conditions:
+          - error_type: transient
+        actions:
+          - retry
+          - notify
+      - name: fallback-to-safe
+        conditions:
+          - error_type: persistent
+          - retry_count: ">3"
+        actions:
+          - rollback
+          - notify
+          - escalate
+      - name: circuit-breaker
+        conditions:
+          - failure_rate: ">10%"
+          - window: 5m
+        actions:
+          - open_circuit
+          - notify
+          - investigate
+
+  # 監控和告警
+  observability:
+    metrics:
+      enabled: true
+      export_interval: 10s
+      include:
+        - event_processing_latency
+        - pipeline_execution_time
+        - success_rate
+        - agent_utilization
+    tracing:
+      enabled: true
+      sample_rate: 0.1
+    logging:
+      level: info
+      format: json
+      include_payload: true

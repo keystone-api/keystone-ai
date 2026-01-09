@@ -1,0 +1,44 @@
+# Root Bootstrap Configuration
+# 根層引導配置 - 只負責指向 controlplane 入口
+
+apiVersion: root.bootstrap/v1
+kind: RootBootstrap
+
+metadata:
+  name: machine-native-ops-aaps-bootstrap
+  version: v1.0.0
+  description: Root layer bootstrap configuration for MachineNativeOps AAPS
+
+controlplane:
+  # Controlplane 路徑
+  path: "./controlplane"
+  
+  # 必需文件檢查
+  requiredFiles:
+    - "config/root.config.yaml"
+    - "config/root.governance.yaml"
+    - "registries/root.registry.modules.yaml"
+    - "validation/root.validator.schema.yaml"
+  
+  # 入口點配置
+  entrypoint:
+    superExecution: "config/root.super-execution.yaml"
+    governance: "config/root.governance.yaml"
+    modules: "config/root.modules.yaml"
+  
+  # 版本鎖定
+  versionLock:
+    controlplaneVersion: "v1.0.0"
+    minCompatibleVersion: "v1.0.0"
+
+# 啟動模式
+bootMode:
+  mode: "production"  # production | development | testing
+  strictValidation: true  # 嚴格驗證配置與結構（啟動時強制 schema/config 檢查）
+  autoRepair: false       # 自動嘗試修復可恢復問題
+
+# 健康檢查
+healthCheck:
+  enabled: true   # 是否啟用健康檢查
+  interval: 60    # seconds
+  timeout: 10     # seconds

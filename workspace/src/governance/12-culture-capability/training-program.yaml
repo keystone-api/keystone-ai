@@ -1,0 +1,26 @@
+---
+# 培訓計劃 | Training Program
+version: "1.0"
+lastUpdated: "2025-12-10"
+status: "active"
+training_curriculum:
+  onboarding:
+    topics:
+      - "Governance fundamentals"
+      - "Policies and procedures"
+      - "Tools training"
+    duration: "4 hours"
+  role_specific:
+    topics:
+      - "Decision makers: Decision governance"
+      - "Risk owners: Risk management"
+      - "Compliance team: Compliance framework"
+    duration: "8 hours"
+  annual_refresher:
+    topics:
+      - "Policy updates"
+      - "Case studies"
+      - "Best practices"
+    duration: "2 hours"
+delivery: "Online + instructor-led"
+tracking: "LMS system"

@@ -1,0 +1,164 @@
+version: v1
+team_id: "default-team"
+display_name: "AI 工作團隊"
+description: "自動激活的多代理協作團隊，統一管理所有 AI 代理並驅動事件型工作流程"
+auto_activate: true
+
+activation:
+  on_startup: true
+  on_events:
+    - "RUN_CREATED"
+    - "CHAT_MESSAGE_CREATED"
+    - "CODE_CHANGE_DETECTED"
+    - "DEPLOYMENT_REQUESTED"
+
+members:
+  - role: "orchestrator"
+    agent_id: "core.orchestrator"
+    source: "teams/default-team/orchestrator"
+    language: "python"
+
+  - role: "architect"
+    agent_id: "ai.architect"
+    source: "src/ai/agents/architect"
+    language: "typescript"
+
+  - role: "security"
+    agent_id: "ai.security"
+    source: "src/ai/agents/security"
+    language: "typescript"
+
+  - role: "devops"
+    agent_id: "ai.devops"
+    source: "src/ai/agents/devops"
+    language: "typescript"
+
+  - role: "qa"
+    agent_id: "ai.qa"
+    source: "src/ai/agents/qa"
+    language: "typescript"
+
+  - role: "data_scientist"
+    agent_id: "ai.data-scientist"
+    source: "src/ai/agents/data-scientist"
+    language: "typescript"
+
+  - role: "product_manager"
+    agent_id: "ai.product-manager"
+    source: "src/ai/agents/product-manager"
+    language: "typescript"
+
+  - role: "code_analyzer"
+    agent_id: "services.code-analyzer"
+    source: "src/services/agents/code-analyzer"
+    language: "python"
+
+  - role: "auto_repair"
+    agent_id: "services.auto-repair"
+    source: "src/services/agents/auto-repair"
+    language: "python"
+
+  - role: "dependency_manager"
+    agent_id: "services.dependency-manager"
+    source: "src/services/agents/dependency-manager"
+    language: "python"
+
+  - role: "recovery"
+    agent_id: "services.phoenix"
+    source: "src/services/agents/recovery"
+    language: "python"
+
+  - role: "vulnerability_detector"
+    agent_id: "services.vulnerability-detector"
+    source: "src/services/agents/vulnerability-detector"
+    language: "python"
+
+  - role: "input_analyzer"
+    agent_id: "instant.input-analysis"
+    source: "src/core/instant_generation/agents/input_analysis_agent.py"
+    language: "python"
+
+  - role: "architecture_designer"
+    agent_id: "instant.architecture-design"
+    source: "src/core/instant_generation/agents/architecture_design_agent.py"
+    language: "python"
+
+  - role: "code_generator"
+    agent_id: "instant.code-generation"
+    source: "src/core/instant_generation/agents/code_generation_agent.py"
+    language: "python"
+
+  - role: "testing"
+    agent_id: "instant.testing"
+    source: "src/core/instant_generation/agents/testing_agent.py"
+    language: "python"
+
+  - role: "deployment"
+    agent_id: "instant.deployment"
+    source: "src/core/instant_generation/agents/deployment_agent.py"
+    language: "python"
+
+  - role: "optimization"
+    agent_id: "instant.optimization"
+    source: "src/core/instant_generation/agents/optimization_agent.py"
+    language: "python"
+
+  - role: "self_evolution"
+    agent_id: "synergy.self-evolution"
+    source: "src/autonomous/agents/synergymesh_core/self_evolution_engine.py"
+    language: "python"
+
+  - role: "ecosystem_orchestrator"
+    agent_id: "synergy.ecosystem"
+    source: "src/autonomous/agents/synergymesh_core/ecosystem_orchestrator.py"
+    language: "python"
+
+  - role: "nlp"
+    agent_id: "synergy.nlp"
+    source: "src/autonomous/agents/synergymesh_core/natural_language_processor.py"
+    language: "python"
+
+  - role: "autonomous_coordinator"
+    agent_id: "synergy.coordinator"
+    source: "src/autonomous/agents/synergymesh_core/autonomous_coordinator.py"
+    language: "python"
+
+  - role: "task_executor"
+    agent_id: "autonomous.task-executor"
+    source: "src/autonomous/agents/agents/task_executor.py"
+    language: "python"
+
+  - role: "autopilot"
+    agent_id: "autonomous.autopilot"
+    source: "src/autonomous/agents/autopilot-agent.py"
+    language: "python"
+
+playbooks:
+  boot: "playbooks/boot.yaml"
+  on_run_created: "playbooks/on_run_created.yaml"
+  on_chat_message: "playbooks/on_chat_message.yaml"
+
+collaboration:
+  arbitration: "orchestrator"
+  mode: "contract-driven"
+  evidence_required: true
+  artifact_store: "artifacts/runs"
+  audit_log: "audit/events.jsonl"
+
+personas:
+  - profile: "profiles/role.career_counselor.md"
+  - profile: "profiles/role.statistician.md"
+  - profile: "profiles/role.tech_writer.md"
+  - profile: "profiles/role.journal_reviewer.md"
+  - profile: "profiles/role.senior_frontend_dev.md"
+  - profile: "profiles/role.it_architect.md"
+  - profile: "profiles/role.it_support.md"
+  - profile: "profiles/role.startup_lawyer.md"
+  - profile: "profiles/role.security_expert.md"
+  - profile: "profiles/role.tech_reviewer.md"
+  - profile: "profiles/role.devrel_consultant.md"
+  - profile: "profiles/role.web_design_consultant.md"
+  - profile: "profiles/role.fullstack_developer.md"
+  - profile: "profiles/role.ml_engineer.md"
+  - profile: "profiles/role.ux_ui_developer.md"
+  - profile: "profiles/role.data_visualizer.md"

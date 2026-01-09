@@ -1,0 +1,136 @@
+{
+  "verification_hash": "9e1c1c8e32c07a066defbf882e04cd4e3dad591686cdca8b4f8ef6ec460e69587c5df043d8eb35cb620ff1bb810f402691f795efa4b54269d16dc6bbcd9788e3",
+  "reproducible_hash": "319fe42d829bcb62d0aca556e44975f0eb8208d4289216532a9f88b8e5cd02b95c061b61bb7ec19eabbbbb27c98c4ad2a3fe52e318e48f106d8cb440e4a47be9",
+  "data": {
+    "runtime_events": [
+      {
+        "timestamp": "2026-01-06T01:16:31.925637+00:00",
+        "priority": "Info",
+        "rule": "Process",
+        "output": "Container started: /usr/bin/nginx",
+        "container_name": "axiom-hft-quantum",
+        "namespace": "axiom-system",
+        "severity": "INFO"
+      },
+      {
+        "timestamp": "2026-01-06T01:16:31.925641+00:00",
+        "priority": "Info",
+        "rule": "Network",
+        "output": "Network connection established to database",
+        "container_name": "axiom-hft-quantum",
+        "namespace": "axiom-system",
+        "severity": "INFO"
+      },
+      {
+        "timestamp": "2026-01-06T01:16:31.925643+00:00",
+        "priority": "Warning",
+        "rule": "Unexpected file access",
+        "output": "Access to sensitive file /etc/shadow detected",
+        "container_name": "unknown-container",
+        "namespace": "default",
+        "severity": "WARNING"
+      }
+    ],
+    "falco_rules": [
+      {
+        "file": "archive/infrastructure/kubernetes/phase2/12-security/falco-deployment.yaml",
+        "rules_count": 0,
+        "syntactically_valid": true,
+        "size": 839
+      },
+      {
+        "file": "archive/infrastructure/kubernetes/manifests/12-security/falco-deployment.yaml",
+        "rules_count": 0,
+        "syntactically_valid": true,
+        "size": 839
+      },
+      {
+        "file": "src/autonomous/infrastructure/infrastructure/kubernetes/phase2/12-security/falco-deployment.yaml",
+        "rules_count": 0,
+        "syntactically_valid": true,
+        "size": 797
+      }
+    ],
+    "audit_logs": [
+      {
+        "timestamp": "2026-01-06T01:16:15.244973+00:00",
+        "stage": 1,
+        "action": "evidence_created",
+        "hash": "4a387bdc80afa4fad6b8b875edd5ea958e8bbb3e69c05d6ef6bd5fc82cc88d1347c03258449243029587bed76cd8b3d1cab568a7297d05cdc5db5d8cd46ce580",
+        "user": "copilot-swe-agent[bot]",
+        "source": "supply-chain-verifier"
+      },
+      {
+        "timestamp": "2026-01-06T01:16:22.830914+00:00",
+        "stage": 2,
+        "action": "evidence_created",
+        "hash": "3846fcc5403537ee1a1c3cad4c66127dca59ca8322e0974610828732f5dad76c47d4e299aaf95c74b682ede985ec5075971b1fde33fc66823c28c2a6ae8d4178",
+        "user": "copilot-swe-agent[bot]",
+        "source": "supply-chain-verifier"
+      },
+      {
+        "timestamp": "2026-01-06T01:16:22.832487+00:00",
+        "stage": 3,
+        "action": "evidence_created",
+        "hash": "3bbe94586fc633b441ca3f7602848e468bdc510debe0fb1c1c94b6dc545013f583143f9b700a5923ccfd8b3d1f24e647219751b61e6d5c806f89691708671db9",
+        "user": "copilot-swe-agent[bot]",
+        "source": "supply-chain-verifier"
+      },
+      {
+        "timestamp": "2026-01-06T01:16:31.456579+00:00",
+        "stage": 4,
+        "action": "evidence_created",
+        "hash": "03c6bd97739f78278e7b9184b327a37ff48b4fc2ae356415e2d9e6fdb6aa0a64d3743a634b98a66ae15295521671813b32ef2fcad18e6c3caa187b3a11080384",
+        "user": "copilot-swe-agent[bot]",
+        "source": "supply-chain-verifier"
+      },
+      {
+        "timestamp": "2026-01-06T01:16:31.457442+00:00",
+        "stage": 5,
+        "action": "evidence_created",
+        "hash": "1f6fa72bcbfeec8bddab7d4c4973206190318467f7287fc87cff23336a8dd4b102601ec7076faa8eb3fe2bd81adc2cb4893abd341f96898450fd0b3705f90c13",
+        "user": "copilot-swe-agent[bot]",
+        "source": "supply-chain-verifier"
+      },
+      {
+        "timestamp": "2026-01-06T01:16:31.925514+00:00",
+        "stage": 6,
+        "action": "evidence_created",
+        "hash": "7cc76de382c5bba0118757b04b0ddac173db0bc49e37cd4834b159c1c03817b57fae07139f616673f5db9519c8c3bb8ed820cf75d09d7bd3b3a2828ef0a8190a",
+        "user": "copilot-swe-agent[bot]",
+        "source": "supply-chain-verifier"
+      }
+    ],
+    "traceability_chain": {
+      "chain_started": "2026-01-06T01:16:15.244973+00:00",
+      "chain_completed": "2026-01-06T01:16:31.998190+00:00",
+      "total_stages": 6,
+      "stage_hashes": {
+        "stage1": "4a387bdc80afa4fad6b8b875edd5ea958e8bbb3e69c05d6ef6bd5fc82cc88d1347c03258449243029587bed76cd8b3d1cab568a7297d05cdc5db5d8cd46ce580",
+        "stage2": "3846fcc5403537ee1a1c3cad4c66127dca59ca8322e0974610828732f5dad76c47d4e299aaf95c74b682ede985ec5075971b1fde33fc66823c28c2a6ae8d4178",
+        "stage3": "3bbe94586fc633b441ca3f7602848e468bdc510debe0fb1c1c94b6dc545013f583143f9b700a5923ccfd8b3d1f24e647219751b61e6d5c806f89691708671db9",
+        "stage4": "03c6bd97739f78278e7b9184b327a37ff48b4fc2ae356415e2d9e6fdb6aa0a64d3743a634b98a66ae15295521671813b32ef2fcad18e6c3caa187b3a11080384",
+        "stage5": "1f6fa72bcbfeec8bddab7d4c4973206190318467f7287fc87cff23336a8dd4b102601ec7076faa8eb3fe2bd81adc2cb4893abd341f96898450fd0b3705f90c13",
+        "stage6": "7cc76de382c5bba0118757b04b0ddac173db0bc49e37cd4834b159c1c03817b57fae07139f616673f5db9519c8c3bb8ed820cf75d09d7bd3b3a2828ef0a8190a"
+      },
+      "reproducible_hashes": {
+        "stage1_reproducible": "88bde761895b9aedd6313e5a9ced8ed1a0ed55d4c3c78ff8d79ab05a2aa7103bd804028c1bc6881d9342030d9a86a29de75ea9f9d4abebffd088126627c324a8",
+        "stage2_reproducible": "98743ed750056c6164de30675c181bbb84551e1bddfa38b62a969032277e166d49a1724b120e96b3cace4f9d1e38e18969de245eacb620437e58b7fc11b2ac2d",
+        "stage3_reproducible": "4c9212af9d597426f8d7523e7e7fe308b5c188ecfce1ffdcc0941a5a954d4de8b8b977090e51f37a4fbcd21758c8977c564f352b6fdffa4e6e3c7676f9c1db8e",
+        "stage4_reproducible": "d69233ce4e732133922c3f564272ee2d42689e7dc89accfe6465c164fb634e7954b57cb2ba28f474265087f8261809e553ecaad578fe58354f1e398e28001a36",
+        "stage5_reproducible": "ce0eab340eb8459b4921309de2800263a9b61eec903c43bd424cc199d71d23263a48574a3b40bad6d07255826451e4bb6db2503a121d7f232efc82c47d4b99de",
+        "stage6_reproducible": "f67fe6789ef6ae0e6169ced99d486d17dc264159374fcc78a29d620df3f7f14486c243cd46b01e150cebb5f039d856b1133afbb950765e434b4d2503898835f4",
+        "stage7_reproducible": "319fe42d829bcb62d0aca556e44975f0eb8208d4289216532a9f88b8e5cd02b95c061b61bb7ec19eabbbbb27c98c4ad2a3fe52e318e48f106d8cb440e4a47be9"
+      },
+      "final_hash": "e56c5fd7035060d1a5ca5d2099a6db40ab83f8cd5381195574e7ea130bde35bd3471ae336d727b6f60d749d7131cc06661183125eb76d60a46ae3c190017e960",
+      "verification_method": "SHA3-512",
+      "can_rollback": true,
+      "is_reproducible": true
+    }
+  },
+  "artifacts": [],
+  "stage": 7,
+  "stage_name": "Runtime \u76e3\u63a7 + \u53ef\u8ffd\u6eaf\u7559\u5b58",
+  "evidence_type": "runtime_monitoring",
+  "timestamp": "2026-01-06T01:16:31.998447+00:00"
+}
