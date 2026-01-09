@@ -1,0 +1,132 @@
+# Namespace Registry
+# Canonical metadata for all registered namespaces
+# Taxonomy-compliant structure following platform-registry-* pattern
+
+version: "1.0.0"
+registry_id: "platform-namespace-registry-v1"
+created_at: "2025-01-18T00:00:00Z"
+updated_at: "2025-01-18T00:00:00Z"
+
+# Registry metadata
+metadata:
+  name: "Machine Native Ops Namespace Registry"
+  description: "Central registry for all namespace modules"
+  maintainer: "Machine Native Ops Team"
+  compliance:
+    taxonomy: true
+    instant: true
+  
+# Registered namespaces
+namespaces:
+  # MCP Namespace
+  - id: "int-mcp-namespace-v1"
+    canonical_name: "int-mcp-namespace-v1"
+    display_name: "Model Context Protocol Namespace"
+    type: "integration"
+    domain: "int"
+    version: "1.0.0"
+    status: "active"
+    owner: "mcp-team"
+    created_at: "2025-01-18T00:00:00Z"
+    updated_at: "2025-01-18T00:00:00Z"
+    metadata:
+      description: "MCP protocol implementation namespace"
+      tags: ["mcp", "protocol", "integration"]
+      repository: "https://github.com/MachineNativeOps/machine-native-ops"
+      path: "00-namespaces/namespaces-mcp"
+    schema_ref: "schema/extensions/mcp_schema.json"
+    dependencies: []
+    
+  # ADK Namespace
+  - id: "platform-adk-namespace-v1"
+    canonical_name: "platform-adk-namespace-v1"
+    display_name: "Agent Development Kit Namespace"
+    type: "platform"
+    domain: "platform"
+    version: "1.0.0"
+    status: "active"
+    owner: "adk-team"
+    created_at: "2025-01-18T00:00:00Z"
+    updated_at: "2025-01-18T00:00:00Z"
+    metadata:
+      description: "Agent development and orchestration namespace"
+      tags: ["adk", "agents", "orchestration"]
+      repository: "https://github.com/MachineNativeOps/machine-native-ops"
+      path: "00-namespaces/namespaces-adk"
+    schema_ref: "schema/extensions/adk_schema.json"
+    dependencies: []
+    
+  # SDK Namespace
+  - id: "platform-sdk-namespace-v1"
+    canonical_name: "platform-sdk-namespace-v1"
+    display_name: "Platform SDK Namespace"
+    type: "platform"
+    domain: "platform"
+    version: "1.0.0"
+    status: "active"
+    owner: "sdk-team"
+    created_at: "2025-01-18T00:00:00Z"
+    updated_at: "2025-01-18T00:00:00Z"
+    metadata:
+      description: "Platform integration SDK namespace"
+      tags: ["sdk", "integration", "tools"]
+      repository: "https://github.com/MachineNativeOps/machine-native-ops"
+      path: "00-namespaces/namespaces-sdk"
+    schema_ref: "schema/extensions/sdk_schema.json"
+    dependencies: []
+    
+  # Taxonomy Core Namespace
+  - id: "platform-taxonomy-namespace-v1"
+    canonical_name: "platform-taxonomy-namespace-v1"
+    display_name: "Taxonomy Core Namespace"
+    type: "platform"
+    domain: "platform"
+    version: "1.0.0"
+    status: "active"
+    owner: "taxonomy-team"
+    created_at: "2025-01-18T00:00:00Z"
+    updated_at: "2025-01-18T00:00:00Z"
+    metadata:
+      description: "Core taxonomy system namespace"
+      tags: ["taxonomy", "naming", "governance"]
+      repository: "https://github.com/MachineNativeOps/machine-native-ops"
+      path: "00-namespaces/taxonomy-core"
+    schema_ref: "schema/base_schema.json"
+    dependencies: []
+
+# Registry configuration
+configuration:
+  # Validation settings
+  validation:
+    enabled: true
+    strict_mode: true
+    schema_validation: true
+    taxonomy_validation: true
+    
+  # Performance settings (INSTANT compliance)
+  performance:
+    cache_enabled: true
+    cache_ttl_seconds: 300
+    max_parallel_operations: 256
+    operation_timeout_ms: 100
+    
+  # Security settings
+  security:
+    authentication_required: true
+    authorization_enabled: true
+    audit_logging: true
+    
+  # Lifecycle settings
+  lifecycle:
+    versioning_enabled: true
+    deprecation_grace_period_days: 90
+    auto_cleanup_enabled: false
+
+# Audit trail
+audit_trail:
+  - timestamp: "2025-01-18T00:00:00Z"
+    action: "registry_created"
+    actor: "system"
+    details:
+      version: "1.0.0"
+      namespaces_count: 4
