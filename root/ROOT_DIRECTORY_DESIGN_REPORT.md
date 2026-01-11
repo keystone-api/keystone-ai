@@ -39,7 +39,7 @@
 
 - 若需要 root 層獨立檔案，採用 thin wrapper 方式（含 `apiVersion/kind/metadata/spec`）指向 `controlplane/config` 單一來源。  
 - 持續以 `.root.jobs/*bundle*` 校驗 attestation/hash-lock，確保與 `gate-lock-attest.yaml` 一致。  
-- 於後續 PR 中，可逐步為 root 層新增針對 super-execution / trust / provenance 的鏡射檔並更新本表，以便 `gate-root-specs` 擴充檢查覆蓋率。
+- 於後續 PR 中，可逐步為 root 層新增針對 super-execution / trust / provenance 的鏡像檔並更新本表，以便 `gate-root-specs` 擴充檢查覆蓋率。
 
 ---
 
