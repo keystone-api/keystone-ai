@@ -8,3 +8,6 @@
  */
 
 export * from './observation-engine';
+export * from './evolution-engine';
+export * from './reflex-engine';
+export * from './audit-engine';
